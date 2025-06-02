@@ -51,3 +51,5 @@ const TestimonialsSection: React.FC = () => {
     </section>
   );
 };
+
+export default TestimonialsSection
