@@ -81,3 +81,5 @@ const PricingSection: React.FC = () => {
     </section>
   );
 };
+
+export default PricingSection

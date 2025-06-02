@@ -43,3 +43,5 @@ const HowItWorksSection: React.FC = () => {
     </section>
   );
 };
+
+export default HowItWorksSection

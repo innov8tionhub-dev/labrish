@@ -19,3 +19,5 @@ const PartnersSection: React.FC = () => {
     </section>
   );
 };
+
+export default PartnersSection

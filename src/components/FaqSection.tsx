@@ -40,3 +40,5 @@ const FaqSection: React.FC = () => {
     </section>
   );
 };
+
+export default FaqSection

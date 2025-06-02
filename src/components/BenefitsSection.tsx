@@ -58,3 +58,5 @@ const BenefitsSection: React.FC = () => {
     </section>
   );
 };
+
+export default BenefitsSection
