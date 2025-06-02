@@ -1,4 +1,5 @@
 import React from 'react';
+import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
 import PartnersSection from './components/PartnersSection';
 import BenefitsSection from './components/BenefitsSection';
@@ -11,6 +12,7 @@ import Footer from './components/Footer';
 function App() {
   return (
     <main className="min-h-screen">
+      <Navbar />
       <HeroSection />
       <PartnersSection />
       <BenefitsSection />
@@ -23,4 +25,4 @@ function App() {
   );
 }
 
-export default App
+export default App;

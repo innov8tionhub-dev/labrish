@@ -4,7 +4,7 @@ const Footer: React.FC = () => {
   return (
     <footer className="bg-gray-900 text-white py-12">
       <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-3 gap-8">
           <div>
             <h3 className="font-heading text-2xl mb-4">Labrish</h3>
             <p className="font-body text-gray-400">Where every voice has a story, and every story finds its voice.</p>
@@ -27,28 +27,17 @@ const Footer: React.FC = () => {
               <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Careers</a></li>
             </ul>
           </div>
-          
-          <div>
-            <h4 className="font-heading text-lg mb-4">Stay Updated</h4>
-            <form className="space-y-4">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="w-full px-4 py-2 rounded bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-caribbean-500"
-              />
-              <button className="w-full px-4 py-2 bg-caribbean-500 text-white rounded hover:bg-caribbean-600 transition-colors">
-                Subscribe
-              </button>
-            </form>
-          </div>
         </div>
         
-        <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-          <p>&copy; {new Date().getFullYear()} Labrish. All rights reserved.</p>
+        <div className="border-t border-gray-800 mt-12 pt-8 flex justify-between items-center">
+          <p className="text-gray-400">&copy; {new Date().getFullYear()} Labrish. All rights reserved.</p>
+          <a href="https://innov8tionhub.com" target="_blank" rel="noopener noreferrer">
+            <img src="/site-by.png" alt="Site by Innov8tion Hub" className="h-8" />
+          </a>
         </div>
       </div>
     </footer>
   );
 };
 
-export default Footer
+export default Footer;
