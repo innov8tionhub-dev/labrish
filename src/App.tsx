@@ -1,24 +1,24 @@
 import React from 'react';
 import HeroSection from './components/HeroSection';
-import AboutSection from './components/AboutSection';
-import TechStackSection from './components/TechStackSection';
-import ChallengesSection from './components/ChallengesSection';
-import AccomplishmentsSection from './components/AccomplishmentsSection';
-import LearningsSection from './components/LearningsSection';
-import NextStepsSection from './components/NextStepsSection';
+import PartnersSection from './components/PartnersSection';
+import BenefitsSection from './components/BenefitsSection';
+import HowItWorksSection from './components/HowItWorksSection';
+import PricingSection from './components/PricingSection';
+import TestimonialsSection from './components/TestimonialsSection';
+import FaqSection from './components/FaqSection';
+import Footer from './components/Footer';
 
 function App() {
   return (
     <main className="min-h-screen">
       <HeroSection />
-      <AboutSection />
-      <TechStackSection />
-      <ChallengesSection />
-      <AccomplishmentsSection />
-      <LearningsSection />
-      <NextStepsSection />
+      <PartnersSection />
+      <BenefitsSection />
+      <HowItWorksSection />
+      <PricingSection />
+      <TestimonialsSection />
+      <FaqSection />
+      <Footer />
     </main>
   );
 }
-
-export default App;
