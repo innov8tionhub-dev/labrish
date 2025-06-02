@@ -2,7 +2,7 @@ import React from 'react';
 
 const Navbar: React.FC = () => {
   return (
-    <nav className="bg-white/80 backdrop-blur-sm fixed w-full z-50 shadow-sm mb-2">
+    <nav className="bg-white/80 backdrop-blur-sm fixed w-full z-50 shadow-sm mb-4">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <a href="#" className="font-heading text-2xl text-gray-800">Labrish</a>
