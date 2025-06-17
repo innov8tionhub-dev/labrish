@@ -1,6 +1,6 @@
 import React from 'react';
 import Navbar from './components/Navbar';
-import HeroSection from './components/HeroSection';
+import CaribbeanVoiceHero from './components/ui/CaribbeanVoiceHero';
 import PartnersSection from './components/PartnersSection';
 import BenefitsSection from './components/BenefitsSection';
 import HowItWorksSection from './components/HowItWorksSection';
@@ -13,7 +13,7 @@ function App() {
   return (
     <main className="min-h-screen">
       <Navbar />
-      <HeroSection />
+      <CaribbeanVoiceHero />
       <PartnersSection />
       <BenefitsSection />
       <HowItWorksSection />
