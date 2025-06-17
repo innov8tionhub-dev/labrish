@@ -206,7 +206,7 @@ const CaribbeanVoiceHero: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
         >
-          <span className="block mb-2">Experience</span>
+          <span className="block mb-2">Labrish</span>
           <AnimatedTextCycle
             words={rotatingWords}
             className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent"
