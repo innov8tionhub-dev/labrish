@@ -1,21 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Mic, 
-  Volume2, 
-  Download, 
-  Play, 
-  Pause, 
-  Square, 
-  Loader2, 
-  FileText,
-  Settings,
-  Save,
-  Upload,
-  Book,
-  Waveform,
-  Share2
-} from 'lucide-react';
+import { Mic, Volume2, Download, Play, Pause, Square, Loader2, FileText, Settings, Save, Upload, Book, AudioWaveform as Waveform, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { generateSpeech, getAvailableVoices, Voice } from '@/lib/elevenlabs';
 import { supabase } from '@/lib/supabase';
