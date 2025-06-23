@@ -121,7 +121,7 @@ const VoiceChatSection: React.FC = () => {
                 </div>
               </div>
             )}
-          </div>
+          </motion.div>
         </div>
 
         {/* Call to Action */}
