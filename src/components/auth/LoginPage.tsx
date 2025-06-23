@@ -27,7 +27,7 @@ const LoginPage: React.FC = () => {
         setMessage({ type: 'error', text: error.message });
       } else {
         setMessage({ type: 'success', text: 'Login successful! Redirecting...' });
-        setTimeout(() => navigate('/'), 1000);
+        setTimeout(() => navigate('/dashboard'), 1000);
       }
     } catch (error: any) {
       setMessage({ type: 'error', text: 'An unexpected error occurred' });

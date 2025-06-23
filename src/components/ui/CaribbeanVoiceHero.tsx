@@ -201,7 +201,7 @@ const CaribbeanVoiceHero: React.FC = () => {
 
         {/* Main headline */}
         <motion.h1
-          className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight"
+          className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-800 mb-6 leading-tight font-heading"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}

@@ -41,7 +41,7 @@ const Navbar: React.FC = () => {
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="font-heading text-2xl text-gray-800">Labrish</Link>
           
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6">
             <a href="#benefits" className="font-body text-gray-600 hover:text-gray-800 transition-colors">Features</a>
             <a href="#how-it-works" className="font-body text-gray-600 hover:text-gray-800 transition-colors">How it Works</a>
             <a href="#pricing" className="font-body text-gray-600 hover:text-gray-800 transition-colors">Pricing</a>

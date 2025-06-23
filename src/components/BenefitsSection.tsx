@@ -36,7 +36,7 @@ const BenefitsSection: React.FC = () => {
   ];
 
   return (
-    <section className="py-16 bg-caribbean-50">
+    <section id="benefits" className="py-16 bg-caribbean-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="font-heading text-4xl mb-4 text-gray-800">Why Choose Labrish?</h2>
