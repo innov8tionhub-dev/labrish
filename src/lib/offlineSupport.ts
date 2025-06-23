@@ -221,29 +221,37 @@ class CacheManager {
   }
 }
 
-// Service worker registration
+// Check if we're in a supported environment
+const isServiceWorkerSupported = (): boolean => {
+  return 'serviceWorker' in navigator && !window.location.hostname.includes('stackblitz');
+};
+
+// Service worker registration with environment detection
 export const registerServiceWorker = async (): Promise<void> => {
-  if ('serviceWorker' in navigator) {
-    try {
-      const registration = await navigator.serviceWorker.register('/sw.js');
-      console.log('Service Worker registered:', registration);
-      
-      // Listen for updates
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
-        if (newWorker) {
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // New version available
-              console.log('New version available');
-              // You could show a notification to the user here
-            }
-          });
-        }
-      });
-    } catch (error) {
-      console.error('Service Worker registration failed:', error);
-    }
+  if (!isServiceWorkerSupported()) {
+    console.log('Service Worker not supported in this environment');
+    return;
+  }
+
+  try {
+    const registration = await navigator.serviceWorker.register('/sw.js');
+    console.log('Service Worker registered:', registration);
+    
+    // Listen for updates
+    registration.addEventListener('updatefound', () => {
+      const newWorker = registration.installing;
+      if (newWorker) {
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // New version available
+            console.log('New version available');
+            // You could show a notification to the user here
+          }
+        });
+      }
+    });
+  } catch (error) {
+    console.warn('Service Worker registration failed:', error);
   }
 };
 
