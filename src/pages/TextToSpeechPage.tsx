@@ -54,6 +54,26 @@ const TextToSpeechPage: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const navigate = useNavigate();
 
+  // Memory leak fix: Clean up audio URLs
+  useEffect(() => {
+    return () => {
+      // Cleanup audio URL when component unmounts
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+      }
+    };
+  }, []);
+
+  // Memory leak fix: Clean up previous audio URL when new one is created
+  useEffect(() => {
+    return () => {
+      // This cleanup function will run when audioUrl changes or component unmounts
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+      }
+    };
+  }, [audioUrl]);
+
   // Check authentication
   useEffect(() => {
     const getUser = async () => {
@@ -128,6 +148,12 @@ const TextToSpeechPage: React.FC = () => {
 
     setIsGenerating(true);
     try {
+      // Clean up previous audio URL before creating new one
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+        setAudioUrl(null);
+      }
+
       const blob = await generateSpeech(text, selectedVoice, voiceSettings);
       const url = URL.createObjectURL(blob);
       setAudioUrl(url);
@@ -237,6 +263,10 @@ const TextToSpeechPage: React.FC = () => {
     setActiveTab('create');
     
     if (story.audio_url) {
+      // Clean up current audio URL before setting new one
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+      }
       setAudioUrl(story.audio_url);
     }
   };
