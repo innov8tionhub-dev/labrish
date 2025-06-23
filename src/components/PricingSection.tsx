@@ -1,7 +1,49 @@
-import React from 'react';
-import { Check } from 'lucide-react';
+import React, { useState } from 'react';
+import { Check, Loader2 } from 'lucide-react';
+import { stripeProducts } from '@/stripe-config';
+import { createCheckoutSession } from '@/lib/stripe';
+import { supabase } from '@/lib/supabase';
+import { useNavigate } from 'react-router-dom';
 
 const PricingSection: React.FC = () => {
+  const [loading, setLoading] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  const handleSubscribe = async (priceId: string) => {
+    setLoading(priceId);
+
+    try {
+      // Check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        navigate('/login');
+        return;
+      }
+
+      const product = stripeProducts.find(p => p.priceId === priceId);
+      if (!product) {
+        throw new Error('Product not found');
+      }
+
+      const { url } = await createCheckoutSession({
+        price_id: priceId,
+        success_url: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${window.location.origin}/pricing`,
+        mode: product.mode,
+      });
+
+      if (url) {
+        window.location.href = url;
+      }
+    } catch (error: any) {
+      console.error('Error creating checkout session:', error);
+      alert(error.message || 'Failed to start checkout process');
+    } finally {
+      setLoading(null);
+    }
+  };
+
   const plans = [
     {
       name: "Starter",
@@ -14,8 +56,9 @@ const PricingSection: React.FC = () => {
       ]
     },
     {
-      name: "Storyteller",
-      price: "$19",
+      name: "Labrish Pro",
+      price: "$19.99",
+      priceId: stripeProducts[0]?.priceId,
       popular: true,
       features: [
         "Unlimited AI-voiced stories",
@@ -39,7 +82,7 @@ const PricingSection: React.FC = () => {
   ];
 
   return (
-    <section className="py-16 bg-caribbean-50">
+    <section id="pricing" className="py-16 bg-caribbean-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="font-heading text-4xl mb-4 text-gray-800">Simple, Transparent Pricing</h2>
@@ -57,7 +100,7 @@ const PricingSection: React.FC = () => {
               <h3 className="font-heading text-2xl mb-2 text-gray-800">{plan.name}</h3>
               <div className="mb-6">
                 <span className="text-4xl font-bold">{plan.price}</span>
-                {plan.price !== "Custom" && <span className="text-gray-600">/month</span>}
+                {plan.price !== "Custom" && plan.price !== "Free" && <span className="text-gray-600">/month</span>}
               </div>
               <ul className="space-y-4 mb-8">
                 {plan.features.map((feature, i) => (
@@ -67,12 +110,23 @@ const PricingSection: React.FC = () => {
                   </li>
                 ))}
               </ul>
-              <button className={`w-full py-3 rounded-lg font-semibold ${
-                plan.popular
-                  ? 'bg-caribbean-500 text-white hover:bg-caribbean-600'
-                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-              } transition-colors`}>
-                Get Started
+              <button 
+                onClick={() => plan.priceId ? handleSubscribe(plan.priceId) : undefined}
+                disabled={loading === plan.priceId || !plan.priceId}
+                className={`w-full py-3 rounded-lg font-semibold flex items-center justify-center gap-2 ${
+                  plan.popular
+                    ? 'bg-caribbean-500 text-white hover:bg-caribbean-600'
+                    : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                } transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                {loading === plan.priceId ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  plan.priceId ? 'Get Started' : 'Contact Sales'
+                )}
               </button>
             </div>
           ))}
@@ -82,4 +136,4 @@ const PricingSection: React.FC = () => {
   );
 };
 
-export default PricingSection
+export default PricingSection;

@@ -1,0 +1,93 @@
+import React, { useEffect, useState } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
+import { CheckCircle, ArrowRight, Home } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+const SuccessPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const sessionId = searchParams.get('session_id');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate a brief loading period to show the success animation
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-900/20 via-teal-800/10 to-cyan-900/20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600">Processing your payment...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-emerald-900/20 via-teal-800/10 to-cyan-900/20 flex items-center justify-center p-4">
+      <div className="max-w-md w-full">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-emerald-200/50 text-center">
+          <div className="mb-6">
+            <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto mb-4 animate-bounce" />
+            <h1 className="font-heading text-3xl text-gray-800 mb-2">Payment Successful!</h1>
+            <p className="text-gray-600">
+              Thank you for subscribing to Labrish Pro. Your account has been upgraded successfully.
+            </p>
+          </div>
+
+          {sessionId && (
+            <div className="mb-6 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+              <p className="text-sm text-emerald-700">
+                <strong>Session ID:</strong> {sessionId}
+              </p>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h3 className="font-semibold text-gray-800 mb-2">What's Next?</h3>
+              <ul className="text-sm text-gray-600 space-y-1 text-left">
+                <li>• Access to unlimited AI-voiced stories</li>
+                <li>• Full Caribbean accent library</li>
+                <li>• Custom voice training capabilities</li>
+                <li>• HD audio quality</li>
+                <li>• Priority support</li>
+              </ul>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button asChild className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600">
+                <Link to="/" className="flex items-center justify-center gap-2">
+                  <Home className="w-4 h-4" />
+                  Go Home
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="flex-1 border-emerald-300 text-emerald-700 hover:bg-emerald-50">
+                <Link to="/dashboard" className="flex items-center justify-center gap-2">
+                  Dashboard
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <p className="text-xs text-gray-500">
+              Need help? Contact our support team at{' '}
+              <a href="mailto:support@labrish.com" className="text-emerald-600 hover:text-emerald-700">
+                support@labrish.com
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SuccessPage;
