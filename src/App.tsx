@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import CaribbeanVoiceHero from './components/ui/CaribbeanVoiceHero';
 import PartnersSection from './components/PartnersSection';
 import BenefitsSection from './components/BenefitsSection';
+import VoiceChatSection from './components/VoiceChatSection';
 import HowItWorksSection from './components/HowItWorksSection';
 import PricingSection from './components/PricingSection';
 import TestimonialsSection from './components/TestimonialsSection';
@@ -20,6 +21,7 @@ const HomePage: React.FC = () => (
     <CaribbeanVoiceHero />
     <PartnersSection />
     <BenefitsSection />
+    <VoiceChatSection />
     <HowItWorksSection />
     <PricingSection />
     <TestimonialsSection />
