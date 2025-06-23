@@ -1,5 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import ErrorBoundary from '@/components/common/ErrorBoundary';
+import { ToastContainer, useToast } from '@/components/common/Toast';
 import Navbar from './components/Navbar';
 import CaribbeanVoiceHero from './components/ui/CaribbeanVoiceHero';
 import PartnersSection from './components/PartnersSection';
@@ -33,19 +35,32 @@ const HomePage: React.FC = () => (
   </main>
 );
 
+const AppContent: React.FC = () => {
+  const { toasts, dismissToast } = useToast();
+
+  return (
+    <>
+      <Router>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/success" element={<SuccessPage />} />
+          <Route path="/pricing" element={<HomePage />} />
+          <Route path="/text-to-speech" element={<TextToSpeechPage />} />
+        </Routes>
+      </Router>
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+    </>
+  );
+};
+
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/success" element={<SuccessPage />} />
-        <Route path="/pricing" element={<HomePage />} />
-        <Route path="/text-to-speech" element={<TextToSpeechPage />} />
-      </Routes>
-    </Router>
+    <ErrorBoundary>
+      <AppContent />
+    </ErrorBoundary>
   );
 }
 
