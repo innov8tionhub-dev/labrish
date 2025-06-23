@@ -15,6 +15,7 @@ import LoginPage from './components/auth/LoginPage';
 import SignupPage from './components/auth/SignupPage';
 import Dashboard from './components/Dashboard';
 import SuccessPage from './components/SuccessPage';
+import TextToSpeechPage from './pages/TextToSpeechPage';
 
 const HomePage: React.FC = () => (
   <main className="min-h-screen">
@@ -42,6 +43,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/success" element={<SuccessPage />} />
         <Route path="/pricing" element={<HomePage />} />
+        <Route path="/text-to-speech" element={<TextToSpeechPage />} />
       </Routes>
     </Router>
   );

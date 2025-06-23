@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, User, LogOut } from 'lucide-react';
+import { Menu, X, User, LogOut, Mic } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { Link, useNavigate } from 'react-router-dom';
@@ -46,6 +46,15 @@ const Navbar: React.FC = () => {
             <a href="#how-it-works" className="font-body text-gray-600 hover:text-gray-800 transition-colors">How it Works</a>
             <a href="#pricing" className="font-body text-gray-600 hover:text-gray-800 transition-colors">Pricing</a>
             <a href="#faq" className="font-body text-gray-600 hover:text-gray-800 transition-colors">FAQ</a>
+            {user && (
+              <Link 
+                to="/text-to-speech" 
+                className="flex items-center gap-2 font-body text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                <Mic className="w-4 h-4" />
+                TTS Studio
+              </Link>
+            )}
           </div>
 
           <div className="flex items-center gap-4">
@@ -102,6 +111,15 @@ const Navbar: React.FC = () => {
             <a href="#how-it-works" className="font-body text-gray-600 hover:text-gray-800 transition-colors px-2 py-3">How it Works</a>
             <a href="#pricing" className="font-body text-gray-600 hover:text-gray-800 transition-colors px-2 py-3">Pricing</a>
             <a href="#faq" className="font-body text-gray-600 hover:text-gray-800 transition-colors px-2 py-3">FAQ</a>
+            {user && (
+              <Link 
+                to="/text-to-speech" 
+                className="flex items-center gap-2 font-body text-gray-600 hover:text-gray-800 transition-colors px-2 py-3"
+              >
+                <Mic className="w-4 h-4" />
+                TTS Studio
+              </Link>
+            )}
             {!user && (
               <>
                 <Link to="/login" className="font-body text-gray-600 hover:text-gray-800 transition-colors px-2 py-3">Sign In</Link>
