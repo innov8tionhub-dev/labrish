@@ -1,21 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Mic, 
-  Upload, 
-  Play, 
-  Pause, 
-  Square, 
-  Download, 
-  Trash2, 
-  CheckCircle, 
-  AlertCircle,
-  Volume2,
-  Waveform,
-  Settings,
-  Save,
-  RefreshCw
-} from 'lucide-react';
+import { Mic, Upload, Play, Pause, Square, Download, Trash2, CheckCircle, AlertCircle, Volume2, AudioWaveform as Waveform, Settings, Save, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProgressBar from '@/components/common/ProgressBar';
 import { useToast } from '@/components/common/Toast';
