@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
-import { Crown, LogOut, Settings, User as UserIcon, Mic } from 'lucide-react';
+import { Crown, LogOut, Settings, User as UserIcon, Mic, Book } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ConvAIWidget from './ConvAIWidget';
+import InteractiveStory from './InteractiveStory';
 
 interface SubscriptionData {
   subscription_status: string;
@@ -17,7 +18,7 @@ const Dashboard: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showVoiceChat, setShowVoiceChat] = useState(false);
+  const [activeTab, setActiveTab] = useState<'chat' | 'story'>('chat');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -106,7 +107,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-900/20 via-teal-800/10 to-cyan-900/20">
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-emerald-200/50 mb-8">
             <div className="flex items-center justify-between">
@@ -130,20 +131,20 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Left Column */}
-            <div className="space-y-8">
+          <div className="grid lg:grid-cols-4 gap-8">
+            {/* Left Sidebar */}
+            <div className="lg:col-span-1 space-y-6">
               {/* Subscription Status */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-emerald-200/50">
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-emerald-200/50">
                 <div className="flex items-center gap-3 mb-4">
-                  <Crown className="w-6 h-6 text-emerald-600" />
-                  <h2 className="font-heading text-2xl text-gray-800">Subscription Status</h2>
+                  <Crown className="w-5 h-5 text-emerald-600" />
+                  <h2 className="font-heading text-lg text-gray-800">Plan</h2>
                 </div>
                 
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-3">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Current Plan</p>
-                    <p className={`text-xl font-semibold ${getStatusColor()}`}>
+                    <p className={`text-lg font-semibold ${getStatusColor()}`}>
                       {getSubscriptionStatus()}
                     </p>
                   </div>
@@ -153,7 +154,7 @@ const Dashboard: React.FC = () => {
                       <p className="text-sm text-gray-600 mb-1">
                         {subscription.cancel_at_period_end ? 'Expires' : 'Renews'}
                       </p>
-                      <p className="text-xl font-semibold text-gray-800">
+                      <p className="text-sm font-medium text-gray-800">
                         {new Date(subscription.current_period_end * 1000).toLocaleDateString()}
                       </p>
                     </div>
@@ -161,13 +162,14 @@ const Dashboard: React.FC = () => {
                 </div>
 
                 {(!subscription || subscription.subscription_status !== 'active') && (
-                  <div className="mt-6 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
-                    <p className="text-emerald-700 mb-3">
-                      Upgrade to Labrish Pro to unlock unlimited stories, custom voice training, and more!
+                  <div className="mt-4 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                    <p className="text-emerald-700 text-sm mb-2">
+                      Upgrade for unlimited access!
                     </p>
                     <Button
                       onClick={() => navigate('/pricing')}
-                      className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+                      size="sm"
+                      className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
                     >
                       Upgrade Now
                     </Button>
@@ -175,60 +177,73 @@ const Dashboard: React.FC = () => {
                 )}
               </div>
 
-              {/* Quick Actions */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-emerald-200/50">
-                <h3 className="font-heading text-xl text-gray-800 mb-4">Quick Actions</h3>
-                <div className="space-y-3">
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start"
-                    onClick={() => setShowVoiceChat(!showVoiceChat)}
+              {/* Navigation */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-emerald-200/50">
+                <h3 className="font-heading text-lg text-gray-800 mb-4">Features</h3>
+                <div className="space-y-2">
+                  <Button
+                    variant={activeTab === 'chat' ? 'default' : 'outline'}
+                    className={`w-full justify-start ${
+                      activeTab === 'chat' 
+                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600' 
+                        : ''
+                    }`}
+                    onClick={() => setActiveTab('chat')}
                   >
                     <Mic className="w-4 h-4 mr-2" />
-                    {showVoiceChat ? 'Hide Voice Chat' : 'Start Voice Chat'}
+                    Voice Chat
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button
+                    variant={activeTab === 'story' ? 'default' : 'outline'}
+                    className={`w-full justify-start ${
+                      activeTab === 'story' 
+                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600' 
+                        : ''
+                    }`}
+                    onClick={() => setActiveTab('story')}
+                  >
+                    <Book className="w-4 h-4 mr-2" />
+                    Interactive Stories
+                  </Button>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-emerald-200/50">
+                <h3 className="font-heading text-lg text-gray-800 mb-4">Quick Actions</h3>
+                <div className="space-y-2">
+                  <Button variant="outline" size="sm" className="w-full justify-start">
                     Browse Voice Library
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" size="sm" className="w-full justify-start">
                     Train Custom Voice
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" size="sm" className="w-full justify-start">
                     <Settings className="w-4 h-4 mr-2" />
-                    Account Settings
+                    Settings
                   </Button>
                 </div>
               </div>
             </div>
 
-            {/* Right Column - Voice Chat */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-emerald-200/50">
-              <h3 className="font-heading text-xl text-gray-800 mb-4">Caribbean Voice Chat</h3>
-              
-              {showVoiceChat ? (
-                <div className="space-y-4">
-                  <p className="text-gray-600 mb-4">
-                    Experience authentic Caribbean voices powered by AI. Start a conversation below:
-                  </p>
-                  <ConvAIWidget 
-                    agentId="agent_01jyd8m2mfedx8z5d030pp2nx0"
-                    className="min-h-[400px] w-full border border-emerald-200 rounded-lg"
-                  />
+            {/* Main Content */}
+            <div className="lg:col-span-3">
+              {activeTab === 'chat' ? (
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-emerald-200/50">
+                  <h3 className="font-heading text-2xl text-gray-800 mb-6">Caribbean Voice Chat</h3>
+                  <div className="space-y-4">
+                    <p className="text-gray-600 mb-6">
+                      Experience authentic Caribbean voices powered by AI. Start a conversation and explore the rich culture and storytelling traditions of the Caribbean.
+                    </p>
+                    <ConvAIWidget 
+                      agentId="agent_01jyd8m2mfedx8z5d030pp2nx0"
+                      className="min-h-[500px] w-full border border-emerald-200 rounded-lg"
+                    />
+                  </div>
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <Mic className="w-16 h-16 text-emerald-400 mx-auto mb-4" />
-                  <h4 className="font-heading text-lg text-gray-800 mb-2">Ready to Chat?</h4>
-                  <p className="text-gray-600 mb-6">
-                    Start a conversation with our Caribbean AI voices. Experience authentic accents and cultural storytelling.
-                  </p>
-                  <Button
-                    onClick={() => setShowVoiceChat(true)}
-                    className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
-                  >
-                    <Mic className="w-4 h-4 mr-2" />
-                    Start Voice Chat
-                  </Button>
+                <div className="space-y-6">
+                  <InteractiveStory />
                 </div>
               )}
             </div>
