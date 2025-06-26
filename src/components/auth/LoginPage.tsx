@@ -18,7 +18,7 @@ const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
   const navigate = useNavigate();
-  const { handleError } = useErrorHandler();
+  const { handleError, handleInfo } = useErrorHandler();
   const { error: showErrorToast, success: showSuccessToast } = useToast();
 
   const validateForm = (): boolean => {
@@ -68,21 +68,37 @@ const LoginPage: React.FC = () => {
       });
 
       if (error) {
-        handleError(error, { context: 'login', email: sanitizedEmail });
-        
+        // Handle expected authentication errors as informational logs
         if (error.message.includes('Invalid login credentials')) {
+          handleInfo('Login attempt with invalid credentials', { 
+            context: 'login_invalid_credentials', 
+            email: sanitizedEmail 
+          });
           setErrors({ general: 'Invalid email or password. Please check your credentials and try again.' });
         } else if (error.message.includes('Email not confirmed')) {
+          handleInfo('Login attempt with unconfirmed email', { 
+            context: 'login_unconfirmed_email', 
+            email: sanitizedEmail 
+          });
           setErrors({ general: 'Please confirm your email address before logging in.' });
+        } else if (error.message.includes('Too many requests')) {
+          handleInfo('Login rate limit exceeded', { 
+            context: 'login_rate_limit', 
+            email: sanitizedEmail 
+          });
+          setErrors({ general: 'Too many login attempts. Please wait a moment before trying again.' });
         } else {
-          setErrors({ general: error.message });
+          // Log unexpected authentication errors as critical
+          handleError(error, { context: 'login_unexpected_auth_error', email: sanitizedEmail });
+          setErrors({ general: 'An authentication error occurred. Please try again or contact support.' });
         }
       } else {
         showSuccessToast('Login successful!', 'Redirecting to your dashboard...');
         setTimeout(() => navigate('/dashboard'), 1000);
       }
     } catch (error: any) {
-      handleError(error, { context: 'login_catch' });
+      // Log unexpected system errors as critical
+      handleError(error, { context: 'login_system_error' });
       setErrors({ general: 'An unexpected error occurred. Please try again.' });
       showErrorToast('Login failed', 'Please try again or contact support if the problem persists.');
     } finally {
@@ -235,7 +251,7 @@ const LoginPage: React.FC = () => {
                 Sign up
               </Link>
             </p>
-          </motion.div>
+          </div>
         </div>
       </motion.div>
     </div>
