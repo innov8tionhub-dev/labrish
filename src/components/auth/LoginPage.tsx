@@ -251,7 +251,7 @@ const LoginPage: React.FC = () => {
                 Sign up
               </Link>
             </p>
-          </div>
+          </motion.div>
         </div>
       </motion.div>
     </div>
