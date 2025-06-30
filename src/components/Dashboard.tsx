@@ -34,11 +34,14 @@ import {
   Shield,
   Globe,
   Users,
-  Target
+  Target,
+  CreditCard,
+  ExternalLink
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAnalytics } from '@/lib/analytics';
+import { useOfflineSupport } from '@/lib/offlineSupport';
 
 interface SubscriptionData {
   subscription_status: string;
@@ -58,6 +61,7 @@ interface QuickLink {
   status?: 'active' | 'inactive' | 'pending';
   lastUsed?: string;
   usageCount?: number;
+  route?: string;
 }
 
 interface RecentActivity {
@@ -131,6 +135,7 @@ const Dashboard: React.FC = () => {
   
   const navigate = useNavigate();
   const { track } = useAnalytics();
+  const { isOnline, queueSize } = useOfflineSupport();
 
   useEffect(() => {
     const getUser = async () => {
@@ -204,33 +209,84 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Enhanced Quick Links with real-time status
+  // Enhanced Quick Links with real-time status and navigation
   const quickLinks: QuickLink[] = [
     {
       id: 'recent-activities',
       title: 'Recent Activities',
       description: 'View your latest actions and creations',
       icon: <Activity className="w-6 h-6" />,
-      action: () => track('quick_link_clicked', { link: 'recent_activities' }),
+      action: () => {
+        track('quick_link_clicked', { link: 'recent_activities' });
+        // Scroll to recent activities section
+        document.getElementById('recent-activities')?.scrollIntoView({ behavior: 'smooth' });
+      },
       color: 'from-emerald-500 to-teal-500',
       status: 'active',
       lastUsed: '2 hours ago',
       usageCount: 15
     },
     {
-      id: 'favorite-tools',
-      title: 'Favorite Tools',
-      description: 'Quick access to your most-used features',
-      icon: <Heart className="w-6 h-6" />,
+      id: 'text-to-speech',
+      title: 'Text-to-Speech Studio',
+      description: 'Create stories with Caribbean voices',
+      icon: <Volume2 className="w-6 h-6" />,
       action: () => {
-        track('quick_link_clicked', { link: 'favorite_tools' });
+        track('quick_link_clicked', { link: 'text_to_speech' });
         navigate('/text-to-speech');
       },
       color: 'from-pink-500 to-rose-500',
       status: 'active',
       lastUsed: '5 hours ago',
       usageCount: 32,
-      badge: 'Popular'
+      badge: 'Popular',
+      route: '/text-to-speech'
+    },
+    {
+      id: 'voice-cloning',
+      title: 'Voice Cloning Studio',
+      description: 'Train your own AI voice model',
+      icon: <Headphones className="w-6 h-6" />,
+      action: () => {
+        track('quick_link_clicked', { link: 'voice_cloning' });
+        navigate('/voice-studio');
+      },
+      color: 'from-purple-500 to-indigo-500',
+      status: 'active',
+      lastUsed: '1 day ago',
+      usageCount: 8,
+      badge: 'New',
+      route: '/voice-studio'
+    },
+    {
+      id: 'analytics-overview',
+      title: 'Advanced Analytics',
+      description: 'Detailed insights into your content performance',
+      icon: <BarChart3 className="w-6 h-6" />,
+      action: () => {
+        track('quick_link_clicked', { link: 'analytics_overview' });
+        navigate('/analytics');
+      },
+      color: 'from-blue-500 to-cyan-500',
+      status: 'active',
+      lastUsed: '3 hours ago',
+      usageCount: 12,
+      route: '/analytics'
+    },
+    {
+      id: 'security-settings',
+      title: 'Security Settings',
+      description: 'Manage account security and privacy',
+      icon: <Shield className="w-6 h-6" />,
+      action: () => {
+        track('quick_link_clicked', { link: 'security_settings' });
+        navigate('/security');
+      },
+      color: 'from-red-500 to-pink-500',
+      status: 'active',
+      lastUsed: '1 week ago',
+      usageCount: 5,
+      route: '/security'
     },
     {
       id: 'saved-templates',
@@ -238,44 +294,10 @@ const Dashboard: React.FC = () => {
       description: 'Access your story templates and presets',
       icon: <Bookmark className="w-6 h-6" />,
       action: () => track('quick_link_clicked', { link: 'saved_templates' }),
-      color: 'from-blue-500 to-cyan-500',
-      status: 'active',
-      lastUsed: '1 day ago',
-      usageCount: 8
-    },
-    {
-      id: 'analytics-overview',
-      title: 'Analytics Overview',
-      description: 'Detailed insights into your content performance',
-      icon: <BarChart3 className="w-6 h-6" />,
-      action: () => track('quick_link_clicked', { link: 'analytics_overview' }),
-      color: 'from-purple-500 to-indigo-500',
-      status: 'active',
-      lastUsed: '3 hours ago',
-      usageCount: 12
-    },
-    {
-      id: 'user-settings',
-      title: 'User Settings',
-      description: 'Customize your preferences and account',
-      icon: <Settings className="w-6 h-6" />,
-      action: () => track('quick_link_clicked', { link: 'user_settings' }),
-      color: 'from-gray-500 to-slate-500',
-      status: 'active',
-      lastUsed: '1 week ago',
-      usageCount: 5
-    },
-    {
-      id: 'voice-training',
-      title: 'Voice Training',
-      description: 'Train new voices or improve existing ones',
-      icon: <Headphones className="w-6 h-6" />,
-      action: () => track('quick_link_clicked', { link: 'voice_training' }),
       color: 'from-amber-500 to-orange-500',
       status: 'pending',
       lastUsed: 'Never',
-      usageCount: 0,
-      badge: 'New'
+      usageCount: 0
     }
   ];
 
@@ -302,6 +324,12 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const openStripePortal = () => {
+    // In a real implementation, this would redirect to Stripe Customer Portal
+    track('stripe_portal_clicked');
+    window.open('https://billing.stripe.com/p/login/test_00000000000000', '_blank');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-900/20 via-teal-800/10 to-cyan-900/20 flex items-center justify-center">
@@ -319,7 +347,7 @@ const Dashboard: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-emerald-900/20 via-teal-800/10 to-cyan-900/20">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
-          {/* Enhanced Header */}
+          {/* Enhanced Header with Offline Status */}
           <motion.div 
             className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-emerald-200/50 mb-8"
             initial={{ opacity: 0, y: 20 }}
@@ -339,6 +367,11 @@ const Dashboard: React.FC = () => {
                     <span className={`text-sm font-medium ${getStatusColor()}`}>
                       {getSubscriptionStatus()}
                     </span>
+                    {!isOnline && (
+                      <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">
+                        Offline ({queueSize} queued)
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -426,6 +459,7 @@ const Dashboard: React.FC = () => {
 
               {/* Recent Activities */}
               <motion.div
+                id="recent-activities"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
@@ -474,7 +508,7 @@ const Dashboard: React.FC = () => {
 
             {/* Enhanced Sidebar */}
             <div className="space-y-6">
-              {/* Subscription Status */}
+              {/* Subscription Status with Management */}
               <motion.div 
                 className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-emerald-200/50"
                 initial={{ opacity: 0, x: 20 }}
@@ -502,6 +536,22 @@ const Dashboard: React.FC = () => {
                       <p className="text-sm font-medium text-gray-800">
                         {new Date(subscription.current_period_end * 1000).toLocaleDateString()}
                       </p>
+                    </div>
+                  )}
+
+                  {/* Subscription Management */}
+                  {subscription && subscription.subscription_status === 'active' && (
+                    <div className="pt-3 border-t border-gray-200">
+                      <Button
+                        onClick={openStripePortal}
+                        variant="outline"
+                        size="sm"
+                        className="w-full flex items-center gap-2"
+                      >
+                        <CreditCard className="w-4 h-4" />
+                        Manage Billing
+                        <ExternalLink className="w-3 h-3" />
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -582,6 +632,17 @@ const Dashboard: React.FC = () => {
                     </div>
                   </div>
                 </div>
+
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <Button
+                    onClick={() => navigate('/analytics')}
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                  >
+                    View Detailed Analytics
+                  </Button>
+                </div>
               </motion.div>
 
               {/* Enhanced Quick Actions */}
@@ -627,10 +688,10 @@ const Dashboard: React.FC = () => {
                     variant="outline" 
                     size="sm" 
                     className="w-full justify-start"
-                    onClick={() => track('quick_action_clicked', { action: 'preferences' })}
+                    onClick={() => navigate('/security')}
                   >
                     <Settings className="w-4 h-4 mr-2" />
-                    Preferences
+                    Security Settings
                   </Button>
                 </div>
               </motion.div>

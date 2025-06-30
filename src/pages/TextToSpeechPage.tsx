@@ -10,6 +10,7 @@ import StoryLibrary from '@/components/StoryLibrary';
 import { saveStory, Story, STORY_CATEGORIES } from '@/lib/storyLibrary';
 import { getAudioMetadata, generateWaveformData, createAudioVisualization } from '@/lib/audioUtils';
 import { FileUploadResult } from '@/lib/fileUpload';
+import { useOfflineSupport, offlineManager } from '@/lib/offlineSupport';
 
 interface VoiceSettings {
   stability: number;
@@ -53,6 +54,7 @@ const TextToSpeechPage: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const navigate = useNavigate();
+  const { isOnline, queueSize } = useOfflineSupport();
 
   // Memory leak fix: Clean up audio URLs
   useEffect(() => {
@@ -154,6 +156,19 @@ const TextToSpeechPage: React.FC = () => {
         setAudioUrl(null);
       }
 
+      if (!isOnline) {
+        // Queue the request for when back online
+        const requestId = offlineManager.queueRequest(
+          '/api/generate-speech',
+          'POST',
+          { 'Content-Type': 'application/json' },
+          JSON.stringify({ text, voice_id: selectedVoice, voice_settings: voiceSettings })
+        );
+        
+        alert(`You're offline. Speech generation has been queued and will process when you're back online. (Queue ID: ${requestId})`);
+        return;
+      }
+
       const blob = await generateSpeech(text, selectedVoice, voiceSettings);
       const url = URL.createObjectURL(blob);
       setAudioUrl(url);
@@ -225,6 +240,21 @@ const TextToSpeechPage: React.FC = () => {
         is_public: isPublic,
         duration: duration || undefined,
       };
+
+      if (!isOnline) {
+        // Queue the save request for when back online
+        const requestId = offlineManager.queueRequest(
+          '/api/save-story',
+          'POST',
+          { 'Content-Type': 'application/json' },
+          JSON.stringify(storyData)
+        );
+        
+        alert(`You're offline. Story save has been queued and will process when you're back online. (Queue ID: ${requestId})`);
+        setShowSaveDialog(false);
+        resetSaveForm();
+        return;
+      }
 
       if (editingStory) {
         // Update existing story
@@ -299,7 +329,7 @@ const TextToSpeechPage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-emerald-900/20 via-teal-800/10 to-cyan-900/20 py-8">
       <div className="container mx-auto px-4">
         <div className="max-w-7xl mx-auto">
-          {/* Header */}
+          {/* Header with Offline Status */}
           <motion.div 
             className="text-center mb-8"
             initial={{ opacity: 0, y: 20 }}
@@ -312,6 +342,12 @@ const TextToSpeechPage: React.FC = () => {
             <p className="font-body text-lg text-gray-600 max-w-2xl mx-auto">
               Transform your text into authentic Caribbean voices with AI-powered speech synthesis
             </p>
+            {!isOnline && (
+              <div className="mt-4 inline-flex items-center gap-2 bg-yellow-100 text-yellow-800 px-4 py-2 rounded-full text-sm">
+                <div className="w-2 h-2 bg-yellow-600 rounded-full"></div>
+                Offline mode - {queueSize} actions queued
+              </div>
+            )}
           </motion.div>
 
           {/* Tab Navigation */}
@@ -441,7 +477,7 @@ const TextToSpeechPage: React.FC = () => {
                           ) : (
                             <>
                               <Mic className="w-5 h-5 mr-2" />
-                              Generate Speech
+                              Generate Speech {!isOnline && '(Queued)'}
                             </>
                           )}
                         </Button>
@@ -769,7 +805,7 @@ const TextToSpeechPage: React.FC = () => {
                       onClick={handleSaveStory}
                       className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
                     >
-                      {editingStory ? 'Update' : 'Save'} Story
+                      {editingStory ? 'Update' : 'Save'} Story {!isOnline && '(Queued)'}
                     </Button>
                   </div>
                 </motion.div>
