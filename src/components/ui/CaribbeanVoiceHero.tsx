@@ -165,7 +165,7 @@ const CaribbeanVoiceHero: React.FC = () => {
         href="https://www.bolt.new" 
         target="_blank" 
         rel="noopener noreferrer" 
-        className="absolute top-4 right-4 z-30 hover:opacity-90 transition-opacity"
+        className="absolute top-20 right-4 z-30 hover:opacity-90 transition-opacity"
         aria-label="Powered by Bolt.new"
       >
         <img src="/boltbadge.png" alt="" className="w-16 h-16 md:w-20 md:h-20" />
