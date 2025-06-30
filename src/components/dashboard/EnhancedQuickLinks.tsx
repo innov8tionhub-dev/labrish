@@ -75,8 +75,8 @@ const EnhancedQuickLinks: React.FC<EnhancedQuickLinksProps> = ({ onNavigate }) =
       },
       {
         id: 'favorite-tools',
-        title: 'Favorite Tools',
-        description: 'Quick access to your most-used features',
+        title: 'Text-to-Speech Studio',
+        description: 'Quick access to Text-to-Speech Studio',
         icon: <Heart className="w-6 h-6" />,
         action: () => {
           track('quick_link_clicked', { link: 'favorite_tools' });
