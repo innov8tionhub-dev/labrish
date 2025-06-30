@@ -11,6 +11,7 @@ import { saveStory, Story, STORY_CATEGORIES } from '@/lib/storyLibrary';
 import { getAudioMetadata, generateWaveformData, createAudioVisualization } from '@/lib/audioUtils';
 import { FileUploadResult } from '@/lib/fileUpload';
 import { useOfflineSupport, offlineManager } from '@/lib/offlineSupport';
+import VoicePlayer from '@/components/VoicePlayer';
 
 interface VoiceSettings {
   stability: number;
@@ -362,7 +363,8 @@ const TextToSpeechPage: React.FC = () => {
                 }`}
               >
                 <FileText className="w-4 h-4 mr-2 inline" />
-                Create Story
+                <span className="hidden sm:inline">Create Story</span>
+                <span className="sm:hidden">Create</span>
               </button>
               <button
                 onClick={() => setActiveTab('library')}
@@ -373,7 +375,8 @@ const TextToSpeechPage: React.FC = () => {
                 }`}
               >
                 <Book className="w-4 h-4 mr-2 inline" />
-                Story Library
+                <span className="hidden sm:inline">Story Library</span>
+                <span className="sm:hidden">Library</span>
               </button>
             </div>
           </div>
@@ -391,8 +394,8 @@ const TextToSpeechPage: React.FC = () => {
                   {/* Text Input Section */}
                   <div className="lg:col-span-2 space-y-6">
                     {/* Text Input */}
-                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-emerald-200/50">
-                      <div className="flex items-center justify-between mb-6">
+                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-4 sm:p-8 border border-emerald-200/50">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                         <div className="flex items-center gap-3">
                           <FileText className="w-6 h-6 text-emerald-600" />
                           <h2 className="font-heading text-2xl text-gray-800">Your Text</h2>
@@ -401,9 +404,11 @@ const TextToSpeechPage: React.FC = () => {
                           onClick={() => setShowFileUpload(!showFileUpload)}
                           variant="outline"
                           size="sm"
+                          className="self-start sm:self-auto"
                         >
                           <Upload className="w-4 h-4 mr-2" />
-                          Upload File
+                          <span className="hidden sm:inline">Upload File</span>
+                          <span className="sm:hidden">Upload</span>
                         </Button>
                       </div>
 
@@ -432,7 +437,7 @@ const TextToSpeechPage: React.FC = () => {
                             id="text-input"
                             value={text}
                             onChange={(e) => setText(e.target.value.slice(0, 2500))}
-                            className="w-full h-64 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
+                            className="w-full h-48 sm:h-64 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
                             placeholder="Enter the text you want to convert to speech. Try writing a Caribbean story or dialogue..."
                           />
                           <div className="flex justify-between items-center mt-2">
@@ -486,7 +491,7 @@ const TextToSpeechPage: React.FC = () => {
 
                     {/* Audio Player with Waveform */}
                     {audioUrl && (
-                      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-emerald-200/50">
+                      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-4 sm:p-8 border border-emerald-200/50">
                         <h3 className="font-heading text-xl text-gray-800 mb-6">Audio Player</h3>
                         
                         <audio ref={audioRef} src={audioUrl} className="hidden" />
@@ -506,30 +511,44 @@ const TextToSpeechPage: React.FC = () => {
                         </div>
 
                         {/* Controls */}
-                        <div className="flex items-center justify-center gap-4 mb-6">
+                        <div className="flex flex-wrap items-center justify-center gap-4 mb-6">
                           <Button
                             onClick={handlePlayPause}
                             className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+                            aria-label={isPlaying ? "Pause audio" : "Play audio"}
                           >
                             {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
                           </Button>
                           
-                          <Button onClick={handleStop} variant="outline">
+                          <Button 
+                            onClick={handleStop} 
+                            variant="outline"
+                            aria-label="Stop audio"
+                            className={isPlaying ? "border-red-300 text-red-600 hover:bg-red-50" : ""}
+                          >
                             <Square className="w-5 h-5" />
                           </Button>
                           
-                          <Button onClick={handleDownload} variant="outline">
+                          <Button 
+                            onClick={handleDownload} 
+                            variant="outline"
+                            aria-label="Download audio"
+                          >
                             <Download className="w-5 h-5" />
                           </Button>
 
                           <Button
                             onClick={() => setShowSaveDialog(true)}
                             variant="outline"
+                            aria-label="Save story"
                           >
                             <Save className="w-5 h-5" />
                           </Button>
 
-                          <Button variant="outline">
+                          <Button 
+                            variant="outline"
+                            aria-label="Share audio"
+                          >
                             <Share2 className="w-5 h-5" />
                           </Button>
                         </div>
@@ -540,13 +559,14 @@ const TextToSpeechPage: React.FC = () => {
                   {/* Voice Selection & Controls */}
                   <div className="space-y-6">
                     {/* Voice Selection */}
-                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-emerald-200/50">
+                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-4 sm:p-6 border border-emerald-200/50">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="font-heading text-xl text-gray-800">Voice Selection</h3>
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => setShowSettings(!showSettings)}
+                          aria-label={showSettings ? "Hide voice settings" : "Show voice settings"}
                         >
                           <Settings className="w-4 h-4" />
                         </Button>
@@ -574,17 +594,12 @@ const TextToSpeechPage: React.FC = () => {
                                   <p className="text-sm text-gray-600">{voice.category}</p>
                                 </div>
                                 {voice.preview_url && (
-                                  <Button
-                                    variant="outline"
+                                  <VoicePlayer 
+                                    url={voice.preview_url}
+                                    name={voice.name}
                                     size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      const audio = new Audio(voice.preview_url);
-                                      audio.play();
-                                    }}
-                                  >
-                                    <Volume2 className="w-4 h-4" />
-                                  </Button>
+                                    variant={selectedVoice === voice.voice_id ? "default" : "outline"}
+                                  />
                                 )}
                               </div>
                             </div>
@@ -606,7 +621,7 @@ const TextToSpeechPage: React.FC = () => {
                             
                             <div>
                               <label className="block text-sm text-gray-600 mb-2">
-                                Stability: {voiceSettings.stability}
+                                Stability: {voiceSettings.stability.toFixed(1)}
                               </label>
                               <input
                                 type="range"
@@ -619,12 +634,13 @@ const TextToSpeechPage: React.FC = () => {
                                   stability: parseFloat(e.target.value)
                                 }))}
                                 className="w-full"
+                                aria-label="Stability setting"
                               />
                             </div>
 
                             <div>
                               <label className="block text-sm text-gray-600 mb-2">
-                                Clarity: {voiceSettings.similarity_boost}
+                                Clarity: {voiceSettings.similarity_boost.toFixed(1)}
                               </label>
                               <input
                                 type="range"
@@ -637,12 +653,13 @@ const TextToSpeechPage: React.FC = () => {
                                   similarity_boost: parseFloat(e.target.value)
                                 }))}
                                 className="w-full"
+                                aria-label="Clarity setting"
                               />
                             </div>
 
                             <div>
                               <label className="block text-sm text-gray-600 mb-2">
-                                Style: {voiceSettings.style}
+                                Style: {voiceSettings.style.toFixed(1)}
                               </label>
                               <input
                                 type="range"
@@ -655,6 +672,7 @@ const TextToSpeechPage: React.FC = () => {
                                   style: parseFloat(e.target.value)
                                 }))}
                                 className="w-full"
+                                aria-label="Style setting"
                               />
                             </div>
 
@@ -668,6 +686,7 @@ const TextToSpeechPage: React.FC = () => {
                                   use_speaker_boost: e.target.checked
                                 }))}
                                 className="rounded"
+                                aria-label="Speaker boost"
                               />
                               <label htmlFor="speaker-boost" className="text-sm text-gray-600">
                                 Speaker Boost
@@ -706,7 +725,7 @@ const TextToSpeechPage: React.FC = () => {
                 exit={{ opacity: 0 }}
               >
                 <motion.div
-                  className="bg-white rounded-2xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto"
+                  className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto"
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.9, opacity: 0 }}
@@ -771,6 +790,7 @@ const TextToSpeechPage: React.FC = () => {
                             <button
                               onClick={() => removeTag(tag)}
                               className="text-emerald-500 hover:text-emerald-700"
+                              aria-label={`Remove tag ${tag}`}
                             >
                               ×
                             </button>
@@ -793,7 +813,7 @@ const TextToSpeechPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex gap-3 mt-8">
+                  <div className="flex flex-col sm:flex-row gap-3 mt-8">
                     <Button
                       onClick={() => setShowSaveDialog(false)}
                       variant="outline"

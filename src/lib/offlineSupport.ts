@@ -1,7 +1,8 @@
+import React from 'react';
+
 /**
  * Offline support and service worker management
  */
-import React from 'react';
 
 interface QueuedRequest {
   id: string;

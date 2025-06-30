@@ -26,6 +26,7 @@ import {
   incrementPlayCount,
   searchStories 
 } from '@/lib/storyLibrary';
+import VoicePlayer from '@/components/VoicePlayer';
 
 interface StoryLibraryProps {
   onCreateNew: () => void;
@@ -136,14 +137,14 @@ const StoryLibrary: React.FC<StoryLibraryProps> = ({ onCreateNew, onEditStory })
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="font-heading text-3xl text-gray-800">Story Library</h2>
           <p className="text-gray-600">Manage and explore your Caribbean stories</p>
         </div>
         <Button
           onClick={onCreateNew}
-          className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+          className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 self-start sm:self-auto"
         >
           <Plus className="w-4 h-4 mr-2" />
           Create New Story
@@ -151,7 +152,7 @@ const StoryLibrary: React.FC<StoryLibraryProps> = ({ onCreateNew, onEditStory })
       </div>
 
       {/* Controls */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-emerald-200/50">
+      <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-emerald-200/50">
         <div className="flex flex-col lg:flex-row gap-4">
           {/* View Mode Toggle */}
           <div className="flex bg-gray-100 rounded-lg p-1">
@@ -190,7 +191,7 @@ const StoryLibrary: React.FC<StoryLibraryProps> = ({ onCreateNew, onEditStory })
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
             </div>
-            <Button onClick={handleSearch} variant="outline">
+            <Button onClick={handleSearch} variant="outline" aria-label="Search">
               <Search className="w-4 h-4" />
             </Button>
           </div>
@@ -200,6 +201,7 @@ const StoryLibrary: React.FC<StoryLibraryProps> = ({ onCreateNew, onEditStory })
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            aria-label="Filter by category"
           >
             <option value="">All Categories</option>
             {STORY_CATEGORIES.map(category => (
@@ -253,7 +255,7 @@ const StoryLibrary: React.FC<StoryLibraryProps> = ({ onCreateNew, onEditStory })
                 {/* Story Header */}
                 <div className={`h-2 bg-gradient-to-r ${getCategoryColor(story.category)}`} />
                 
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   {/* Title and Category */}
                   <div className="mb-4">
                     <h3 className="font-heading text-lg text-gray-800 mb-1 line-clamp-2">
@@ -310,18 +312,13 @@ const StoryLibrary: React.FC<StoryLibraryProps> = ({ onCreateNew, onEditStory })
                   {/* Actions */}
                   <div className="flex items-center gap-2">
                     {story.audio_url && (
-                      <Button
-                        onClick={() => handlePlayStory(story)}
-                        size="sm"
-                        className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
-                      >
-                        {playingStory === story.id ? (
-                          <Pause className="w-4 h-4 mr-1" />
-                        ) : (
-                          <Play className="w-4 h-4 mr-1" />
-                        )}
-                        {playingStory === story.id ? 'Pause' : 'Play'}
-                      </Button>
+                      <VoicePlayer
+                        url={story.audio_url}
+                        name={story.title}
+                        className="flex-1"
+                        variant="default"
+                        onPlay={() => incrementPlayCount(story.id)}
+                      />
                     )}
 
                     {viewMode === 'my-stories' ? (
@@ -330,6 +327,7 @@ const StoryLibrary: React.FC<StoryLibraryProps> = ({ onCreateNew, onEditStory })
                           onClick={() => onEditStory(story)}
                           size="sm"
                           variant="outline"
+                          aria-label={`Edit ${story.title}`}
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
@@ -338,19 +336,20 @@ const StoryLibrary: React.FC<StoryLibraryProps> = ({ onCreateNew, onEditStory })
                           size="sm"
                           variant="outline"
                           className="text-red-600 hover:text-red-700 hover:border-red-300"
+                          aria-label={`Delete ${story.title}`}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </>
                     ) : (
                       <>
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" aria-label="Download story">
                           <Download className="w-4 h-4" />
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" aria-label="Share story">
                           <Share2 className="w-4 h-4" />
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" aria-label="Like story">
                           <Heart className="w-4 h-4" />
                         </Button>
                       </>
