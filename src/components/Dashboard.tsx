@@ -538,22 +538,6 @@ const Dashboard: React.FC = () => {
                       </p>
                     </div>
                   )}
-
-                  {/* Subscription Management */}
-                  {subscription && subscription.subscription_status === 'active' && (
-                    <div className="pt-3 border-t border-gray-200">
-                      <Button
-                        onClick={openStripePortal}
-                        variant="outline"
-                        size="sm"
-                        className="w-full flex items-center gap-2"
-                      >
-                        <CreditCard className="w-4 h-4" />
-                        Manage Billing
-                        <ExternalLink className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  )}
                 </div>
 
                 {(!subscription || subscription.subscription_status !== 'active') && (
@@ -570,6 +554,22 @@ const Dashboard: React.FC = () => {
                       className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
                     >
                       Upgrade Now
+                    </Button>
+                  </div>
+                )}
+
+                {/* Subscription Management */}
+                {subscription && subscription.subscription_status === 'active' && (
+                  <div className="pt-3 border-t border-gray-200">
+                    <Button
+                      onClick={openStripePortal}
+                      variant="outline"
+                      size="sm"
+                      className="w-full flex items-center gap-2"
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      Manage Billing
+                      <ExternalLink className="w-3 h-3" />
                     </Button>
                   </div>
                 )}
