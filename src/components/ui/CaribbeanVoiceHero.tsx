@@ -168,7 +168,7 @@ const CaribbeanVoiceHero: React.FC = () => {
         className="absolute top-20 right-4 z-30 hover:opacity-90 transition-opacity"
         aria-label="Powered by Bolt.new"
       >
-        <img src="/boltbadge.png" alt="" className="w-16 h-16 md:w-20 md:h-20" />
+        <img src="https://assets.website-files.com/643e6f8ee55abcf8cf9bc12c/64e4e14b1153b19022b8af97_bolt-badge.svg" alt="" className="w-16 h-16 md:w-20 md:h-20" />
       </a>
 
       {/* Main content */}
