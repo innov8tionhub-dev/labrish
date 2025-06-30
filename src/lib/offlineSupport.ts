@@ -1,3 +1,5 @@
+import React from 'react';
+
 /**
  * Offline support and service worker management
  */
