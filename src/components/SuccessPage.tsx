@@ -31,12 +31,12 @@ const SuccessPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-900/20 via-teal-800/10 to-cyan-900/20 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-emerald-200/50 text-center">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-emerald-200/50 text-center relative">
           <div className="mb-6">
-            <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto mb-4 animate-bounce" />
+            <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
             <h1 className="font-heading text-3xl text-gray-800 mb-2">Payment Successful!</h1>
             <p className="text-gray-600">
-              Thank you for subscribing to Labrish Pro. Your account has been upgraded successfully.
+              Thank you for subscribing to Labrish Pro. Your account has been upgraded to our premium tier.
             </p>
           </div>
 
@@ -51,8 +51,8 @@ const SuccessPage: React.FC = () => {
           <div className="space-y-4">
             <div className="bg-gray-50 rounded-lg p-4">
               <h3 className="font-semibold text-gray-800 mb-2">What's Next?</h3>
-              <ul className="text-sm text-gray-600 space-y-1 text-left">
-                <li>• Access to unlimited AI-voiced stories</li>
+              <ul className="text-sm text-gray-600 space-y-1 text-left list-none">
+                <li>• 40 AI-voiced stories per month</li>
                 <li>• Full Caribbean accent library</li>
                 <li>• Custom voice training capabilities</li>
                 <li>• HD audio quality</li>
@@ -61,17 +61,20 @@ const SuccessPage: React.FC = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button asChild className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600">
-                <Link to="/" className="flex items-center justify-center gap-2">
-                  <Home className="w-4 h-4" />
-                  Go Home
-                </Link>
+              <Button 
+                onClick={() => window.location.href = 'https://labrish.online/'}
+                className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 flex items-center justify-center gap-2"
+              >
+                <Home className="w-4 h-4" />
+                Go Home
               </Button>
-              <Button asChild variant="outline" className="flex-1 border-emerald-300 text-emerald-700 hover:bg-emerald-50">
-                <Link to="/dashboard" className="flex items-center justify-center gap-2">
-                  Dashboard
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+              <Button 
+                onClick={() => window.location.href = 'https://labrish.online/dashboard'} 
+                variant="outline" 
+                className="flex-1 border-emerald-300 text-emerald-700 hover:bg-emerald-50 flex items-center justify-center gap-2"
+              >
+                Dashboard
+                <ArrowRight className="w-4 h-4" />
               </Button>
             </div>
           </div>
@@ -79,8 +82,8 @@ const SuccessPage: React.FC = () => {
           <div className="mt-6 pt-6 border-t border-gray-200">
             <p className="text-xs text-gray-500">
               Need help? Contact our support team at{' '}
-              <a href="mailto:support@labrish.com" className="text-emerald-600 hover:text-emerald-700">
-                support@labrish.com
+              <a href="mailto:support@labrish.online" className="text-emerald-600 hover:text-emerald-700">
+                support@labrish.online
               </a>
             </p>
           </div>
