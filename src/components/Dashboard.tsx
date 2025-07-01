@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 // Added missing closing bracket for recentActivities useState initialization
 const [recentActivities] = useState<RecentActivity[]>([
     {
