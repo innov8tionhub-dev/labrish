@@ -2,7 +2,7 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 
 const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '', 
+  Deno.env.get('SUPABASE_URL') ?? '',
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 );
 
@@ -70,13 +70,12 @@ Deno.serve(async (req) => {
     // Parse request body
     const {
       voiceDescription,
-      name = 'My Custom Voice',
-      model_id = 'eleven_monolingual_v1',
+      model_id = 'eleven_multilingual_ttv_v2',
       text = '',
       auto_generate_text = true,
-      loudness = 1,
+      loudness = 0.5,
       seed = 42,
-      guidance_scale = 1.5,
+      guidance_scale = 5,
       reference_audio = null,
       reference_audio_weight = 0.5,
     } = await req.json();
@@ -86,32 +85,25 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Voice description is required and must be a string' }, 400);
     }
 
-    // Prepare the request body
+    // Prepare the request body for ElevenLabs
     const requestBody: Record<string, any> = {
-      name,
+      voice_description: voiceDescription.trim(),
+      model_id,
       text: text || undefined,
       auto_generate_text,
       loudness,
       seed,
-      model_id,
       guidance_scale,
     };
 
-    // Only include description if it's not empty
-    if (voiceDescription.trim()) {
-      requestBody.description = voiceDescription.trim();
-    }
-
     // Only include reference audio if provided
     if (reference_audio) {
-      requestBody.reference_audio = reference_audio;
-      requestBody.reference_audio_weight = reference_audio_weight;
+      requestBody.reference_audio_base64 = reference_audio;
+      requestBody.prompt_strength = reference_audio_weight;
     }
 
-    console.log('Sending voice design request with body:', JSON.stringify(requestBody, null, 2));
-
-    // Make request to Eleven Labs API
-    const response = await fetch(`${ELEVENLABS_BASE_URL}/voice-generation/generate`, {
+    // Make request to ElevenLabs API (correct endpoint)
+    const response = await fetch(`${ELEVENLABS_BASE_URL}/text-to-voice/design`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -123,9 +115,6 @@ Deno.serve(async (req) => {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-      console.error('ElevenLabs API error:', errorData);
-      
-      // Extract specific error message from ElevenLabs response
       let errorMessage = 'Failed to generate voice design';
       if (errorData.detail && typeof errorData.detail === 'string') {
         errorMessage = errorData.detail;
@@ -136,15 +125,14 @@ Deno.serve(async (req) => {
       } else if (typeof errorData === 'string') {
         errorMessage = errorData;
       }
-
-      return corsResponse({ 
-        error: errorMessage, 
+      return corsResponse({
+        error: errorMessage,
         details: errorData,
-        status: response.status 
+        status: response.status
       }, response.status);
     }
 
-    // Return the voice design result
+    // Return the voice design result (previews array)
     const result = await response.json();
     return corsResponse(result);
 
