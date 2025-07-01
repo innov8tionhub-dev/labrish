@@ -125,8 +125,20 @@ Deno.serve(async (req) => {
       const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
       console.error('ElevenLabs API error:', errorData);
       
+      // Extract specific error message from ElevenLabs response
+      let errorMessage = 'Failed to generate voice design';
+      if (errorData.detail && typeof errorData.detail === 'string') {
+        errorMessage = errorData.detail;
+      } else if (errorData.message && typeof errorData.message === 'string') {
+        errorMessage = errorData.message;
+      } else if (errorData.error && typeof errorData.error === 'string') {
+        errorMessage = errorData.error;
+      } else if (typeof errorData === 'string') {
+        errorMessage = errorData;
+      }
+
       return corsResponse({ 
-        error: 'Failed to generate voice design', 
+        error: errorMessage, 
         details: errorData,
         status: response.status 
       }, response.status);
