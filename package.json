@@ -20,7 +20,7 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0",
     "tailwind-merge": "^2.0.0",
-   "@elevenlabs/elevenlabs-js": "^1.1.0",
+    "@elevenlabs/web-sdk": "^1.0.0",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
