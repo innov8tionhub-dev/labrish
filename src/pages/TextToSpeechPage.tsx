@@ -10,8 +10,9 @@ import StoryLibrary from '@/components/StoryLibrary';
 import { saveStory, Story, STORY_CATEGORIES } from '@/lib/storyLibrary';
 import { getAudioMetadata, generateWaveformData, createAudioVisualization } from '@/lib/audioUtils';
 import { FileUploadResult } from '@/lib/fileUpload';
-import { useOfflineSupport, offlineManager } from '@/lib/offlineSupport';
+import { useOfflineSupport, offlineManager, cacheManager } from '@/lib/offlineSupport';
 import VoicePlayer from '@/components/VoicePlayer';
+import { Crown } from 'lucide-react';
 
 interface VoiceSettings {
   stability: number;
@@ -45,6 +46,12 @@ const TextToSpeechPage: React.FC = () => {
   const [isPublic, setIsPublic] = useState(false);
   const [editingStory, setEditingStory] = useState<Story | null>(null);
 
+  // Tier and usage state
+  const [userTier, setUserTier] = useState<'free' | 'pro'>('free');
+  const [generationCount, setGenerationCount] = useState<number>(0);
+  const [monthlyLimit, setMonthlyLimit] = useState<number>(5); // Default to free tier
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState<boolean>(false);
+
   const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>({
     stability: 0.5,
     similarity_boost: 0.75,
@@ -77,6 +84,41 @@ const TextToSpeechPage: React.FC = () => {
     };
   }, [audioUrl]);
 
+  const loadUserTierAndUsage = async () => {
+    try {
+      // Check subscription status to determine tier
+      const { data: subscription } = await supabase
+        .from('stripe_user_subscriptions')
+        .select('subscription_status')
+        .maybeSingle();
+      
+      const isPro = subscription?.subscription_status === 'active' || 
+                    subscription?.subscription_status === 'trialing';
+      
+      setUserTier(isPro ? 'pro' : 'free');
+      setMonthlyLimit(isPro ? 40 : 5);
+      
+      // Get current month's usage
+      const now = new Date();
+      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      
+      const { data: generationData } = await supabase
+        .from('user_generation_counts')
+        .select('generation_count')
+        .eq('month', currentMonth)
+        .maybeSingle();
+      
+      setGenerationCount(generationData?.generation_count || 0);
+      
+      // Show upgrade prompt if approaching limit
+      if (!isPro && generationData?.generation_count && generationData.generation_count >= 3) {
+        setShowUpgradePrompt(true);
+      }
+    } catch (error) {
+      console.error('Failed to load user tier and usage:', error);
+    }
+  };
+
   // Check authentication
   useEffect(() => {
     const getUser = async () => {
@@ -86,6 +128,9 @@ const TextToSpeechPage: React.FC = () => {
         return;
       }
       setUser(user);
+      
+      // Load user tier and usage information
+      loadUserTierAndUsage();
     };
     getUser();
   }, [navigate]);
@@ -176,7 +221,25 @@ const TextToSpeechPage: React.FC = () => {
       setAudioBlob(blob);
     } catch (error: any) {
       console.error('Speech generation failed:', error);
-      alert(error.message || 'Failed to generate speech');
+      
+      // Check if the error is due to reaching the monthly limit
+      if (error.response && error.response.status === 403) {
+        const data = await error.response.json();
+        if (data.limitReached) {
+          setGenerationCount(data.count || monthlyLimit);
+          
+          if (userTier === 'free') {
+            alert(`You've reached your monthly limit of ${monthlyLimit} generations. Please upgrade to Labrish Pro for more generations.`);
+            setShowUpgradePrompt(true);
+          } else {
+            alert(`You've reached your monthly limit of ${monthlyLimit} generations. Your limit will reset next month.`);
+          }
+        } else {
+          alert(error.message || 'Failed to generate speech');
+        }
+      } else {
+        alert(error.message || 'Failed to generate speech');
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -354,6 +417,19 @@ const TextToSpeechPage: React.FC = () => {
             <p className="font-body text-lg text-gray-600 max-w-2xl mx-auto">
               Transform your text into authentic Caribbean voices with AI-powered speech synthesis
             </p>
+            
+            {/* Usage Status */}
+            <div className="flex justify-center mt-4">
+              <div className={`px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 ${
+                userTier === 'pro' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+              }`}>
+                {userTier === 'pro' && <Crown className="w-4 h-4" />}
+                <span>
+                  {userTier === 'pro' ? 'Labrish Pro' : 'Free Tier'}: {generationCount} / {monthlyLimit} generations used this month
+                </span>
+              </div>
+            </div>
+            
             {!isOnline && (
               <div className="mt-4 inline-flex items-center gap-2 bg-yellow-100 text-yellow-800 px-4 py-2 rounded-full text-sm">
                 <div className="w-2 h-2 bg-yellow-600 rounded-full"></div>
@@ -391,6 +467,34 @@ const TextToSpeechPage: React.FC = () => {
               </button>
             </div>
           </div>
+          
+          {/* Upgrade Prompt */}
+          {showUpgradePrompt && userTier === 'free' && (
+            <motion.div
+              className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 backdrop-blur-sm rounded-xl p-4 border border-purple-300 max-w-4xl mx-auto mb-6"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className="flex flex-col md:flex-row items-center gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                  <Crown className="w-6 h-6 text-purple-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-heading text-lg text-gray-800 mb-1">Upgrade to Labrish Pro</h3>
+                  <p className="text-sm text-gray-600">
+                    You've used {generationCount} of your {monthlyLimit} monthly generations.
+                    Upgrade to Labrish Pro for 40 generations per month, plus advanced voice features.
+                  </p>
+                </div>
+                <Button
+                  onClick={() => navigate('/pricing')}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                >
+                  Upgrade Now
+                </Button>
+              </div>
+            </motion.div>
+          )}
 
           <AnimatePresence mode="wait">
             {activeTab === 'create' ? (
@@ -482,7 +586,7 @@ const TextToSpeechPage: React.FC = () => {
                         {/* Generate Button */}
                         <Button
                           onClick={handleGenerateSpeech}
-                          disabled={!text.trim() || isGenerating}
+                          disabled={!text.trim() || isGenerating || generationCount >= monthlyLimit}
                           className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-4 text-lg font-semibold"
                         >
                           {isGenerating ? (
@@ -494,9 +598,20 @@ const TextToSpeechPage: React.FC = () => {
                             <>
                               <Mic className="w-5 h-5 mr-2" />
                               Generate Speech {!isOnline && '(Queued)'}
+                              {generationCount >= monthlyLimit && ' (Limit Reached)'}
                             </>
                           )}
                         </Button>
+                        
+                        {/* Show remaining generations */}
+                        <div className="flex justify-center mt-4">
+                          <span className={`text-sm ${generationCount >= monthlyLimit ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
+                            {generationCount >= monthlyLimit
+                              ? `You've reached your monthly limit of ${monthlyLimit} generations.`
+                              : `${monthlyLimit - generationCount} generations remaining this month.`
+                            }
+                          </span>
+                        </div>
                       </div>
                     </div>
 

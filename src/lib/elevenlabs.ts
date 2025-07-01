@@ -38,7 +38,7 @@ export interface TTSResponse {
 export const generateSpeech = async (
   text: string,
   voiceId: string,
-  voiceSettings: VoiceSettings
+  voiceSettings: VoiceSettings,
 ): Promise<Blob> => {
   const { data: { session } } = await supabase.auth.getSession();
   
@@ -62,6 +62,17 @@ export const generateSpeech = async (
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: 'Failed to generate speech' }));
     throw new Error(error.error || 'Failed to generate speech');
+  }
+
+  // Handle specific error for generation limits
+  if (response.status === 403) {
+    const error = await response.json();
+    if (error.limitReached) {
+      const limitError = new Error('Monthly generation limit reached');
+      // @ts-ignore
+      limitError.response = response;
+      throw limitError;
+    }
   }
 
   return response.blob();

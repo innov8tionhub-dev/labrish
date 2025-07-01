@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, Loader2, Star, Zap, Crown } from 'lucide-react';
+import { Check, Loader2, Star, Zap, Crown, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { stripeProducts } from '@/stripe-config';
 import { createCheckoutSession } from '@/lib/stripe';
@@ -83,7 +83,7 @@ const PricingSection: React.FC = () => {
       yearlyPrice: "$199.99",
       priceId: stripeProducts[0]?.priceId,
       description: "Unlimited storytelling with premium features",
-      popular: true,
+      popular: false,
       features: [
         "Unlimited AI-voiced stories",
         "Full accent library access (8+ voices)",
@@ -99,7 +99,7 @@ const PricingSection: React.FC = () => {
       cta: "Start Pro Trial",
       icon: <Zap className="w-6 h-6" />,
       color: "from-emerald-500 to-teal-500",
-      badge: "Most Popular",
+      badge: null,
       savings: billingCycle === 'yearly' ? "Save $40/year" : null
     },
     {
@@ -182,6 +182,11 @@ const PricingSection: React.FC = () => {
             </button>
           </div>
         </motion.div>
+        
+        {/* Pricing Table Header */}
+        <div className="text-center mb-6 text-gray-600 text-sm">
+          <p>Free users are limited to 5 generations per month. Pro subscribers get 40 per month.</p>
+        </div>
 
         <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
           {plans.map((plan, index) => (

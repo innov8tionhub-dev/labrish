@@ -37,12 +37,13 @@ import {
   Target,
   CreditCard,
   ExternalLink,
-  Wand2
+  Sparkles
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAnalytics } from '@/lib/analytics';
 import { useOfflineSupport } from '@/lib/offlineSupport';
+import { useEffect } from 'react';
 
 interface SubscriptionData {
   subscription_status: string;
@@ -105,6 +106,13 @@ const Dashboard: React.FC = () => {
   
   const [recentActivities] = useState<RecentActivity[]>([
     {
+      
+  // Usage statistics for free/pro tier
+  const [generationStats, setGenerationStats] = useState({
+    current: 0,
+    limit: 5, // Default to free tier
+    percentage: 0,
+  });
       id: '1',
       type: 'story_created',
       title: 'Created "Anansi and the Golden Mango"',
@@ -151,6 +159,47 @@ const Dashboard: React.FC = () => {
     };
 
     getUser();
+
+    // Load generation statistics
+    if (user) {
+      loadGenerationStats();
+    }
+  }, [user, track]);
+
+  const loadGenerationStats = async () => {
+    try {
+      // First determine user tier
+      const { data: subscription } = await supabase
+        .from('stripe_user_subscriptions')
+        .select('subscription_status')
+        .maybeSingle();
+      
+      const isPro = subscription?.subscription_status === 'active' || 
+                    subscription?.subscription_status === 'trialing';
+      
+      const limit = isPro ? 40 : 5; // Pro or Free tier limit
+      
+      // Get current month's usage
+      const now = new Date();
+      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      
+      const { data: generationData } = await supabase
+        .from('user_generation_counts')
+        .select('generation_count')
+        .eq('month', currentMonth)
+        .maybeSingle();
+      
+      const count = generationData?.generation_count || 0;
+      const percentage = Math.min(Math.round((count / limit) * 100), 100);
+      
+      setGenerationStats({
+        current: count,
+        limit,
+        percentage
+      });
+    } catch (error) {
+      console.error('Failed to load generation stats:', error);
+    }
   }, [track]);
 
   const fetchSubscription = async () => {
@@ -263,7 +312,7 @@ const Dashboard: React.FC = () => {
       id: 'voice-design',
       title: 'Voice Design Studio',
       description: 'Create custom voices by description',
-      icon: <Wand2 className="w-6 h-6" />,
+      icon: <Sparkles className="w-6 h-6" />,
       action: () => {
         track('quick_link_clicked', { link: 'voice_design' });
         navigate('/voice-design');
@@ -619,13 +668,34 @@ const Dashboard: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Volume2 className="w-4 h-4 text-purple-500" />
-                      <span className="text-sm text-gray-600">Audio Generated</span>
+                      <span className="text-sm text-gray-600">Voice Generations</span>
                     </div>
                     <div className="text-right">
-                      <span className="font-semibold text-gray-800">24</span>
-                      <div className="text-xs text-green-600">+18%</div>
+                      <span className="font-semibold text-gray-800">{generationStats.current} / {generationStats.limit}</span>
+                      <div className="text-xs text-gray-600">{generationStats.percentage}% used</div>
                     </div>
                   </div>
+                  
+                  {/* Progress bar */}
+                  <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                    <div 
+                      className={`h-1.5 rounded-full ${
+                        generationStats.percentage >= 90 ? 'bg-red-500' : 
+                        generationStats.percentage >= 70 ? 'bg-yellow-500' : 
+                        'bg-green-500'
+                      }`} 
+                      style={{ width: `${generationStats.percentage}%` }}
+                    ></div>
+                  </div>
+                  
+                  {/* Show upgrade prompt if close to limit on free tier */}
+                  {generationStats.limit === 5 && generationStats.percentage >= 60 && (
+                    <div className="mt-2 text-xs">
+                      <Link to="/pricing" className="text-purple-600 hover:underline">
+                        Upgrade to Pro for more generations
+                      </Link>
+                    </div>
+                  )}
                   
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
