@@ -1,6 +1,3 @@
-Here's the fixed version with all missing closing brackets added:
-
-```typescript
 // Added missing closing bracket for recentActivities useState initialization
 const [recentActivities] = useState<RecentActivity[]>([
     {
@@ -72,4 +69,3 @@ const loadGenerationStats = async () => {
 
 // Added missing closing bracket for Dashboard component
 export default Dashboard;
-```
