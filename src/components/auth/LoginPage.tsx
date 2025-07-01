@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Eye, EyeOff, Mail, Lock, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { validateEmail, sanitizeInput } from '@/lib/security';
+import { validateEmail, sanitizeInput, RateLimiter } from '@/lib/security';
 import { useErrorHandler } from '@/lib/errorHandling';
 import { useToast } from '@/components/common/Toast';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
