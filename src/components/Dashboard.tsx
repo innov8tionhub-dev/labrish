@@ -285,14 +285,14 @@ const Dashboard: React.FC = () => {
       icon: <Headphones className="w-6 h-6" />,
       action: () => {
         track('quick_link_clicked', { link: 'voice_cloning' });
-        navigate('/voice-studio');
+        alert('Voice Cloning Studio is coming soon!');
       },
       color: 'from-purple-500 to-indigo-500',
-      status: 'active',
+      status: 'pending',
       lastUsed: '1 day ago',
       usageCount: 8,
-      badge: 'New',
-      route: '/voice-studio'
+      badge: 'Coming Soon',
+      route: null
     },
     {
       id: 'voice-design',
@@ -301,14 +301,14 @@ const Dashboard: React.FC = () => {
       icon: <Palette className="w-6 h-6" />,
       action: () => {
         track('quick_link_clicked', { link: 'voice_design' });
-        navigate('/voice-design');
+        alert('Voice Design Studio is coming soon!');
       },
       color: 'from-yellow-500 to-orange-500',
-      status: 'active',
+      status: 'pending',
       lastUsed: '3 days ago',
       usageCount: 5,
-      badge: 'New',
-      route: '/voice-design'
+      badge: 'Coming Soon',
+      route: null
     },
     {
       id: 'analytics-overview',

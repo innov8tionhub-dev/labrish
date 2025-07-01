@@ -151,8 +151,6 @@ const AppContent: React.FC = () => {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/security" element={<SecurityPage />} />
-          <Route path="/voice-studio" element={<VoiceStudioPage />} />
-          <Route path="/voice-design" element={<VoiceDesignPage />} />
           <Route path="/success" element={<SuccessPage />} />
           <Route path="/pricing" element={<PricingPageWrapper />} />
           <Route path="/text-to-speech" element={<TextToSpeechPageWrapper />} />
