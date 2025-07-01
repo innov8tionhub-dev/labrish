@@ -36,7 +36,8 @@ import {
   Users,
   Target,
   CreditCard,
-  ExternalLink
+  ExternalLink,
+  Wand2
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
