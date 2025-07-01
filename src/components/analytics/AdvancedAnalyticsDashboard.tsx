@@ -19,10 +19,12 @@ import {
   ArrowDown,
   Minus,
   Settings,
-  ExternalLink
+  ExternalLink,
+  ChevronLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAnalytics } from '@/lib/analytics';
+import { useNavigate } from 'react-router-dom';
 
 interface MetricCard {
   id: string;
@@ -63,6 +65,7 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
   const [realTimeUpdates, setRealTimeUpdates] = useState(true);
   
   const { track } = useAnalytics();
+  const navigate = useNavigate();
 
   const dateRangeOptions: DateRange[] = [
     {
@@ -109,6 +112,7 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
   const loadAnalyticsData = async () => {
     setLoading(true);
     try {
+      console.log('Loading analytics data started');
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const metrics: MetricCard[] = [
@@ -181,6 +185,7 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
     } catch (error) {
       console.error('Failed to load analytics data:', error);
     } finally {
+      console.log('Loading analytics data finished');
       setLoading(false);
     }
   };
@@ -281,6 +286,17 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
+          <div className="flex items-center gap-3 mb-4">
+            <Button
+              onClick={() => navigate('/dashboard')}
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Back to Dashboard
+            </Button>
+          </div>
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div>
               <h1 className="font-heading text-4xl text-gray-800 mb-2">Advanced Analytics</h1>

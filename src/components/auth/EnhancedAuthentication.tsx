@@ -25,12 +25,14 @@ import {
   Activity,
   Bell,
   LogOut,
-  Trash2
+  ExternalLink,
+  ChevronLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/common/Toast';
 import { supabase } from '@/lib/supabase';
 import { useAnalytics } from '@/lib/analytics';
+import { useNavigate } from 'react-router-dom';
 
 interface MFASetupProps {
   onComplete: () => void;
@@ -467,6 +469,7 @@ const EnhancedSecurityDashboard: React.FC = () => {
   
   const { success: showSuccess, error: showError } = useToast();
   const { track } = useAnalytics();
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadSecurityData();
@@ -639,6 +642,17 @@ const EnhancedSecurityDashboard: React.FC = () => {
             <Shield className="w-10 h-10 text-emerald-600" />
             <div>
               <h1 className="font-heading text-4xl text-gray-800">Enhanced Security</h1>
+              <div className="flex items-center gap-2 mt-2">
+                <Button
+                  onClick={() => navigate('/dashboard')}
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-2 -ml-2"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Back to Dashboard
+                </Button>
+              </div>
               <p className="text-gray-600">Advanced security features and account protection</p>
             </div>
           </div>

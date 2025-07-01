@@ -1,10 +1,12 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, Upload, Play, Pause, Square, Download, Trash2, CheckCircle, AlertCircle, Volume2, Settings, Save, RefreshCw, AudioWaveform as Waveform, Clock, Star, Shield, Zap, FileAudio, Headphones } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProgressBar from '@/components/common/ProgressBar';
 import { useToast } from '@/components/common/Toast';
 import { useAnalytics } from '@/lib/analytics';
+import { useNavigate } from 'react-router-dom';
 
 interface VoiceCloneProject {
   id: string;
@@ -67,6 +69,7 @@ const VoiceCloningStudio: React.FC = () => {
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const { success: showSuccess, error: showError, info: showInfo } = useToast();
   const { track } = useAnalytics();
+  const navigate = useNavigate();
 
   const supportedLanguages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -367,9 +370,20 @@ const VoiceCloningStudio: React.FC = () => {
               <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full flex items-center justify-center">
                 <Headphones className="w-8 h-8 text-white" />
               </div>
+              <div className="flex flex-col">
+                <Button
+                  onClick={() => navigate('/dashboard')}
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-2 -ml-2 self-start"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Back to Dashboard
+                </Button>
               <div>
                 <h1 className="font-heading text-4xl text-gray-800 mb-2">Voice Cloning Studio</h1>
                 <p className="text-gray-600">Create your personalized AI voice with advanced cloning technology</p>
+              </div>
               </div>
             </div>
             

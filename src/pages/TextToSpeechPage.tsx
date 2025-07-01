@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Volume2, Download, Play, Pause, Square, Loader2, FileText, Settings, Save, Upload, Book, AudioWaveform as Waveform, Share2 } from 'lucide-react';
+import { Mic, Volume2, Download, Play, Pause, Square, Loader2, FileText, Settings, Save, Upload, Book, AudioWaveform as Waveform, Share2, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { generateSpeech, getAvailableVoices, Voice } from '@/lib/elevenlabs';
 import { supabase } from '@/lib/supabase';
@@ -338,6 +338,17 @@ const TextToSpeechPage: React.FC = () => {
             transition={{ duration: 0.6 }}
           >
             <h1 className="font-heading text-4xl md:text-5xl text-gray-800 mb-4">
+              <div className="flex items-center justify-center mb-2">
+                <Button
+                  onClick={() => navigate('/dashboard')}
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Back to Dashboard
+                </Button>
+              </div>
               Text-to-Speech Studio
             </h1>
             <p className="font-body text-lg text-gray-600 max-w-2xl mx-auto">

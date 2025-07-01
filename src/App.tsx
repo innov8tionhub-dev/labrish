@@ -18,10 +18,13 @@ import LoginPage from './components/auth/LoginPage';
 import SignupPage from './components/auth/SignupPage';
 import Dashboard from './components/Dashboard';
 import SuccessPage from './components/SuccessPage';
+import ForgotPasswordPage from './components/auth/ForgotPasswordPage';
+import ResetPasswordPage from './components/auth/ResetPasswordPage';
 import TextToSpeechPage from './pages/TextToSpeechPage';
 import AdvancedAnalyticsDashboard from './components/analytics/AdvancedAnalyticsDashboard';
 import EnhancedSecurityDashboard from './components/auth/EnhancedAuthentication';
 import VoiceCloningStudio from './components/voice/VoiceCloningStudio';
+import VoiceDesignStudio from './components/voice/VoiceDesignStudio';
 
 const HomePage: React.FC = () => {
   const { updateSEO } = useSEO();
@@ -119,6 +122,20 @@ const VoiceStudioPage: React.FC = () => {
   return <VoiceCloningStudio />;
 };
 
+const VoiceDesignPage: React.FC = () => {
+  const { updateSEO } = useSEO();
+  
+  React.useEffect(() => {
+    updateSEO({
+      title: 'Voice Design Studio - Labrish',
+      description: 'Create custom voices with our AI-powered voice design technology. Describe the voice you want, and we\'ll generate it.',
+      keywords: ['voice design', 'custom voice', 'AI voice', 'voice generator', 'personalized voice'],
+    });
+  }, [updateSEO]);
+
+  return <VoiceDesignStudio />;
+};
+
 const AppContent: React.FC = () => {
   const { toasts, dismissToast } = useToast();
 
@@ -129,10 +146,13 @@ const AppContent: React.FC = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/security" element={<SecurityPage />} />
           <Route path="/voice-studio" element={<VoiceStudioPage />} />
+          <Route path="/voice-design" element={<VoiceDesignPage />} />
           <Route path="/success" element={<SuccessPage />} />
           <Route path="/pricing" element={<PricingPageWrapper />} />
           <Route path="/text-to-speech" element={<TextToSpeechPageWrapper />} />

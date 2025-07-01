@@ -245,10 +245,15 @@ const LoginPage: React.FC = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
           >
-            <p className="text-gray-600">
+            <p className="text-gray-600 mb-3">
               Don't have an account?{' '}
               <Link to="/signup" className="text-emerald-600 hover:text-emerald-700 font-semibold">
                 Sign up
+              </Link>
+            </p>
+            <p className="text-gray-600">
+              <Link to="/forgot-password" className="text-emerald-600 hover:text-emerald-700">
+                Forgot your password?
               </Link>
             </p>
           </motion.div>

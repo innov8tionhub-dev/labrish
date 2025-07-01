@@ -259,6 +259,22 @@ const Dashboard: React.FC = () => {
       route: '/voice-studio'
     },
     {
+      id: 'voice-design',
+      title: 'Voice Design Studio',
+      description: 'Create custom voices by description',
+      icon: <Wand2 className="w-6 h-6" />,
+      action: () => {
+        track('quick_link_clicked', { link: 'voice_design' });
+        navigate('/voice-design');
+      },
+      color: 'from-pink-500 to-rose-500',
+      status: 'active',
+      lastUsed: 'Never',
+      usageCount: 0,
+      badge: 'New Feature',
+      route: '/voice-design'
+    },
+    {
       id: 'analytics-overview',
       title: 'Advanced Analytics',
       description: 'Detailed insights into your content performance',
