@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Eye, EyeOff, Mail, Lock, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { validateEmail, validatePassword, RateLimiter, sanitizeInput } from '@/lib/security';
+import { validateEmail, sanitizeInput } from '@/lib/security';
 import { useErrorHandler } from '@/lib/errorHandling';
 import { useToast } from '@/components/common/Toast';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -44,7 +44,7 @@ const LoginPage: React.FC = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     // Rate limiting check
@@ -70,21 +70,21 @@ const LoginPage: React.FC = () => {
       if (error) {
         // Handle expected authentication errors as informational logs
         if (error.message.includes('Invalid login credentials')) {
-          handleInfo('Login attempt with invalid credentials', { 
-            context: 'login_invalid_credentials', 
-            email: sanitizedEmail 
+          handleInfo('Login attempt with invalid credentials', {
+            context: 'login_invalid_credentials',
+            email: sanitizedEmail
           });
           setErrors({ general: 'Invalid email or password. Please check your credentials and try again.' });
         } else if (error.message.includes('Email not confirmed')) {
-          handleInfo('Login attempt with unconfirmed email', { 
-            context: 'login_unconfirmed_email', 
-            email: sanitizedEmail 
+          handleInfo('Login attempt with unconfirmed email', {
+            context: 'login_unconfirmed_email',
+            email: sanitizedEmail
           });
           setErrors({ general: 'Please confirm your email address before logging in.' });
         } else if (error.message.includes('Too many requests')) {
-          handleInfo('Login rate limit exceeded', { 
-            context: 'login_rate_limit', 
-            email: sanitizedEmail 
+          handleInfo('Login rate limit exceeded', {
+            context: 'login_rate_limit',
+            email: sanitizedEmail
           });
           setErrors({ general: 'Too many login attempts. Please wait a moment before trying again.' });
         } else {
@@ -96,7 +96,7 @@ const LoginPage: React.FC = () => {
         showSuccessToast('Login successful!', 'Redirecting to your dashboard...');
         setTimeout(() => navigate('/dashboard'), 1000);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Log unexpected system errors as critical
       handleError(error, { context: 'login_system_error' });
       setErrors({ general: 'An unexpected error occurred. Please try again.' });
@@ -108,7 +108,7 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-900/20 via-teal-800/10 to-cyan-900/20 flex items-center justify-center p-4">
-      <motion.div 
+      <motion.div
         className="w-full max-w-md"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -116,7 +116,7 @@ const LoginPage: React.FC = () => {
       >
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-emerald-200/50">
           <div className="text-center mb-8">
-            <motion.h1 
+            <motion.h1
               className="font-heading text-3xl text-gray-800 mb-2"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -124,7 +124,7 @@ const LoginPage: React.FC = () => {
             >
               Welcome Back
             </motion.h1>
-            <motion.p 
+            <motion.p
               className="text-gray-600"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -135,7 +135,7 @@ const LoginPage: React.FC = () => {
           </div>
 
           {errors.general && (
-            <motion.div 
+            <motion.div
               className="mb-6 p-4 rounded-lg bg-red-50 text-red-700 border border-red-200 flex items-start gap-3"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -163,9 +163,8 @@ const LoginPage: React.FC = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 transition-colors ${
-                    errors.email ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-emerald-500'
-                  }`}
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 transition-colors ${errors.email ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-emerald-500'
+                    }`}
                   placeholder="Enter your email"
                   required
                   autoComplete="email"
@@ -195,9 +194,8 @@ const LoginPage: React.FC = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 transition-colors ${
-                    errors.password ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-emerald-500'
-                  }`}
+                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 transition-colors ${errors.password ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-emerald-500'
+                    }`}
                   placeholder="Enter your password"
                   required
                   autoComplete="current-password"
@@ -239,7 +237,7 @@ const LoginPage: React.FC = () => {
             </motion.div>
           </form>
 
-          <motion.div 
+          <motion.div
             className="mt-6 text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

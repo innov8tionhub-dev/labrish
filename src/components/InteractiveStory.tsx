@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import { Book, Users, MapPin, Clock, Sparkles, RotateCcw, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ConvAIWidget from './ConvAIWidget';
@@ -242,7 +242,7 @@ const InteractiveStory: React.FC = () => {
       <section className="py-16 bg-gradient-to-br from-caribbean-50 to-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <motion.h2 
+            <motion.h2
               className="font-heading text-4xl mb-4 text-gray-800"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -250,7 +250,7 @@ const InteractiveStory: React.FC = () => {
             >
               Interactive Caribbean Stories
             </motion.h2>
-            <motion.p 
+            <motion.p
               className="font-body text-lg text-gray-600 max-w-2xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -300,7 +300,7 @@ const InteractiveStory: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           {/* Story Header */}
-          <motion.div 
+          <motion.div
             className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-caribbean-200/50 mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -328,7 +328,7 @@ const InteractiveStory: React.FC = () => {
                 <span className="text-sm text-gray-500">{storyState.storyProgress}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <motion.div 
+                <motion.div
                   className={`h-2 rounded-full bg-gradient-to-r ${getMoodColor(currentNode?.mood || 'folklore')}`}
                   initial={{ width: 0 }}
                   animate={{ width: `${storyState.storyProgress}%` }}
@@ -356,7 +356,7 @@ const InteractiveStory: React.FC = () => {
 
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Voice Chat */}
-            <motion.div 
+            <motion.div
               className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-caribbean-200/50"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -369,7 +369,7 @@ const InteractiveStory: React.FC = () => {
 
               {isVoiceActive ? (
                 <div className="space-y-4">
-                  <ConvAIWidget 
+                  <ConvAIWidget
                     agentId="agent_01jyd8m2mfedx8z5d030pp2nx0"
                     className="min-h-[400px] w-full border border-caribbean-200 rounded-lg"
                   />
@@ -386,7 +386,7 @@ const InteractiveStory: React.FC = () => {
             </motion.div>
 
             {/* Story Choices */}
-            <motion.div 
+            <motion.div
               className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-caribbean-200/50"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}

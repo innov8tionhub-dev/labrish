@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { CheckCircle, ArrowRight, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -61,16 +61,16 @@ const SuccessPage: React.FC = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button 
+              <Button
                 onClick={() => window.location.href = 'https://labrish.online/'}
                 className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 flex items-center justify-center gap-2"
               >
                 <Home className="w-4 h-4" />
                 Go Home
               </Button>
-              <Button 
-                onClick={() => window.location.href = 'https://labrish.online/dashboard'} 
-                variant="outline" 
+              <Button
+                onClick={() => window.location.href = 'https://labrish.online/dashboard'}
+                variant="outline"
                 className="flex-1 border-emerald-300 text-emerald-700 hover:bg-emerald-50 flex items-center justify-center gap-2"
               >
                 Dashboard

@@ -1,20 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  BarChart3, 
-  TrendingUp, 
-  Users, 
-  Clock, 
-  Download, 
-  Calendar,
-  Filter,
+import {
+  BarChart3,
+  TrendingUp,
+  Clock,
+  Download,
   RefreshCw,
   Eye,
-  Heart,
   Share2,
   Volume2,
-  Target,
-  Globe
+  Target
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAnalytics } from '@/lib/analytics';
@@ -76,7 +71,7 @@ const AnalyticsDashboard: React.FC = () => {
   });
   const [selectedMetric, setSelectedMetric] = useState<'views' | 'listens' | 'shares' | 'engagement'>('views');
   const [refreshing, setRefreshing] = useState(false);
-  
+
   const { track } = useAnalytics();
 
   const dateRangeOptions: DateRange[] = [
@@ -112,7 +107,7 @@ const AnalyticsDashboard: React.FC = () => {
     try {
       // Simulate API call - replace with actual analytics service
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       const mockData: AnalyticsData = {
         overview: {
           totalViews: 12847,
@@ -188,7 +183,7 @@ const AnalyticsDashboard: React.FC = () => {
           }
         }
       };
-      
+
       setAnalyticsData(mockData);
     } catch (error) {
       console.error('Failed to load analytics data:', error);
@@ -200,7 +195,7 @@ const AnalyticsDashboard: React.FC = () => {
   const generateTimeSeriesData = () => {
     const data = [];
     const days = Math.floor((selectedDateRange.end.getTime() - selectedDateRange.start.getTime()) / (1000 * 60 * 60 * 24));
-    
+
     for (let i = 0; i < days; i++) {
       const date = new Date(selectedDateRange.start.getTime() + i * 24 * 60 * 60 * 1000);
       data.push({
@@ -211,7 +206,7 @@ const AnalyticsDashboard: React.FC = () => {
         engagement: Math.floor(Math.random() * 30) + 60
       });
     }
-    
+
     return data;
   };
 
@@ -230,9 +225,9 @@ const AnalyticsDashboard: React.FC = () => {
   };
 
   const handleExport = () => {
-    track('analytics_exported', { 
+    track('analytics_exported', {
       date_range: selectedDateRange.label,
-      metric: selectedMetric 
+      metric: selectedMetric
     });
     // Implement export functionality
     console.log('Exporting analytics data...');
@@ -277,7 +272,7 @@ const AnalyticsDashboard: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-emerald-900/20 via-teal-800/10 to-cyan-900/20 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <motion.div 
+        <motion.div
           className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-emerald-200/50 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -288,7 +283,7 @@ const AnalyticsDashboard: React.FC = () => {
               <h1 className="font-heading text-4xl text-gray-800 mb-2">Analytics Dashboard</h1>
               <p className="text-gray-600">Comprehensive insights into your content performance</p>
             </div>
-            
+
             <div className="flex items-center gap-4">
               {/* Date Range Selector */}
               <select
@@ -328,7 +323,7 @@ const AnalyticsDashboard: React.FC = () => {
         </motion.div>
 
         {/* Overview Cards */}
-        <motion.div 
+        <motion.div
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -385,7 +380,7 @@ const AnalyticsDashboard: React.FC = () => {
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Chart */}
-          <motion.div 
+          <motion.div
             className="lg:col-span-2 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-emerald-200/50 p-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -398,18 +393,17 @@ const AnalyticsDashboard: React.FC = () => {
                   <button
                     key={metric}
                     onClick={() => setSelectedMetric(metric)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                      selectedMetric === metric
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${selectedMetric === metric
                         ? 'bg-emerald-500 text-white'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
+                      }`}
                   >
                     {metric.charAt(0).toUpperCase() + metric.slice(1)}
                   </button>
                 ))}
               </div>
             </div>
-            
+
             {/* Simplified chart representation */}
             <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
               <div className="text-center">
@@ -423,7 +417,7 @@ const AnalyticsDashboard: React.FC = () => {
           </motion.div>
 
           {/* Top Stories */}
-          <motion.div 
+          <motion.div
             className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-emerald-200/50 p-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -451,7 +445,7 @@ const AnalyticsDashboard: React.FC = () => {
         </div>
 
         {/* Audience Insights */}
-        <motion.div 
+        <motion.div
           className="grid lg:grid-cols-2 gap-8 mt-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -460,7 +454,7 @@ const AnalyticsDashboard: React.FC = () => {
           {/* Demographics */}
           <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-emerald-200/50 p-6">
             <h3 className="font-heading text-xl text-gray-800 mb-6">Audience Demographics</h3>
-            
+
             <div className="space-y-6">
               <div>
                 <h4 className="font-medium text-gray-700 mb-3">Age Distribution</h4>
@@ -470,7 +464,7 @@ const AnalyticsDashboard: React.FC = () => {
                       <span className="text-sm text-gray-600">{age.range}</span>
                       <div className="flex items-center gap-2">
                         <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div 
+                          <div
                             className="h-full bg-emerald-500 rounded-full"
                             style={{ width: `${age.percentage}%` }}
                           />
@@ -499,7 +493,7 @@ const AnalyticsDashboard: React.FC = () => {
           {/* Behavior Insights */}
           <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-emerald-200/50 p-6">
             <h3 className="font-heading text-xl text-gray-800 mb-6">Behavior Insights</h3>
-            
+
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-4 bg-blue-50 rounded-lg">

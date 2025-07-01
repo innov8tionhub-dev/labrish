@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  BarChart3, 
-  TrendingUp, 
-  Users, 
-  Clock, 
-  Download, 
+import {
+  BarChart3,
+  TrendingUp,
+  Clock,
+  Download,
   Calendar,
-  Filter,
   RefreshCw,
   Eye,
-  Heart,
   Share2,
   Volume2,
   Target,
@@ -63,7 +60,7 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
   const [metricsData, setMetricsData] = useState<MetricCard[]>([]);
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [realTimeUpdates, setRealTimeUpdates] = useState(true);
-  
+
   const { track } = useAnalytics();
   const navigate = useNavigate();
 
@@ -97,13 +94,13 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    
+
     if (realTimeUpdates) {
       interval = setInterval(() => {
         updateRealTimeData();
       }, 30000); // Update every 30 seconds
     }
-    
+
     return () => {
       if (interval) clearInterval(interval);
     };
@@ -114,7 +111,7 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
     try {
       console.log('Loading analytics data started');
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       const metrics: MetricCard[] = [
         {
           id: 'total-views',
@@ -179,7 +176,7 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
       ];
 
       const chart = generateTimeSeriesData();
-      
+
       setMetricsData(metrics);
       setChartData(chart);
     } catch (error) {
@@ -194,7 +191,7 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
     // Simulate real-time updates
     setMetricsData(prev => prev.map(metric => ({
       ...metric,
-      value: typeof metric.value === 'string' && metric.value.includes(',') 
+      value: typeof metric.value === 'string' && metric.value.includes(',')
         ? (parseInt(metric.value.replace(/,/g, '')) + Math.floor(Math.random() * 10)).toLocaleString()
         : metric.value,
       change: metric.change + (Math.random() - 0.5) * 2
@@ -204,7 +201,7 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
   const generateTimeSeriesData = (): ChartData[] => {
     const data = [];
     const days = Math.floor((selectedDateRange.end.getTime() - selectedDateRange.start.getTime()) / (1000 * 60 * 60 * 24));
-    
+
     for (let i = 0; i < days; i++) {
       const date = new Date(selectedDateRange.start.getTime() + i * 24 * 60 * 60 * 1000);
       data.push({
@@ -215,7 +212,7 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
         engagement: Math.floor(Math.random() * 30) + 60
       });
     }
-    
+
     return data;
   };
 
@@ -227,12 +224,12 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
   };
 
   const handleExport = (format: 'csv' | 'pdf' | 'json') => {
-    track('analytics_exported', { 
+    track('analytics_exported', {
       date_range: selectedDateRange.label,
       metric: selectedMetric,
-      format 
+      format
     });
-    
+
     // Simulate export
     const data = {
       dateRange: selectedDateRange.label,
@@ -240,7 +237,7 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
       chartData: chartData,
       exportedAt: new Date().toISOString()
     };
-    
+
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -280,7 +277,7 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-emerald-900/20 via-teal-800/10 to-cyan-900/20 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <motion.div 
+        <motion.div
           className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-emerald-200/50 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -308,7 +305,7 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
                 </div>
               )}
             </div>
-            
+
             <div className="flex items-center gap-4">
               {/* Real-time Toggle */}
               <label className="flex items-center gap-2 cursor-pointer">
@@ -381,7 +378,7 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
         </motion.div>
 
         {/* Metrics Grid */}
-        <motion.div 
+        <motion.div
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -407,7 +404,7 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
                   </span>
                 </div>
               </div>
-              
+
               <h3 className="text-2xl font-bold text-gray-800 mb-1">{metric.value}</h3>
               <p className="text-gray-600 text-sm mb-2">{metric.title}</p>
               <p className="text-xs text-gray-500">{metric.description}</p>
@@ -417,7 +414,7 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Chart */}
-          <motion.div 
+          <motion.div
             className="lg:col-span-2 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-emerald-200/50 p-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -430,18 +427,17 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
                   <button
                     key={metric}
                     onClick={() => setSelectedMetric(metric)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                      selectedMetric === metric
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${selectedMetric === metric
                         ? 'bg-emerald-500 text-white'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
+                      }`}
                   >
                     {metric.charAt(0).toUpperCase() + metric.slice(1)}
                   </button>
                 ))}
               </div>
             </div>
-            
+
             {/* Interactive Chart Placeholder */}
             <div className="h-80 bg-gray-50 rounded-lg flex items-center justify-center relative overflow-hidden">
               <div className="text-center">
@@ -451,14 +447,14 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
                   {chartData.length} data points for {selectedDateRange.label}
                 </p>
               </div>
-              
+
               {/* Simulated Chart Data Visualization */}
               <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between h-32">
                 {chartData.slice(0, 20).map((data, index) => (
                   <div
                     key={index}
                     className="bg-emerald-500 rounded-t opacity-60 hover:opacity-100 transition-opacity cursor-pointer"
-                    style={{ 
+                    style={{
                       height: `${(data[selectedMetric] / Math.max(...chartData.map(d => d[selectedMetric]))) * 100}%`,
                       width: `${100 / 20}%`
                     }}
@@ -470,7 +466,7 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
           </motion.div>
 
           {/* Side Panel */}
-          <motion.div 
+          <motion.div
             className="space-y-6"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}

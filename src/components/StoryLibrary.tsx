@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Book, 
-  Search, 
-  Filter, 
-  Play, 
-  Pause, 
-  Download, 
-  Share2, 
-  Edit, 
+import {
+  Book,
+  Search,
+  Filter,
+  Play,
+  Pause,
+  Download,
+  Share2,
+  Edit,
   Trash2,
   Plus,
   Clock,
@@ -16,15 +16,15 @@ import {
   Heart
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { 
-  Story, 
-  StoryCategory, 
-  STORY_CATEGORIES, 
-  getUserStories, 
-  getPublicStories, 
-  deleteStory, 
+import {
+  Story,
+  StoryCategory,
+  STORY_CATEGORIES,
+  getUserStories,
+  getPublicStories,
+  deleteStory,
   incrementPlayCount,
-  searchStories 
+  searchStories
 } from '@/lib/storyLibrary';
 import VoicePlayer from '@/components/VoicePlayer';
 
@@ -50,13 +50,13 @@ const StoryLibrary: React.FC<StoryLibraryProps> = ({ onCreateNew, onEditStory })
     setLoading(true);
     try {
       let fetchedStories: Story[];
-      
+
       if (viewMode === 'my-stories') {
         fetchedStories = await getUserStories(selectedCategory || undefined);
       } else {
         fetchedStories = await getPublicStories(selectedCategory || undefined);
       }
-      
+
       setStories(fetchedStories);
     } catch (error: any) {
       console.error('Failed to load stories:', error);
@@ -79,36 +79,6 @@ const StoryLibrary: React.FC<StoryLibraryProps> = ({ onCreateNew, onEditStory })
       console.error('Search failed:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handlePlayStory = async (story: Story) => {
-    if (!story.audio_url) return;
-
-    if (playingStory === story.id) {
-      // Pause current story
-      const audio = audioElements[story.id];
-      if (audio) {
-        audio.pause();
-      }
-      setPlayingStory(null);
-    } else {
-      // Stop any currently playing audio
-      Object.values(audioElements).forEach(audio => audio.pause());
-      
-      // Play new story
-      let audio = audioElements[story.id];
-      if (!audio) {
-        audio = new Audio(story.audio_url);
-        audio.addEventListener('ended', () => setPlayingStory(null));
-        setAudioElements(prev => ({ ...prev, [story.id]: audio }));
-      }
-      
-      await audio.play();
-      setPlayingStory(story.id);
-      
-      // Increment play count
-      await incrementPlayCount(story.id);
     }
   };
 
@@ -158,21 +128,19 @@ const StoryLibrary: React.FC<StoryLibraryProps> = ({ onCreateNew, onEditStory })
           <div className="flex bg-gray-100 rounded-lg p-1">
             <button
               onClick={() => setViewMode('my-stories')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                viewMode === 'my-stories'
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${viewMode === 'my-stories'
                   ? 'bg-white text-emerald-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-800'
-              }`}
+                }`}
             >
               My Stories
             </button>
             <button
               onClick={() => setViewMode('public')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                viewMode === 'public'
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${viewMode === 'public'
                   ? 'bg-white text-emerald-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-800'
-              }`}
+                }`}
             >
               Public Stories
             </button>
@@ -225,7 +193,7 @@ const StoryLibrary: React.FC<StoryLibraryProps> = ({ onCreateNew, onEditStory })
             {viewMode === 'my-stories' ? 'No stories yet' : 'No stories found'}
           </h3>
           <p className="text-gray-500 mb-6">
-            {viewMode === 'my-stories' 
+            {viewMode === 'my-stories'
               ? 'Create your first Caribbean story to get started'
               : 'Try adjusting your search or category filter'
             }
@@ -254,7 +222,7 @@ const StoryLibrary: React.FC<StoryLibraryProps> = ({ onCreateNew, onEditStory })
               >
                 {/* Story Header */}
                 <div className={`h-2 bg-gradient-to-r ${getCategoryColor(story.category)}`} />
-                
+
                 <div className="p-4 sm:p-6">
                   {/* Title and Category */}
                   <div className="mb-4">

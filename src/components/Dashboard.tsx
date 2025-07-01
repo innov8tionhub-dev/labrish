@@ -2,40 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
-import { 
-  Crown, 
-  LogOut, 
-  Settings, 
-  User as UserIcon, 
-  Mic, 
-  Book, 
-  Search,
-  Plus,
-  Play,
-  FileText,
+import {
+  Crown,
+  LogOut,
+  Settings,
+  User as UserIcon,
+  Mic,
+  Book,
   BarChart3,
-  Clock,
   Star,
-  Zap,
   Volume2,
-  Download,
   Share2,
   Edit,
-  Trash2,
-  Filter,
   TrendingUp,
   Activity,
   Calendar,
   Bookmark,
-  Heart,
   Headphones,
   Palette,
   Bell,
   Shield,
-  Globe,
-  Users,
-  Target,
-  CreditCard,
   ExternalLink
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -94,8 +80,6 @@ const Dashboard: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState('all');
   const [generationStats, setGenerationStats] = useState<GenerationStats>({
     current: 0,
     limit: 5,
@@ -112,7 +96,7 @@ const Dashboard: React.FC = () => {
       listens: 18
     }
   });
-  
+
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([
     {
       id: '1',
@@ -143,7 +127,7 @@ const Dashboard: React.FC = () => {
       metadata: { views: 23, likes: 8 }
     }
   ]);
-  
+
   const navigate = useNavigate();
   const { track } = useAnalytics();
   const { isOnline, queueSize } = useOfflineSupport();
@@ -152,7 +136,7 @@ const Dashboard: React.FC = () => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
-      
+
       if (user) {
         await fetchSubscription();
         await loadGenerationStats();
@@ -188,25 +172,25 @@ const Dashboard: React.FC = () => {
         .from('stripe_user_subscriptions')
         .select('subscription_status')
         .maybeSingle();
-      
-      const isPro = subscription?.subscription_status === 'active' || 
-                    subscription?.subscription_status === 'trialing';
-      
+
+      const isPro = subscription?.subscription_status === 'active' ||
+        subscription?.subscription_status === 'trialing';
+
       const limit = isPro ? 40 : 5; // Pro or Free tier limit
-      
+
       // Get current month's usage
       const now = new Date();
       const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-      
+
       const { data: generationData } = await supabase
         .from('user_generation_counts')
         .select('generation_count')
         .eq('month', currentMonth)
         .maybeSingle();
-      
+
       const count = generationData?.generation_count || 0;
       const percentage = Math.min(Math.round((count / limit) * 100), 100);
-      
+
       setGenerationStats({
         current: count,
         limit,
@@ -225,7 +209,7 @@ const Dashboard: React.FC = () => {
 
   const getSubscriptionStatus = () => {
     if (!subscription) return 'Free';
-    
+
     switch (subscription.subscription_status) {
       case 'active':
         return 'Labrish Pro';
@@ -242,7 +226,7 @@ const Dashboard: React.FC = () => {
 
   const getStatusColor = () => {
     if (!subscription) return 'text-gray-600';
-    
+
     switch (subscription.subscription_status) {
       case 'active':
         return 'text-emerald-600';
@@ -401,7 +385,7 @@ const Dashboard: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
           {/* Enhanced Header with Offline Status */}
-          <motion.div 
+          <motion.div
             className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-emerald-200/50 mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -428,7 +412,7 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
               </div>
-              
+
               {/* Enhanced Quick Stats */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="text-center">
@@ -562,7 +546,7 @@ const Dashboard: React.FC = () => {
             {/* Enhanced Sidebar */}
             <div className="space-y-6">
               {/* Generation Stats */}
-              <motion.div 
+              <motion.div
                 className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-emerald-200/50"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -572,7 +556,7 @@ const Dashboard: React.FC = () => {
                   <Zap className="w-5 h-5 text-emerald-600" />
                   <h3 className="font-heading text-lg text-gray-800">TTS Generations</h3>
                 </div>
-                
+
                 <div className="space-y-3">
                   <div>
                     <div className="flex justify-between text-sm mb-1">
@@ -580,13 +564,13 @@ const Dashboard: React.FC = () => {
                       <span className="font-medium text-gray-800">{generationStats.current}/{generationStats.limit}</span>
                     </div>
                     <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div 
+                      <div
                         className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full"
                         style={{ width: `${generationStats.percentage}%` }}
                       ></div>
                     </div>
                   </div>
-                  
+
                   <div className="text-xs text-gray-500">
                     {getSubscriptionStatus() === 'Free' ? (
                       <span>Upgrade to Pro for 40 generations per month</span>
@@ -595,9 +579,9 @@ const Dashboard: React.FC = () => {
                     )}
                   </div>
                 </div>
-                
+
                 {getSubscriptionStatus() === 'Free' && (
-                  <Button 
+                  <Button
                     onClick={() => navigate('/pricing')}
                     className="w-full mt-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                     size="sm"
@@ -608,7 +592,7 @@ const Dashboard: React.FC = () => {
               </motion.div>
 
               {/* Subscription Status with Management */}
-              <motion.div 
+              <motion.div
                 className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-emerald-200/50"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -618,7 +602,7 @@ const Dashboard: React.FC = () => {
                   <Crown className="w-5 h-5 text-emerald-600" />
                   <h3 className="font-heading text-lg text-gray-800">Subscription</h3>
                 </div>
-                
+
                 <div className="space-y-3">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Current Plan</p>
@@ -626,7 +610,7 @@ const Dashboard: React.FC = () => {
                       {getSubscriptionStatus()}
                     </p>
                   </div>
-                  
+
                   {subscription?.current_period_end && (
                     <div>
                       <p className="text-sm text-gray-600 mb-1">
@@ -675,7 +659,7 @@ const Dashboard: React.FC = () => {
               </motion.div>
 
               {/* Enhanced Usage Analytics */}
-              <motion.div 
+              <motion.div
                 className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-emerald-200/50"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -685,7 +669,7 @@ const Dashboard: React.FC = () => {
                   <TrendingUp className="w-5 h-5 text-emerald-600" />
                   <h3 className="font-heading text-lg text-gray-800">This Month</h3>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -697,7 +681,7 @@ const Dashboard: React.FC = () => {
                       <div className="text-xs text-green-600">+25%</div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Volume2 className="w-4 h-4 text-purple-500" />
@@ -708,7 +692,7 @@ const Dashboard: React.FC = () => {
                       <div className="text-xs text-green-600">+18%</div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Play className="w-4 h-4 text-green-500" />
@@ -745,7 +729,7 @@ const Dashboard: React.FC = () => {
               </motion.div>
 
               {/* Enhanced Quick Actions */}
-              <motion.div 
+              <motion.div
                 className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-emerald-200/50"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -753,9 +737,9 @@ const Dashboard: React.FC = () => {
               >
                 <h3 className="font-heading text-lg text-gray-800 mb-4">Quick Actions</h3>
                 <div className="space-y-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="w-full justify-start"
                     onClick={() => track('quick_action_clicked', { action: 'saved_templates' })}
                   >
@@ -763,9 +747,9 @@ const Dashboard: React.FC = () => {
                     Saved Templates
                     <span className="ml-auto text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">3</span>
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="w-full justify-start"
                     onClick={() => track('quick_action_clicked', { action: 'scheduled_posts' })}
                   >
@@ -773,9 +757,9 @@ const Dashboard: React.FC = () => {
                     Scheduled Posts
                     <span className="ml-auto text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">2</span>
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="w-full justify-start"
                     onClick={() => track('quick_action_clicked', { action: 'favorites' })}
                   >
@@ -783,9 +767,9 @@ const Dashboard: React.FC = () => {
                     Favorites
                     <span className="ml-auto text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">7</span>
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="w-full justify-start"
                     onClick={() => navigate('/security')}
                   >
@@ -796,7 +780,7 @@ const Dashboard: React.FC = () => {
               </motion.div>
 
               {/* Notifications */}
-              <motion.div 
+              <motion.div
                 className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-emerald-200/50"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -807,7 +791,7 @@ const Dashboard: React.FC = () => {
                   <h3 className="font-heading text-lg text-gray-800">Notifications</h3>
                   <span className="ml-auto text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">2</span>
                 </div>
-                
+
                 <div className="space-y-3">
                   <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                     <p className="text-sm font-medium text-blue-800">New voice available!</p>

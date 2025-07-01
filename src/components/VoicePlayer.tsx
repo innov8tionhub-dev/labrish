@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import { Play, Pause, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -61,8 +61,8 @@ const VoicePlayer: React.FC<VoicePlayerProps> = ({
 
   // Stop all other audio players
   const stopOtherPlayers = useCallback(() => {
-    if (globalAudioContext.currentAudio && 
-        globalAudioContext.currentPlayerId !== playerIdRef.current) {
+    if (globalAudioContext.currentAudio &&
+      globalAudioContext.currentPlayerId !== playerIdRef.current) {
       globalAudioContext.currentAudio.pause();
       globalAudioContext.currentAudio.currentTime = 0;
       // The ended event will handle state cleanup in the other player
@@ -73,7 +73,7 @@ const VoicePlayer: React.FC<VoicePlayerProps> = ({
   useEffect(() => {
     const audio = new Audio();
     audioRef.current = audio;
-    
+
     const handleEnded = () => {
       setIsPlaying(false);
       if (onStop) onStop();
@@ -82,7 +82,7 @@ const VoicePlayer: React.FC<VoicePlayerProps> = ({
         globalAudioContext.currentPlayerId = null;
       }
     };
-    
+
     const handleError = (e: ErrorEvent) => {
       console.error('Audio playback error:', e);
       setError('Failed to play audio');
@@ -90,7 +90,7 @@ const VoicePlayer: React.FC<VoicePlayerProps> = ({
       setIsLoading(false);
       if (onStop) onStop();
     };
-    
+
     const handleCanPlay = () => {
       setIsLoading(false);
       if (isPlaying) {
@@ -102,11 +102,11 @@ const VoicePlayer: React.FC<VoicePlayerProps> = ({
         });
       }
     };
-    
+
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('error', handleError as EventListener);
     audio.addEventListener('canplay', handleCanPlay);
-    
+
     return () => {
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError as EventListener);
@@ -118,7 +118,7 @@ const VoicePlayer: React.FC<VoicePlayerProps> = ({
   // Handle play/pause
   const togglePlayback = useCallback(() => {
     if (!audioRef.current) return;
-    
+
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
@@ -130,20 +130,20 @@ const VoicePlayer: React.FC<VoicePlayerProps> = ({
     } else {
       setError(null);
       setIsLoading(true);
-      
+
       // Stop any other playing audio
       stopOtherPlayers();
-      
+
       // Set current audio in global context
       globalAudioContext.currentAudio = audioRef.current;
       globalAudioContext.currentPlayerId = playerIdRef.current;
-      
+
       // Set source if not already set
       if (audioRef.current.src !== url) {
         audioRef.current.src = url;
         audioRef.current.load();
       }
-      
+
       // Try to play
       audioRef.current.play().then(() => {
         setIsPlaying(true);
@@ -162,16 +162,16 @@ const VoicePlayer: React.FC<VoicePlayerProps> = ({
   useEffect(() => {
     if (audioRef.current && audioRef.current.src !== url) {
       const wasPlaying = !audioRef.current.paused;
-      
+
       if (wasPlaying) {
         audioRef.current.pause();
         setIsPlaying(false);
         if (onStop) onStop();
       }
-      
+
       audioRef.current.src = url;
       audioRef.current.load();
-      
+
       if (wasPlaying) {
         togglePlayback();
       }
@@ -204,7 +204,7 @@ const VoicePlayer: React.FC<VoicePlayerProps> = ({
           <Play className="w-4 h-4" />
         )}
       </Button>
-      
+
       {error && (
         <span className="ml-2 text-xs text-red-500" role="alert">
           {error}

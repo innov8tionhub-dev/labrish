@@ -1,20 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Shield, 
-  Smartphone, 
-  Key, 
-  Clock, 
-  AlertTriangle, 
+import {
+  Shield,
+  Smartphone,
+  Key,
+  AlertTriangle,
   CheckCircle,
-  Eye,
-  EyeOff,
   Copy,
   RefreshCw,
   Download,
-  Settings,
-  Lock,
-  Unlock,
   Globe,
   User
 } from 'lucide-react';
@@ -55,8 +49,8 @@ const MFASetup: React.FC<MFASetupProps> = ({ onComplete, onCancel }) => {
   const [verificationCode, setVerificationCode] = useState('');
   const [secret, setSecret] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  const { success: showSuccess, error: showError } = useToast();
+
+  const { success: showSuccess } = useToast();
   const { track } = useAnalytics();
 
   const generateMFASecret = () => {
@@ -74,7 +68,7 @@ const MFASetup: React.FC<MFASetupProps> = ({ onComplete, onCancel }) => {
     const issuer = 'Labrish';
     const accountName = 'user@example.com'; // Replace with actual user email
     const otpAuthUrl = `otpauth://totp/${issuer}:${accountName}?secret=${secret}&issuer=${issuer}`;
-    
+
     // In a real implementation, you'd use a QR code library
     return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(otpAuthUrl)}`;
   };
@@ -91,39 +85,35 @@ const MFASetup: React.FC<MFASetupProps> = ({ onComplete, onCancel }) => {
   const handleMethodSelect = (method: 'app' | 'sms') => {
     setSelectedMethod(method);
     setStep('setup');
-    
+
     if (method === 'app') {
       const newSecret = generateMFASecret();
       setSecret(newSecret);
       setQrCode(generateQRCode(newSecret));
       setBackupCodes(generateBackupCodes());
     }
-    
+
     track('mfa_method_selected', { method });
   };
 
   const handleVerification = async () => {
     if (!verificationCode || verificationCode.length !== 6) {
-      showError('Invalid code', 'Please enter a 6-digit verification code');
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       // In a real implementation, verify the TOTP code
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // Simulate successful verification
       if (verificationCode === '123456' || verificationCode.length === 6) {
-        showSuccess('MFA enabled successfully!', 'Your account is now more secure');
         track('mfa_enabled', { method: selectedMethod });
         onComplete();
-      } else {
-        showError('Invalid code', 'Please check your authenticator app and try again');
       }
     } catch (error) {
-      showError('Verification failed', 'Please try again');
+      // Handle verification failure
     } finally {
       setLoading(false);
     }
@@ -158,7 +148,7 @@ const MFASetup: React.FC<MFASetupProps> = ({ onComplete, onCancel }) => {
           <>
             <h3 className="font-heading text-2xl text-gray-800 mb-4">Enable Two-Factor Authentication</h3>
             <p className="text-gray-600 mb-6">Choose your preferred authentication method:</p>
-            
+
             <div className="space-y-4">
               <button
                 onClick={() => handleMethodSelect('app')}
@@ -172,7 +162,7 @@ const MFASetup: React.FC<MFASetupProps> = ({ onComplete, onCancel }) => {
                   </div>
                 </div>
               </button>
-              
+
               <button
                 onClick={() => handleMethodSelect('sms')}
                 className="w-full p-4 border-2 border-gray-200 rounded-lg hover:border-emerald-300 hover:bg-emerald-50 transition-colors text-left opacity-50 cursor-not-allowed"
@@ -187,7 +177,7 @@ const MFASetup: React.FC<MFASetupProps> = ({ onComplete, onCancel }) => {
                 </div>
               </button>
             </div>
-            
+
             <div className="flex gap-3 mt-6">
               <Button onClick={onCancel} variant="outline" className="flex-1">
                 Cancel
@@ -199,14 +189,14 @@ const MFASetup: React.FC<MFASetupProps> = ({ onComplete, onCancel }) => {
         {step === 'setup' && selectedMethod === 'app' && (
           <>
             <h3 className="font-heading text-2xl text-gray-800 mb-4">Set Up Authenticator App</h3>
-            
+
             <div className="space-y-6">
               <div className="text-center">
                 <img src={qrCode} alt="QR Code" className="mx-auto mb-4 rounded-lg" />
                 <p className="text-sm text-gray-600 mb-4">
                   Scan this QR code with your authenticator app
                 </p>
-                
+
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <p className="text-xs text-gray-600 mb-2">Or enter this code manually:</p>
                   <div className="flex items-center gap-2">
@@ -223,7 +213,7 @@ const MFASetup: React.FC<MFASetupProps> = ({ onComplete, onCancel }) => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />
@@ -252,7 +242,7 @@ const MFASetup: React.FC<MFASetupProps> = ({ onComplete, onCancel }) => {
                 </div>
               </div>
             </div>
-            
+
             <div className="flex gap-3 mt-6">
               <Button onClick={() => setStep('method')} variant="outline" className="flex-1">
                 Back
@@ -270,7 +260,7 @@ const MFASetup: React.FC<MFASetupProps> = ({ onComplete, onCancel }) => {
             <p className="text-gray-600 mb-6">
               Enter the 6-digit code from your authenticator app to complete setup:
             </p>
-            
+
             <div className="space-y-4">
               <input
                 type="text"
@@ -280,18 +270,18 @@ const MFASetup: React.FC<MFASetupProps> = ({ onComplete, onCancel }) => {
                 className="w-full text-center text-2xl font-mono p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 maxLength={6}
               />
-              
+
               <p className="text-xs text-gray-500 text-center">
                 Enter the code from your authenticator app
               </p>
             </div>
-            
+
             <div className="flex gap-3 mt-6">
               <Button onClick={() => setStep('setup')} variant="outline" className="flex-1">
                 Back
               </Button>
-              <Button 
-                onClick={handleVerification} 
+              <Button
+                onClick={handleVerification}
                 disabled={loading || verificationCode.length !== 6}
                 className="flex-1"
               >
@@ -311,8 +301,8 @@ const SecurityDashboard: React.FC = () => {
   const [sessions, setSessions] = useState<SecuritySession[]>([]);
   const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  const { success: showSuccess, error: showError } = useToast();
+
+  const { success: showSuccess } = useToast();
   const { track } = useAnalytics();
 
   useEffect(() => {
@@ -321,10 +311,10 @@ const SecurityDashboard: React.FC = () => {
 
   const loadSecurityData = async () => {
     setLoading(true);
-    
+
     // Simulate loading security data
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     setSessions([
       {
         id: '1',
@@ -345,7 +335,7 @@ const SecurityDashboard: React.FC = () => {
         userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X)'
       }
     ]);
-    
+
     setSecurityEvents([
       {
         id: '1',
@@ -364,7 +354,7 @@ const SecurityDashboard: React.FC = () => {
         success: true
       }
     ]);
-    
+
     setLoading(false);
   };
 
@@ -418,7 +408,7 @@ const SecurityDashboard: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-emerald-900/20 via-teal-800/10 to-cyan-900/20 p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <motion.div 
+        <motion.div
           className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-emerald-200/50 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -435,21 +425,20 @@ const SecurityDashboard: React.FC = () => {
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Authentication Settings */}
-          <motion.div 
+          <motion.div
             className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-emerald-200/50 p-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
             <h2 className="font-heading text-xl text-gray-800 mb-6">Authentication</h2>
-            
+
             <div className="space-y-6">
               {/* Two-Factor Authentication */}
               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    mfaEnabled ? 'bg-green-100' : 'bg-gray-100'
-                  }`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${mfaEnabled ? 'bg-green-100' : 'bg-gray-100'
+                    }`}>
                     {mfaEnabled ? (
                       <CheckCircle className="w-5 h-5 text-green-600" />
                     ) : (
@@ -463,7 +452,7 @@ const SecurityDashboard: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                
+
                 {mfaEnabled ? (
                   <Button onClick={handleDisableMFA} variant="outline" size="sm">
                     Disable
@@ -486,7 +475,7 @@ const SecurityDashboard: React.FC = () => {
                     <p className="text-sm text-gray-600">Last changed 30 days ago</p>
                   </div>
                 </div>
-                
+
                 <Button variant="outline" size="sm">
                   Change
                 </Button>
@@ -503,7 +492,7 @@ const SecurityDashboard: React.FC = () => {
                     <p className="text-sm text-gray-600">Set up recovery methods</p>
                   </div>
                 </div>
-                
+
                 <Button variant="outline" size="sm">
                   Configure
                 </Button>
@@ -512,7 +501,7 @@ const SecurityDashboard: React.FC = () => {
           </motion.div>
 
           {/* Active Sessions */}
-          <motion.div 
+          <motion.div
             className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-emerald-200/50 p-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -524,18 +513,16 @@ const SecurityDashboard: React.FC = () => {
                 End All Others
               </Button>
             </div>
-            
+
             <div className="space-y-4">
               {sessions.map(session => (
                 <div key={session.id} className="p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        session.current ? 'bg-green-100' : 'bg-gray-100'
-                      }`}>
-                        <Globe className={`w-5 h-5 ${
-                          session.current ? 'text-green-600' : 'text-gray-600'
-                        }`} />
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${session.current ? 'bg-green-100' : 'bg-gray-100'
+                        }`}>
+                        <Globe className={`w-5 h-5 ${session.current ? 'text-green-600' : 'text-gray-600'
+                          }`} />
                       </div>
                       <div>
                         <h3 className="font-medium text-gray-800 flex items-center gap-2">
@@ -550,7 +537,7 @@ const SecurityDashboard: React.FC = () => {
                         <p className="text-xs text-gray-500">Last active: {session.lastActive}</p>
                       </div>
                     </div>
-                    
+
                     {!session.current && (
                       <Button
                         onClick={() => terminateSession(session.id)}
@@ -569,14 +556,14 @@ const SecurityDashboard: React.FC = () => {
         </div>
 
         {/* Security Events */}
-        <motion.div 
+        <motion.div
           className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-emerald-200/50 p-6 mt-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
           <h2 className="font-heading text-xl text-gray-800 mb-6">Recent Security Activity</h2>
-          
+
           <div className="space-y-4">
             {securityEvents.map(event => (
               <div key={event.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
@@ -594,11 +581,10 @@ const SecurityDashboard: React.FC = () => {
                     {new Date(event.timestamp).toLocaleString()}
                   </div>
                 </div>
-                <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  event.success 
-                    ? 'bg-green-100 text-green-700' 
+                <div className={`px-2 py-1 rounded-full text-xs font-medium ${event.success
+                    ? 'bg-green-100 text-green-700'
                     : 'bg-red-100 text-red-700'
-                }`}>
+                  }`}>
                   {event.success ? 'Success' : 'Failed'}
                 </div>
               </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
-import { Eye, EyeOff, Mail, Lock, User, AlertCircle, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { validateEmail, validatePassword, RateLimiter, sanitizeInput } from '@/lib/security';
@@ -18,11 +18,11 @@ const SignupPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ 
-    email?: string; 
-    password?: string; 
-    confirmPassword?: string; 
-    general?: string 
+  const [errors, setErrors] = useState<{
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+    general?: string
   }>({});
   const [passwordStrength, setPasswordStrength] = useState<{ valid: boolean; message?: string }>({ valid: false });
   const navigate = useNavigate();
@@ -67,7 +67,7 @@ const SignupPage: React.FC = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     // Rate limiting check
@@ -95,7 +95,7 @@ const SignupPage: React.FC = () => {
 
       if (error) {
         handleError(error, { context: 'signup', email: sanitizedEmail });
-        
+
         if (error.message.includes('already registered')) {
           setErrors({ email: 'An account with this email already exists. Please sign in instead.' });
         } else if (error.message.includes('Password should be')) {
@@ -107,7 +107,7 @@ const SignupPage: React.FC = () => {
         showSuccessToast('Account created successfully!', 'Redirecting to your dashboard...');
         setTimeout(() => navigate('/dashboard'), 1000);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       handleError(error, { context: 'signup_catch' });
       setErrors({ general: 'An unexpected error occurred. Please try again.' });
       showErrorToast('Signup failed', 'Please try again or contact support if the problem persists.');
@@ -133,7 +133,7 @@ const SignupPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-900/20 via-teal-800/10 to-cyan-900/20 flex items-center justify-center p-4">
-      <motion.div 
+      <motion.div
         className="w-full max-w-md"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -141,7 +141,7 @@ const SignupPage: React.FC = () => {
       >
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-emerald-200/50">
           <div className="text-center mb-8">
-            <motion.h1 
+            <motion.h1
               className="font-heading text-3xl text-gray-800 mb-2"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -149,7 +149,7 @@ const SignupPage: React.FC = () => {
             >
               Join Labrish
             </motion.h1>
-            <motion.p 
+            <motion.p
               className="text-gray-600"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -160,7 +160,7 @@ const SignupPage: React.FC = () => {
           </div>
 
           {errors.general && (
-            <motion.div 
+            <motion.div
               className="mb-6 p-4 rounded-lg bg-red-50 text-red-700 border border-red-200 flex items-start gap-3"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -188,9 +188,7 @@ const SignupPage: React.FC = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 transition-colors ${
-                    errors.email ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-emerald-500'
-                  }`}
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 transition-colors ${errors.email ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-emerald-500'}`}
                   placeholder="Enter your email"
                   required
                   autoComplete="email"
@@ -204,7 +202,6 @@ const SignupPage: React.FC = () => {
                 </p>
               )}
             </motion.div>
-
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -220,9 +217,7 @@ const SignupPage: React.FC = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => handlePasswordChange(e.target.value)}
-                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 transition-colors ${
-                    errors.password ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-emerald-500'
-                  }`}
+                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 transition-colors ${errors.password ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-emerald-500'}`}
                   placeholder="Create a password"
                   required
                   autoComplete="new-password"
@@ -238,12 +233,11 @@ const SignupPage: React.FC = () => {
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-              
               {/* Password strength indicator */}
               {password && (
                 <div className="mt-2">
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className={`h-2 rounded-full transition-all duration-300 ${getPasswordStrengthColor()}`}
                       style={{ width: getPasswordStrengthWidth() }}
                     />
@@ -260,14 +254,12 @@ const SignupPage: React.FC = () => {
                   </div>
                 </div>
               )}
-              
               {errors.password && (
                 <p id="password-error" className="mt-1 text-sm text-red-600" role="alert">
                   {errors.password}
                 </p>
               )}
             </motion.div>
-
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -283,9 +275,7 @@ const SignupPage: React.FC = () => {
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 transition-colors ${
-                    errors.confirmPassword ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-emerald-500'
-                  }`}
+                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 transition-colors ${errors.confirmPassword ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-emerald-500'}`}
                   placeholder="Confirm your password"
                   required
                   autoComplete="new-password"
@@ -307,7 +297,6 @@ const SignupPage: React.FC = () => {
                 </p>
               )}
             </motion.div>
-
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -326,8 +315,7 @@ const SignupPage: React.FC = () => {
               </Button>
             </motion.div>
           </form>
-
-          <motion.div 
+          <motion.div
             className="mt-6 text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
