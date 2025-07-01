@@ -1,6 +1,10 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 
+// Constants for tier limits
+const FREE_TIER_LIMIT = 5;
+const PRO_TIER_LIMIT = 40;
+
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL') ?? '', 
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -65,8 +69,91 @@ Deno.serve(async (req) => {
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: getUserError } = await supabase.auth.getUser(token);
 
+    console.log('Authenticating user for TTS generation');
     if (getUserError || !user) {
       return corsResponse({ error: 'Invalid authentication token' }, 401);
+    }
+
+    // Check user's tier and usage limits
+    try {
+      // Check if user is on Pro tier by looking up their subscription status
+      const { data: subscription } = await supabase
+        .from('stripe_user_subscriptions')
+        .select('subscription_status')
+        .maybeSingle();
+
+      const isPro = subscription?.subscription_status === 'active' || 
+                    subscription?.subscription_status === 'trialing';
+
+      // Get the current month in YYYY-MM format
+      const now = new Date();
+      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+      // Get or create user's generation count for the current month
+      let { data: generationCount } = await supabase
+        .from('user_generation_counts')
+        .select('generation_count')
+        .eq('user_id', user.id)
+        .eq('month', currentMonth)
+        .maybeSingle();
+
+      if (!generationCount) {
+        // Create a new record for this month
+        const { data: newCount, error: insertError } = await supabase
+          .from('user_generation_counts')
+          .insert({
+            user_id: user.id,
+            month: currentMonth,
+            generation_count: 0,
+            last_generated_at: now.toISOString()
+          })
+          .select('generation_count')
+          .single();
+
+        if (insertError) {
+          console.error('Error creating generation count record:', insertError);
+          return corsResponse({ error: 'Failed to track generation usage' }, 500);
+        }
+
+        generationCount = newCount;
+      }
+
+      // Determine the user's limit based on their tier
+      const monthlyLimit = isPro ? PRO_TIER_LIMIT : FREE_TIER_LIMIT;
+
+      // Check if user has exceeded their limit
+      if (generationCount.generation_count >= monthlyLimit) {
+        console.log(`User ${user.id} has reached their ${isPro ? 'Pro' : 'Free'} tier limit of ${monthlyLimit} generations`);
+        
+        // Return a specific error for limit reached
+        return corsResponse({ 
+          error: 'Monthly generation limit reached', 
+          tier: isPro ? 'pro' : 'free',
+          limit: monthlyLimit,
+          count: generationCount.generation_count,
+          limitReached: true
+        }, 403);
+      }
+
+      // Increment the generation count
+      console.log(`Incrementing generation count for user ${user.id} (current: ${generationCount.generation_count})`);
+      const { error: updateError } = await supabase
+        .from('user_generation_counts')
+        .update({ 
+          generation_count: generationCount.generation_count + 1,
+          last_generated_at: now.toISOString(),
+          updated_at: now.toISOString()
+        })
+        .eq('user_id', user.id)
+        .eq('month', currentMonth);
+
+      if (updateError) {
+        console.error('Error updating generation count:', updateError);
+        // Continue with generation even if tracking fails
+      }
+    } catch (countError) {
+      console.error('Error checking generation limits:', countError);
+      // Continue with generation even if limit checking fails
     }
 
     // Parse request body
@@ -149,6 +236,23 @@ Deno.serve(async (req) => {
     // Return audio data
     return corsResponse(audioData, 200);
 
+  } catch (error: any) {
+    console.error('TTS error:', error);
+    
+    // Special handling for limit reached errors
+    if (error.limitReached) {
+      return corsResponse({ 
+        error: error.message || 'Monthly generation limit reached',
+        tier: error.tier || 'free',
+        limit: error.limit || FREE_TIER_LIMIT,
+        count: error.count || 0,
+        limitReached: true
+      }, 403);
+    }
+    
+    return corsResponse({ error: error.message || 'Internal server error' }, 500);
+  }
+});
   } catch (error: any) {
     console.error('TTS error:', error);
     return corsResponse({ error: error.message || 'Internal server error' }, 500);
