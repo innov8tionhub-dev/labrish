@@ -14,7 +14,9 @@ import {
   ChevronLeft,
   CheckCircle,
   Settings,
-  AlertCircle
+  AlertCircle,
+  Type,
+  Mic
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
@@ -28,22 +30,26 @@ interface VoiceDesignState {
   error: string | null;
   generatedVoiceId: string | null;
   previewUrl: string | null;
+  isGeneratingPreview: boolean;
 }
 
 const VoiceDesignStudio: React.FC = () => {
   const [voiceDescription, setVoiceDescription] = useState('');
   const [voiceName, setVoiceName] = useState('My Caribbean Voice');
+  const [previewText, setPreviewText] = useState('Welcome to our Caribbean storytelling platform. My name is Maria, and I am excited to share stories with you today.');
   const [voiceState, setVoiceState] = useState<VoiceDesignState>({
     loading: false,
     error: null,
     generatedVoiceId: null,
-    previewUrl: null
+    previewUrl: null,
+    isGeneratingPreview: false
   });
   const [referenceAudio, setReferenceAudio] = useState<File | null>(null);
   const [referenceAudioWeight, setReferenceAudioWeight] = useState(0.5);
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessView, setShowSuccessView] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   // Advanced settings
   const [seed, setSeed] = useState(42);
@@ -101,6 +107,53 @@ const VoiceDesignStudio: React.FC = () => {
     setSeed(Math.floor(Math.random() * 1000));
   };
 
+  const generatePreviewAudio = async (voiceId: string): Promise<string | null> => {
+    try {
+      setVoiceState(prev => ({ ...prev, isGeneratingPreview: true }));
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('User not authenticated');
+      }
+
+      const textToSpeak = autoGenerateText ? previewText : (customText || previewText);
+      
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          text: textToSpeak,
+          voice_id: voiceId,
+          model_id: 'eleven_monolingual_v1',
+          voice_settings: {
+            stability: 0.5,
+            similarity_boost: 0.75,
+            style: 0,
+            use_speaker_boost: true
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate preview audio');
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      
+      return audioUrl;
+    } catch (err) {
+      console.error('Preview generation error:', err);
+      return null;
+    } finally {
+      setVoiceState(prev => ({ ...prev, isGeneratingPreview: false }));
+    }
+  };
+
   const handleGenerateVoice = async () => {
     if (!voiceDescription.trim()) {
       error('Voice description required', 'Please enter a description of the voice you want to generate');
@@ -111,7 +164,8 @@ const VoiceDesignStudio: React.FC = () => {
       loading: true,
       error: null,
       generatedVoiceId: null,
-      previewUrl: null
+      previewUrl: null,
+      isGeneratingPreview: false
     });
     
     setIsSubmitting(true);
@@ -128,12 +182,18 @@ const VoiceDesignStudio: React.FC = () => {
         voiceDescription: voiceDescription,
         name: voiceName || 'My Caribbean Voice',
         model_id: 'eleven_monolingual_v1',
-        auto_generate_text: autoGenerateText,
-        text: autoGenerateText ? '' : customText,
         loudness,
         seed,
         guidance_scale: guidanceScale,
       };
+
+      // Only include text if auto_generate_text is false
+      if (!autoGenerateText) {
+        requestBody.auto_generate_text = false;
+        requestBody.text = customText || previewText;
+      } else {
+        requestBody.auto_generate_text = true;
+      }
       
       // If reference audio is provided, convert it to base64
       if (referenceAudio) {
@@ -174,15 +234,15 @@ const VoiceDesignStudio: React.FC = () => {
         throw new Error('No voice ID was returned from the API');
       }
       
-      // Simulate a preview URL for demo purposes
-      // In production, you would get this from the ElevenLabs API
-      const previewUrl = `https://api.elevenlabs.io/v1/voices/${data.voice_id}/preview`;
+      // Generate actual preview audio using the new voice
+      const previewUrl = await generatePreviewAudio(data.voice_id);
       
       setVoiceState({
         loading: false,
         error: null,
         generatedVoiceId: data.voice_id,
-        previewUrl
+        previewUrl,
+        isGeneratingPreview: false
       });
       
       success('Voice generated successfully!', `Voice ID: ${data.voice_id}`);
@@ -194,18 +254,70 @@ const VoiceDesignStudio: React.FC = () => {
         loading: false,
         error: err.message || 'Failed to generate voice',
         generatedVoiceId: null,
-        previewUrl: null
+        previewUrl: null,
+        isGeneratingPreview: false
       });
       error('Voice generation failed', err.message || 'Please try again with a different description');
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const handleRegeneratePreview = async () => {
+    if (!voiceState.generatedVoiceId) return;
+    
+    const newPreviewUrl = await generatePreviewAudio(voiceState.generatedVoiceId);
+    if (newPreviewUrl) {
+      setVoiceState(prev => ({ ...prev, previewUrl: newPreviewUrl }));
+      success('Preview regenerated', 'New audio preview created');
+    } else {
+      error('Failed to regenerate preview', 'Please try again');
+    }
+  };
   
-  const handleSaveVoice = () => {
-    // In a real implementation, this would save the voice to the user's collection
-    success('Voice saved to your library', 'You can now use this voice for your stories');
-    track('voice_design_saved', { voice_id: voiceState.generatedVoiceId });
+  const handleSaveVoice = async () => {
+    if (!voiceState.generatedVoiceId) return;
+    
+    setIsSaving(true);
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user?.id) {
+        throw new Error('User not authenticated');
+      }
+
+      const voiceSettings = {
+        seed,
+        loudness,
+        guidance_scale: guidanceScale,
+        reference_audio_weight: referenceAudioWeight,
+        model_id: 'eleven_monolingual_v1'
+      };
+
+      const { error: insertError } = await supabase
+        .from('custom_voices')
+        .insert({
+          user_id: session.user.id,
+          voice_id: voiceState.generatedVoiceId,
+          name: voiceName,
+          description: voiceDescription,
+          voice_settings: voiceSettings,
+          preview_url: voiceState.previewUrl
+        });
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      success('Voice saved successfully!', 'You can now use this voice for your stories');
+      track('voice_design_saved', { voice_id: voiceState.generatedVoiceId });
+    } catch (err: any) {
+      console.error('Save voice error:', err);
+      error('Failed to save voice', err.message || 'Please try again');
+    } finally {
+      setIsSaving(false);
+    }
   };
   
   return (
@@ -249,16 +361,21 @@ const VoiceDesignStudio: React.FC = () => {
               previewUrl={voiceState.previewUrl}
               voiceName={voiceName}
               description={voiceDescription}
+              previewText={autoGenerateText ? previewText : (customText || previewText)}
               onSave={handleSaveVoice}
+              onRegeneratePreview={handleRegeneratePreview}
               onReset={() => {
                 setShowSuccessView(false);
                 setVoiceState({
                   loading: false,
                   error: null,
                   generatedVoiceId: null,
-                  previewUrl: null
+                  previewUrl: null,
+                  isGeneratingPreview: false
                 });
               }}
+              isSaving={isSaving}
+              isRegenerating={voiceState.isGeneratingPreview}
             />
           ) : (
             <div className="grid md:grid-cols-2 gap-8">
@@ -309,6 +426,25 @@ const VoiceDesignStudio: React.FC = () => {
                         >
                           Use example
                         </button>
+                      </div>
+                    </div>
+
+                    {/* Preview Text */}
+                    <div>
+                      <label htmlFor="preview-text" className="block text-sm font-medium text-gray-700 mb-2">
+                        <Type className="w-4 h-4 inline mr-2" />
+                        Preview Text (what the voice will say)
+                      </label>
+                      <textarea
+                        id="preview-text"
+                        value={previewText}
+                        onChange={(e) => setPreviewText(e.target.value)}
+                        className="w-full h-24 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"
+                        placeholder="Enter the text you want the voice to speak in the preview..."
+                        maxLength={500}
+                      />
+                      <div className="text-xs text-gray-500 mt-1">
+                        {previewText.length}/500 characters
                       </div>
                     </div>
                     
@@ -607,8 +743,12 @@ interface SuccessViewProps {
   previewUrl: string | null;
   voiceName: string;
   description: string;
+  previewText: string;
   onSave: () => void;
+  onRegeneratePreview: () => void;
   onReset: () => void;
+  isSaving: boolean;
+  isRegenerating: boolean;
 }
 
 const SuccessView: React.FC<SuccessViewProps> = ({ 
@@ -616,8 +756,12 @@ const SuccessView: React.FC<SuccessViewProps> = ({
   previewUrl, 
   voiceName, 
   description,
+  previewText,
   onSave,
-  onReset
+  onRegeneratePreview,
+  onReset,
+  isSaving,
+  isRegenerating
 }) => {
   return (
     <motion.div 
@@ -650,6 +794,10 @@ const SuccessView: React.FC<SuccessViewProps> = ({
               <p className="text-sm text-gray-500">Description</p>
               <p className="text-gray-800">{description}</p>
             </div>
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-500">Preview Text</p>
+              <p className="text-gray-800 italic">"{previewText}"</p>
+            </div>
           </div>
         </div>
         
@@ -671,9 +819,30 @@ const SuccessView: React.FC<SuccessViewProps> = ({
               )}
             </div>
             
-            <p className="text-center text-sm text-purple-700">
-              Listen to your generated voice
-            </p>
+            <div className="text-center space-y-2">
+              <p className="text-sm text-purple-700">
+                Listen to your generated voice
+              </p>
+              <Button
+                onClick={onRegeneratePreview}
+                disabled={isRegenerating}
+                variant="outline"
+                size="sm"
+                className="text-purple-600 border-purple-300 hover:bg-purple-50"
+              >
+                {isRegenerating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Mic className="w-4 h-4 mr-2" />
+                    Regenerate Preview
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -681,10 +850,20 @@ const SuccessView: React.FC<SuccessViewProps> = ({
       <div className="flex flex-col md:flex-row gap-4 justify-center">
         <Button
           onClick={onSave}
+          disabled={isSaving}
           className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
         >
-          <Save className="w-4 h-4 mr-2" />
-          Save to My Voices
+          {isSaving ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4 mr-2" />
+              Save to My Voices
+            </>
+          )}
         </Button>
         
         <Button
