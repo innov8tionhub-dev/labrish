@@ -1,0 +1,61 @@
+Labrish: Site Overview for LLMs
+================================
+
+Labrish is a modern, interactive web application designed to showcase advanced AI voice, text, and analytics features. The site is built with a modular React frontend and integrates with ElevenLabs, Supabase, and Stripe for voice, authentication, and payment functionalities.
+
+Key Features:
+-------------
+1. **Voice AI Studios**
+   - Voice Cloning Studio: Users can upload audio and create custom AI voices.
+   - Voice Design Studio: Users can design new voices using text prompts and preview them.
+   - Text-to-Speech: Convert text to speech using multiple ElevenLabs models (e.g., eleven_v3, multilingual, flash, turbo).
+   - Voice Player: Play and manage generated audio.
+
+2. **Conversational AI**
+   - ConvAIWidget: Interactive chat widget for real-time AI conversations.
+   - VoiceChatSection: Voice-enabled chat with AI agents.
+
+3. **Storytelling & Content**
+   - InteractiveStory: Users can create, edit, and listen to AI-generated stories.
+   - StoryLibrary: Browse and manage a collection of stories.
+
+4. **User Authentication & Security**
+   - Signup, Login, Forgot/Reset Password: Secure authentication flows using Supabase.
+   - EnhancedAuthentication: Additional security and user experience features.
+
+5. **Analytics & Dashboard**
+   - AnalyticsDashboard: Visualize usage, voice generation stats, and user activity.
+   - AdvancedAnalyticsDashboard: Deeper insights and export options.
+   - EnhancedQuickLinks: Fast access to key site features.
+
+6. **Payments & Subscriptions**
+   - Stripe integration for checkout, subscriptions, and webhooks.
+   - PricingSection: Display plans and handle upgrades.
+
+7. **UI/UX**
+   - Modern, responsive design with Tailwind CSS.
+   - Accessible components and error boundaries for robust user experience.
+   - Progress bars, loading spinners, and toast notifications for feedback.
+
+8. **FAQ & Support**
+   - InteractiveFAQ: Dynamic, searchable FAQ section.
+   - About, Partners, Testimonials, and more for trust and transparency.
+
+9. **Offline & Performance**
+   - Service worker for offline support.
+   - Performance optimizations and accessibility best practices.
+
+Tech Stack:
+-----------
+- React (TypeScript)
+- Tailwind CSS
+- Supabase (auth, storage, serverless functions)
+- ElevenLabs API (voice, TTS, STT)
+- Stripe (payments)
+- Vite (build tool)
+
+Intended Use:
+-------------
+Labrish is intended as a showcase and playground for advanced AI voice and conversational technologies, with a focus on Caribbean voices and multilingual support. It is suitable for demos, prototyping, and as a foundation for more specialized AI voice applications.
+
+For more details, see the README.md or explore the /src/components directory for feature implementations. 
