@@ -149,11 +149,26 @@ Deno.serve(async (req) => {
 
       if (updateError) {
         console.error('Error updating generation count:', updateError);
-        // Continue with generation even if tracking fails
+      }
+
+      const { error: activityError } = await supabase
+        .from('user_activities')
+        .insert({
+          user_id: user.id,
+          activity_type: 'audio_generated',
+          entity_type: 'audio',
+          metadata: {
+            voice_id,
+            text_length: text.length,
+            timestamp: new Date().toISOString()
+          }
+        });
+
+      if (activityError) {
+        console.error('Error logging activity:', activityError);
       }
     } catch (countError) {
       console.error('Error checking generation limits:', countError);
-      // Continue with generation even if limit checking fails
     }
 
     // Parse request body

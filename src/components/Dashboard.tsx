@@ -32,6 +32,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAnalytics } from '@/lib/analytics';
 import { useOfflineSupport } from '@/lib/offlineSupport';
+import { useDashboardStats, useMonthlyStats, useRecentActivities } from '@/hooks/useDashboardStats';
 
 interface SubscriptionData {
   subscription_status: string;
@@ -49,30 +50,10 @@ interface QuickLink {
   color: string;
   badge?: string;
   status?: 'active' | 'inactive' | 'pending';
-  lastUsed?: string;
-  usageCount?: number;
   route?: string;
 }
 
-interface RecentActivity {
-  id: string;
-  type: 'story_created' | 'audio_generated' | 'voice_trained' | 'story_shared';
-  title: string;
-  timestamp: string;
-  metadata?: Record<string, any>;
-}
 
-interface UsageStats {
-  storiesCreated: number;
-  audioGenerated: number;
-  voicesUsed: number;
-  totalListens: number;
-  weeklyGrowth: {
-    stories: number;
-    audio: number;
-    listens: number;
-  };
-}
 
 interface GenerationStats {
   current: number;
@@ -89,52 +70,15 @@ const Dashboard: React.FC = () => {
     limit: 5,
     percentage: 0
   });
-  const [usageStats, setUsageStats] = useState<UsageStats>({
-    storiesCreated: 12,
-    audioGenerated: 45,
-    voicesUsed: 8,
-    totalListens: 234,
-    weeklyGrowth: {
-      stories: 15,
-      audio: 23,
-      listens: 18
-    }
-  });
 
-  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([
-    {
-      id: '1',
-      type: 'story_created',
-      title: 'Created "Anansi and the Golden Mango"',
-      timestamp: '2 hours ago',
-      metadata: { category: 'folklore', duration: '3:45' }
-    },
-    {
-      id: '2',
-      type: 'audio_generated',
-      title: 'Generated audio for "Caribbean Sunset"',
-      timestamp: '5 hours ago',
-      metadata: { voice: 'Jamaican Female', length: '2:30' }
-    },
-    {
-      id: '3',
-      type: 'voice_trained',
-      title: 'Completed voice training session',
-      timestamp: '1 day ago',
-      metadata: { accuracy: '94%', samples: 15 }
-    },
-    {
-      id: '4',
-      type: 'story_shared',
-      title: 'Shared "Island Breeze" publicly',
-      timestamp: '2 days ago',
-      metadata: { views: 23, likes: 8 }
-    }
-  ]);
 
   const navigate = useNavigate();
   const { track } = useAnalytics();
   const { isOnline, queueSize } = useOfflineSupport();
+
+  const { stats: dashboardStats, loading: statsLoading } = useDashboardStats(user?.id);
+  const { stats: monthlyStats, loading: monthlyLoading } = useMonthlyStats(user?.id);
+  const { activities: recentActivities, loading: activitiesLoading } = useRecentActivities(user?.id, 4);
 
   useEffect(() => {
     const getUser = async () => {
@@ -254,13 +198,10 @@ const Dashboard: React.FC = () => {
       icon: <Activity className="w-6 h-6" />,
       action: () => {
         track('quick_link_clicked', { link: 'recent_activities' });
-        // Scroll to recent activities section
         document.getElementById('recent-activities')?.scrollIntoView({ behavior: 'smooth' });
       },
       color: 'from-emerald-500 to-teal-500',
-      status: 'active',
-      lastUsed: '2 hours ago',
-      usageCount: 15
+      status: 'active'
     },
     {
       id: 'text-to-speech',
@@ -273,8 +214,6 @@ const Dashboard: React.FC = () => {
       },
       color: 'from-pink-500 to-rose-500',
       status: 'active',
-      lastUsed: '5 hours ago',
-      usageCount: 32,
       badge: 'Popular',
       route: '/text-to-speech'
     },
@@ -289,8 +228,6 @@ const Dashboard: React.FC = () => {
       },
       color: 'from-purple-500 to-indigo-500',
       status: 'pending',
-      lastUsed: '1 day ago',
-      usageCount: 8,
       badge: 'Coming Soon',
       route: null
     },
@@ -305,8 +242,6 @@ const Dashboard: React.FC = () => {
       },
       color: 'from-yellow-500 to-orange-500',
       status: 'pending',
-      lastUsed: '3 days ago',
-      usageCount: 5,
       badge: 'Coming Soon',
       route: null
     },
@@ -321,8 +256,6 @@ const Dashboard: React.FC = () => {
       },
       color: 'from-blue-500 to-cyan-500',
       status: 'active',
-      lastUsed: '3 hours ago',
-      usageCount: 12,
       route: '/analytics'
     },
     {
@@ -336,8 +269,6 @@ const Dashboard: React.FC = () => {
       },
       color: 'from-red-500 to-pink-500',
       status: 'active',
-      lastUsed: '1 week ago',
-      usageCount: 5,
       route: '/security'
     }
   ];
@@ -420,24 +351,30 @@ const Dashboard: React.FC = () => {
               {/* Enhanced Quick Stats */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-emerald-600">{usageStats.storiesCreated}</div>
+                  <div className="text-2xl font-bold text-emerald-600">{statsLoading ? '...' : dashboardStats.storiesCreated}</div>
                   <div className="text-xs text-gray-500">Stories</div>
-                  <div className="text-xs text-emerald-600">+{usageStats.weeklyGrowth.stories}% this week</div>
+                  <div className="text-xs text-emerald-600">
+                    {dashboardStats.weeklyGrowth.stories > 0 ? `+${dashboardStats.weeklyGrowth.stories}% growth` : 'Start creating!'}
+                  </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{usageStats.audioGenerated}</div>
+                  <div className="text-2xl font-bold text-blue-600">{statsLoading ? '...' : dashboardStats.audioGenerated}</div>
                   <div className="text-xs text-gray-500">Audio Files</div>
-                  <div className="text-xs text-blue-600">+{usageStats.weeklyGrowth.audio}% this week</div>
+                  <div className="text-xs text-blue-600">
+                    {dashboardStats.weeklyGrowth.audio > 0 ? `+${dashboardStats.weeklyGrowth.audio}% growth` : 'Generate audio'}
+                  </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600">{usageStats.voicesUsed}</div>
+                  <div className="text-2xl font-bold text-purple-600">{dashboardStats.voicesAvailable}</div>
                   <div className="text-xs text-gray-500">Voices</div>
-                  <div className="text-xs text-gray-500">8 available</div>
+                  <div className="text-xs text-gray-500">available</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-pink-600">{usageStats.totalListens}</div>
-                  <div className="text-xs text-gray-500">Listens</div>
-                  <div className="text-xs text-pink-600">+{usageStats.weeklyGrowth.listens}% this week</div>
+                  <div className="text-2xl font-bold text-pink-600">{statsLoading ? '...' : dashboardStats.totalPlays}</div>
+                  <div className="text-xs text-gray-500">Total Plays</div>
+                  <div className="text-xs text-pink-600">
+                    {dashboardStats.totalPlays > 0 ? 'Keep sharing!' : 'Share stories'}
+                  </div>
                 </div>
               </div>
 
@@ -488,11 +425,7 @@ const Dashboard: React.FC = () => {
                         </div>
                       </div>
                       <h3 className="font-heading text-lg text-gray-800 mb-2 group-hover:text-emerald-600 transition-colors">{link.title}</h3>
-                      <p className="text-gray-600 text-sm mb-3">{link.description}</p>
-                      <div className="flex items-center justify-between text-xs text-gray-500">
-                        <span>Used {link.usageCount} times</span>
-                        <span>{link.lastUsed}</span>
-                      </div>
+                      <p className="text-gray-600 text-sm">{link.description}</p>
                     </motion.div>
                   ))}
                 </div>
@@ -513,8 +446,19 @@ const Dashboard: React.FC = () => {
                 </div>
 
                 <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-emerald-200/50 overflow-hidden">
-                  <div className="divide-y divide-gray-200">
-                    {recentActivities.map((activity, index) => (
+                  {activitiesLoading ? (
+                    <div className="p-8 text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto"></div>
+                    </div>
+                  ) : recentActivities.length === 0 ? (
+                    <div className="p-8 text-center text-gray-500">
+                      <Activity className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                      <p>No recent activities yet</p>
+                      <p className="text-sm mt-1">Start creating stories to see your activity here</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-gray-200">
+                      {recentActivities.map((activity, index) => (
                       <motion.div
                         key={activity.id}
                         className="p-6 hover:bg-emerald-50/50 transition-colors"
@@ -541,8 +485,9 @@ const Dashboard: React.FC = () => {
                           </div>
                         </div>
                       </motion.div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </motion.div>
             </div>
@@ -674,51 +619,53 @@ const Dashboard: React.FC = () => {
                   <h3 className="font-heading text-lg text-gray-800">This Month</h3>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Activity className="w-4 h-4 text-blue-500" />
-                      <span className="text-sm text-gray-600">Stories Created</span>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-semibold text-gray-800">8</span>
-                      <div className="text-xs text-green-600">+25%</div>
-                    </div>
+                {monthlyLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-500"></div>
                   </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-blue-500" />
+                        <span className="text-sm text-gray-600">Stories Created</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-semibold text-gray-800">{monthlyStats.storiesCreated}</span>
+                      </div>
+                    </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Volume2 className="w-4 h-4 text-purple-500" />
-                      <span className="text-sm text-gray-600">Audio Generated</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Volume2 className="w-4 h-4 text-purple-500" />
+                        <span className="text-sm text-gray-600">Audio Generated</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-semibold text-gray-800">{monthlyStats.audioGenerated}</span>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <span className="font-semibold text-gray-800">24</span>
-                      <div className="text-xs text-green-600">+18%</div>
-                    </div>
-                  </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Play className="w-4 h-4 text-green-500" />
-                      <span className="text-sm text-gray-600">Total Plays</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Play className="w-4 h-4 text-green-500" />
+                        <span className="text-sm text-gray-600">Total Plays</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-semibold text-gray-800">{monthlyStats.totalPlays}</span>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <span className="font-semibold text-gray-800">156</span>
-                      <div className="text-xs text-green-600">+32%</div>
-                    </div>
-                  </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-pink-500" />
-                      <span className="text-sm text-gray-600">Engagement</span>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-semibold text-gray-800">89%</span>
-                      <div className="text-xs text-green-600">+5%</div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-pink-500" />
+                        <span className="text-sm text-gray-600">Engagement</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-semibold text-gray-800">{monthlyStats.engagement}%</span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <Button
@@ -784,29 +731,6 @@ const Dashboard: React.FC = () => {
               </motion.div>
 
               {/* Notifications */}
-              <motion.div
-                className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-emerald-200/50"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <Bell className="w-5 h-5 text-emerald-600" />
-                  <h3 className="font-heading text-lg text-gray-800">Notifications</h3>
-                  <span className="ml-auto text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">2</span>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                    <p className="text-sm font-medium text-blue-800">New voice available!</p>
-                    <p className="text-xs text-blue-600">Trinidadian Creole voice is now ready</p>
-                  </div>
-                  <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                    <p className="text-sm font-medium text-green-800">Story milestone reached</p>
-                    <p className="text-xs text-green-600">Your story hit 100 plays!</p>
-                  </div>
-                </div>
-              </motion.div>
             </div>
           </div>
         </div>
