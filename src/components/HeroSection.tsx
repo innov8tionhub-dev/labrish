@@ -1,7 +1,10 @@
 import React from 'react';
 import { Mic, MessageSquare, Globe2, ChevronDown, PlayCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const HeroSection: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-caribbean-100 to-caribbean-200 overflow-hidden">
       {/* Background Pattern */}
@@ -55,12 +58,21 @@ const HeroSection: React.FC = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button className="px-8 py-4 bg-brandy text-white font-body font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-brandy/90 flex items-center gap-2 hover:scale-105">
-              Start Your Story
+            <button
+              onClick={() => navigate('/signup')}
+              className="px-8 py-4 bg-brandy text-white font-body font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-brandy/90 flex items-center gap-2 hover:scale-105"
+            >
+              Create Free Account
               <ChevronDown className="w-5 h-5 animate-bounce" />
             </button>
-            <button className="px-8 py-4 bg-white/80 backdrop-blur-sm text-gray-800 font-body font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/90 flex items-center gap-2 hover:scale-105">
-              Listen to a Sample
+            <button
+              onClick={() => {
+                const storiesSection = document.getElementById('stories');
+                storiesSection?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="px-8 py-4 bg-white/80 backdrop-blur-sm text-gray-800 font-body font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/90 flex items-center gap-2 hover:scale-105"
+            >
+              Explore Stories
               <PlayCircle className="w-5 h-5" />
             </button>
           </div>
