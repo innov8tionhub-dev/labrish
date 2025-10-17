@@ -97,7 +97,7 @@ const FaqSection: React.FC = () => {
   };
 
   return (
-    <section id="faq" className="py-20 bg-gradient-to-br from-caribbean-50 to-white">
+    <section id="faq" className="py-20 bg-gradient-to-br from-caribbean-50 to-white scroll-mt-20">
       <div className="container mx-auto px-4">
         <motion.div 
           className="text-center mb-16"

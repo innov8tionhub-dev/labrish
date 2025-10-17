@@ -4,6 +4,7 @@ import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { ToastContainer, useToast } from '@/components/common/Toast';
 import { useSEO, pageConfigs } from '@/lib/seo';
 import Navbar from './components/Navbar';
+import StickyCTABar from './components/StickyCTABar';
 import CaribbeanVoiceHero from './components/ui/CaribbeanVoiceHero';
 import PartnersSection from './components/PartnersSection';
 import BenefitsSection from './components/BenefitsSection';
@@ -36,6 +37,7 @@ const HomePage: React.FC = () => {
   return (
     <main className="min-h-screen">
       <Navbar />
+      <StickyCTABar />
       <CaribbeanVoiceHero />
       <PartnersSection />
       <BenefitsSection />

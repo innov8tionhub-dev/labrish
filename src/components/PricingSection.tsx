@@ -83,7 +83,7 @@ const PricingSection: React.FC = () => {
       yearlyPrice: "$199.99",
       priceId: stripeProducts[0]?.priceId,
       description: "Unlimited storytelling with premium features",
-      popular: false,
+      popular: true,
       features: [
         "Unlimited AI-voiced stories",
         "Full accent library access (8+ voices)",
@@ -99,7 +99,7 @@ const PricingSection: React.FC = () => {
       cta: "Start Pro Trial",
       icon: <Zap className="w-6 h-6" />,
       color: "from-emerald-500 to-teal-500",
-      badge: null,
+      badge: "Most Popular",
       savings: billingCycle === 'yearly' ? "Save $40/year" : null
     },
     {
@@ -139,7 +139,7 @@ const PricingSection: React.FC = () => {
   };
 
   return (
-    <section id="pricing" className="py-20 bg-gradient-to-br from-caribbean-50 to-white">
+    <section id="pricing" className="py-20 bg-gradient-to-br from-caribbean-50 to-white scroll-mt-20">
       <div className="container mx-auto px-4">
         <motion.div 
           className="text-center mb-16"

@@ -303,12 +303,39 @@ const CaribbeanVoiceHero: React.FC = () => {
           </Button>
         </motion.div>
 
+        {/* Social proof stats */}
+        <motion.div
+          className="mt-12 grid grid-cols-3 gap-6 max-w-2xl mx-auto"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 1.2 }}
+        >
+          <div className="text-center">
+            <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-1">
+              10K+
+            </div>
+            <p className="text-xs md:text-sm text-muted-foreground">Active Users</p>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-1">
+              50K+
+            </div>
+            <p className="text-xs md:text-sm text-muted-foreground">Stories Created</p>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-1">
+              15+
+            </div>
+            <p className="text-xs md:text-sm text-muted-foreground">Voice Accents</p>
+          </div>
+        </motion.div>
+
         {/* Cultural preservation message */}
         <motion.div
-          className="mt-12 p-6 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 backdrop-blur-sm border border-emerald-400/20"
+          className="mt-8 p-6 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 backdrop-blur-sm border border-emerald-400/20"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 1.2 }}
+          transition={{ duration: 0.8, delay: 1.4 }}
         >
           <p className="text-sm md:text-base text-muted-foreground">
             🌴 <strong className="text-emerald-400">Preserving Culture:</strong> Every conversation helps keep Caribbean languages and stories alive for future generations
