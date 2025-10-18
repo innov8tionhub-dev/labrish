@@ -6,6 +6,21 @@ export interface WebVitalsMetric {
   id: string;
 }
 
+interface LayoutShift extends PerformanceEntry {
+  value: number;
+  hadRecentInput: boolean;
+}
+
+interface PerformanceEventTiming extends PerformanceEntry {
+  processingStart: number;
+  processingEnd: number;
+}
+
+interface PerformanceNavigationTiming extends PerformanceEntry {
+  responseStart: number;
+  requestStart: number;
+}
+
 const thresholds = {
   CLS: { good: 0.1, poor: 0.25 },
   FID: { good: 100, poor: 300 },
