@@ -124,21 +124,18 @@ const TextToSpeechPage: React.FC = () => {
     }
   };
 
-  // Check authentication
+  // Load user and tier information
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/login');
-        return;
-      }
       setUser(user);
-      
-      // Load user tier and usage information
-      loadUserTierAndUsage();
+
+      if (user) {
+        loadUserTierAndUsage();
+      }
     };
     getUser();
-  }, [navigate]);
+  }, []);
 
   // Load available voices
   useEffect(() => {

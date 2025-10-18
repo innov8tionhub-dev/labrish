@@ -8,12 +8,9 @@ import {
   CheckCircle,
   Copy,
   Download,
-  Globe,
   User,
   Mail,
   Phone,
-  Fingerprint,
-  UserCheck,
   ChevronLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -25,27 +22,6 @@ import { useNavigate } from 'react-router-dom';
 interface MFASetupProps {
   onComplete: () => void;
   onCancel: () => void;
-}
-
-interface SecuritySession {
-  id: string;
-  device: string;
-  location: string;
-  lastActive: string;
-  current: boolean;
-  ipAddress: string;
-  userAgent: string;
-  riskLevel: 'low' | 'medium' | 'high';
-}
-
-interface SecurityEvent {
-  id: string;
-  type: 'login' | 'logout' | 'password_change' | 'mfa_enabled' | 'suspicious_activity' | 'failed_login';
-  timestamp: string;
-  location: string;
-  device: string;
-  success: boolean;
-  riskScore: number;
 }
 
 interface PasswordRequirement {
@@ -78,7 +54,6 @@ const MFASetup: React.FC<MFASetupProps> = ({ onComplete, onCancel }) => {
   };
 
   const generateQRCode = (secret: string) => {
-    const user = supabase.auth.getUser();
     const issuer = 'Labrish';
     const accountName = 'user@example.com';
     const otpAuthUrl = `otpauth://totp/${issuer}:${accountName}?secret=${secret}&issuer=${issuer}`;
@@ -445,8 +420,6 @@ const PasswordStrengthChecker: React.FC<{ password: string; onValidation: (isVal
 const EnhancedSecurityDashboard: React.FC = () => {
   const [showMFASetup, setShowMFASetup] = useState(false);
   const [mfaEnabled, setMfaEnabled] = useState(false);
-  const [sessions, setSessions] = useState<SecuritySession[]>([]);
-  const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -459,79 +432,13 @@ const EnhancedSecurityDashboard: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    loadSecurityData();
+    const loadData = async () => {
+      setLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setLoading(false);
+    };
+    loadData();
   }, []);
-
-  const loadSecurityData = async () => {
-    setLoading(true);
-
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    setSessions([
-      {
-        id: '1',
-        device: 'Chrome on Windows 11',
-        location: 'Kingston, Jamaica',
-        lastActive: '2 minutes ago',
-        current: true,
-        ipAddress: '192.168.1.1',
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        riskLevel: 'low'
-      },
-      {
-        id: '2',
-        device: 'Safari on iPhone 15',
-        location: 'Port of Spain, Trinidad',
-        lastActive: '2 hours ago',
-        current: false,
-        ipAddress: '10.0.0.1',
-        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)',
-        riskLevel: 'low'
-      },
-      {
-        id: '3',
-        device: 'Chrome on Android',
-        location: 'Unknown Location',
-        lastActive: '1 day ago',
-        current: false,
-        ipAddress: '203.0.113.1',
-        userAgent: 'Mozilla/5.0 (Linux; Android 13)',
-        riskLevel: 'medium'
-      }
-    ]);
-
-    setSecurityEvents([
-      {
-        id: '1',
-        type: 'login',
-        timestamp: '2024-01-15T10:30:00Z',
-        location: 'Kingston, Jamaica',
-        device: 'Chrome on Windows',
-        success: true,
-        riskScore: 15
-      },
-      {
-        id: '2',
-        type: 'failed_login',
-        timestamp: '2024-01-15T09:45:00Z',
-        location: 'Unknown Location',
-        device: 'Unknown Browser',
-        success: false,
-        riskScore: 85
-      },
-      {
-        id: '3',
-        type: 'password_change',
-        timestamp: '2024-01-14T15:45:00Z',
-        location: 'Kingston, Jamaica',
-        device: 'Chrome on Windows',
-        success: true,
-        riskScore: 10
-      }
-    ]);
-
-    setLoading(false);
-  };
 
   const handleMFAComplete = () => {
     setMfaEnabled(true);
@@ -559,8 +466,11 @@ const EnhancedSecurityDashboard: React.FC = () => {
     }
 
     try {
-      // Simulate password change
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
 
       showSuccess('Password changed successfully');
       setShowPasswordChange(false);
@@ -568,42 +478,8 @@ const EnhancedSecurityDashboard: React.FC = () => {
       setNewPassword('');
       setConfirmPassword('');
       track('password_changed');
-    } catch (error) {
-      showError('Failed to change password');
-    }
-  };
-
-  const terminateSession = async (sessionId: string) => {
-    setSessions(prev => prev.filter(s => s.id !== sessionId));
-    showSuccess('Session terminated');
-    track('session_terminated', { session_id: sessionId });
-  };
-
-  const terminateAllOtherSessions = async () => {
-    if (confirm('This will sign you out of all other devices. Continue?')) {
-      setSessions(prev => prev.filter(s => s.current));
-      showSuccess('All other sessions terminated');
-      track('all_sessions_terminated');
-    }
-  };
-
-  const getEventIcon = (type: SecurityEvent['type']) => {
-    switch (type) {
-      case 'login': return <User className="w-4 h-4 text-green-600" />;
-      case 'logout': return <LogOut className="w-4 h-4 text-gray-600" />;
-      case 'password_change': return <Key className="w-4 h-4 text-blue-600" />;
-      case 'mfa_enabled': return <Shield className="w-4 h-4 text-emerald-600" />;
-      case 'suspicious_activity': return <AlertTriangle className="w-4 h-4 text-red-600" />;
-      case 'failed_login': return <AlertTriangle className="w-4 h-4 text-red-600" />;
-    }
-  };
-
-  const getRiskLevelColor = (level: string) => {
-    switch (level) {
-      case 'low': return 'text-green-600 bg-green-100';
-      case 'medium': return 'text-yellow-600 bg-yellow-100';
-      case 'high': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+    } catch (error: any) {
+      showError('Failed to change password', error.message);
     }
   };
 
@@ -617,8 +493,7 @@ const EnhancedSecurityDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-900/20 via-teal-800/10 to-cyan-900/20 p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
+      <div className="max-w-4xl mx-auto">
         <motion.div
           className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-emerald-200/50 mb-8"
           initial={{ opacity: 0, y: 20 }}
@@ -628,7 +503,7 @@ const EnhancedSecurityDashboard: React.FC = () => {
           <div className="flex items-center gap-4 mb-4">
             <Shield className="w-10 h-10 text-emerald-600" />
             <div>
-              <h1 className="font-heading text-4xl text-gray-800">Enhanced Security</h1>
+              <h1 className="font-heading text-4xl text-gray-800">Security Settings</h1>
               <div className="flex items-center gap-2 mt-2">
                 <Button
                   onClick={() => navigate('/dashboard')}
@@ -640,11 +515,10 @@ const EnhancedSecurityDashboard: React.FC = () => {
                   Back to Dashboard
                 </Button>
               </div>
-              <p className="text-gray-600">Advanced security features and account protection</p>
+              <p className="text-gray-600">Manage your account security and authentication</p>
             </div>
           </div>
 
-          {/* Security Score */}
           <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg p-4 border border-emerald-200">
             <div className="flex items-center justify-between">
               <div>
@@ -663,207 +537,83 @@ const EnhancedSecurityDashboard: React.FC = () => {
           </div>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Authentication Settings */}
-          <motion.div
-            className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-emerald-200/50 p-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            <h2 className="font-heading text-xl text-gray-800 mb-6">Authentication & Access</h2>
-
-            <div className="space-y-6">
-              {/* Two-Factor Authentication */}
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${mfaEnabled ? 'bg-green-100' : 'bg-gray-100'
-                    }`}>
-                    {mfaEnabled ? (
-                      <CheckCircle className="w-5 h-5 text-green-600" />
-                    ) : (
-                      <Shield className="w-5 h-5 text-gray-600" />
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-800">Two-Factor Authentication</h3>
-                    <p className="text-sm text-gray-600">
-                      {mfaEnabled ? 'Enabled with authenticator app' : 'Add an extra layer of security'}
-                    </p>
-                  </div>
-                </div>
-
-                {mfaEnabled ? (
-                  <Button onClick={handleDisableMFA} variant="outline" size="sm">
-                    Disable
-                  </Button>
-                ) : (
-                  <Button onClick={() => setShowMFASetup(true)} size="sm">
-                    Enable
-                  </Button>
-                )}
-              </div>
-
-              {/* Password */}
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Key className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-800">Password</h3>
-                    <p className="text-sm text-gray-600">Last changed 30 days ago</p>
-                  </div>
-                </div>
-
-                <Button
-                  onClick={() => setShowPasswordChange(true)}
-                  variant="outline"
-                  size="sm"
-                >
-                  Change
-                </Button>
-              </div>
-
-              {/* Biometric Authentication */}
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                    <Fingerprint className="w-5 h-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-800">Biometric Login</h3>
-                    <p className="text-sm text-gray-600">Use fingerprint or face recognition</p>
-                  </div>
-                </div>
-
-                <Button variant="outline" size="sm">
-                  Set Up
-                </Button>
-              </div>
-
-              {/* SSO Integration */}
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                    <UserCheck className="w-5 h-5 text-indigo-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-800">Single Sign-On</h3>
-                    <p className="text-sm text-gray-600">Connect with Google, Microsoft, or SAML</p>
-                  </div>
-                </div>
-
-                <Button variant="outline" size="sm">
-                  Configure
-                </Button>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Active Sessions */}
-          <motion.div
-            className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-emerald-200/50 p-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-heading text-xl text-gray-800">Active Sessions</h2>
-              <Button onClick={terminateAllOtherSessions} variant="outline" size="sm">
-                End All Others
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              {sessions.map(session => (
-                <div key={session.id} className="p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${session.current ? 'bg-green-100' : 'bg-gray-100'
-                        }`}>
-                        <Globe className={`w-5 h-5 ${session.current ? 'text-green-600' : 'text-gray-600'
-                          }`} />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-medium text-gray-800 flex items-center gap-2">
-                          {session.device}
-                          {session.current && (
-                            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                              Current
-                            </span>
-                          )}
-                          <span className={`px-2 py-1 text-xs rounded-full ${getRiskLevelColor(session.riskLevel)}`}>
-                            {session.riskLevel} risk
-                          </span>
-                        </h3>
-                        <p className="text-sm text-gray-600">{session.location}</p>
-                        <p className="text-xs text-gray-500">
-                          Last active: {session.lastActive} • IP: {session.ipAddress}
-                        </p>
-                      </div>
-                    </div>
-
-                    {!session.current && (
-                      <Button
-                        onClick={() => terminateSession(session.id)}
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        End
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Security Events */}
         <motion.div
-          className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-emerald-200/50 p-6 mt-8"
+          className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-emerald-200/50 p-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
         >
-          <h2 className="font-heading text-xl text-gray-800 mb-6">Security Activity Log</h2>
+          <h2 className="font-heading text-xl text-gray-800 mb-6">Authentication & Access</h2>
 
-          <div className="space-y-4">
-            {securityEvents.map(event => (
-              <div key={event.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                  {getEventIcon(event.type)}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${mfaEnabled ? 'bg-green-100' : 'bg-gray-100'
+                  }`}>
+                  {mfaEnabled ? (
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <Shield className="w-5 h-5 text-gray-600" />
+                  )}
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-medium text-gray-800">
-                    {event.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                  </h3>
-                  <div className="text-sm text-gray-600">
-                    {event.location} • {event.device}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {new Date(event.timestamp).toLocaleString()}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className={`px-2 py-1 rounded-full text-xs font-medium ${event.success
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-red-100 text-red-700'
-                    }`}>
-                    {event.success ? 'Success' : 'Failed'}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    Risk: {event.riskScore}%
-                  </div>
+                <div>
+                  <h3 className="font-medium text-gray-800">Two-Factor Authentication</h3>
+                  <p className="text-sm text-gray-600">
+                    {mfaEnabled ? 'Enabled with authenticator app' : 'Add an extra layer of security'}
+                  </p>
                 </div>
               </div>
-            ))}
+
+              {mfaEnabled ? (
+                <Button onClick={handleDisableMFA} variant="outline" size="sm">
+                  Disable
+                </Button>
+              ) : (
+                <Button onClick={() => setShowMFASetup(true)} size="sm">
+                  Enable
+                </Button>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Key className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-800">Password</h3>
+                  <p className="text-sm text-gray-600">Update your account password</p>
+                </div>
+              </div>
+
+              <Button
+                onClick={() => setShowPasswordChange(true)}
+                variant="outline"
+                size="sm"
+              >
+                Change
+              </Button>
+            </div>
+          </div>
+
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div>
+                  <h4 className="font-semibold text-blue-800 mb-1">Security Best Practices</h4>
+                  <ul className="text-sm text-blue-700 space-y-1">
+                    <li>• Enable two-factor authentication for maximum security</li>
+                    <li>• Use a strong, unique password for your account</li>
+                    <li>• Never share your password or authentication codes</li>
+                    <li>• Regularly review your account activity</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
         </motion.div>
 
-        {/* MFA Setup Modal */}
         <AnimatePresence>
           {showMFASetup && (
             <MFASetup
@@ -873,7 +623,6 @@ const EnhancedSecurityDashboard: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* Password Change Modal */}
         <AnimatePresence>
           {showPasswordChange && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

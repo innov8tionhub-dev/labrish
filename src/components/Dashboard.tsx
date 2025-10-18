@@ -314,7 +314,6 @@ const Dashboard: React.FC = () => {
   }
 
   if (!user) {
-    navigate('/login');
     return null;
   }
 
@@ -709,31 +708,19 @@ const Dashboard: React.FC = () => {
                     variant="outline"
                     size="sm"
                     className="w-full justify-start"
-                    onClick={() => track('quick_action_clicked', { action: 'saved_templates' })}
+                    onClick={() => navigate('/text-to-speech')}
                   >
-                    <Bookmark className="w-4 h-4 mr-2" />
-                    Saved Templates
-                    <span className="ml-auto text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">3</span>
+                    <Volume2 className="w-4 h-4 mr-2" />
+                    Create New Story
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     className="w-full justify-start"
-                    onClick={() => track('quick_action_clicked', { action: 'scheduled_posts' })}
+                    onClick={() => navigate('/analytics')}
                   >
-                    <Calendar className="w-4 h-4 mr-2" />
-                    Scheduled Posts
-                    <span className="ml-auto text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">2</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full justify-start"
-                    onClick={() => track('quick_action_clicked', { action: 'favorites' })}
-                  >
-                    <Star className="w-4 h-4 mr-2" />
-                    Favorites
-                    <span className="ml-auto text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">7</span>
+                    <BarChart3 className="w-4 h-4 mr-2" />
+                    View Analytics
                   </Button>
                   <Button
                     variant="outline"
@@ -743,6 +730,15 @@ const Dashboard: React.FC = () => {
                   >
                     <Settings className="w-4 h-4 mr-2" />
                     Security Settings
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={() => navigate('/pricing')}
+                  >
+                    <Crown className="w-4 h-4 mr-2" />
+                    Upgrade Plan
                   </Button>
                 </div>
               </motion.div>

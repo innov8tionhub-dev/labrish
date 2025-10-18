@@ -4,6 +4,7 @@ import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { ToastContainer, useToast } from '@/components/common/Toast';
 import { useSEO, pageConfigs } from '@/lib/seo';
 import LoadingSpinner from './components/common/LoadingSpinner';
+import ProtectedRoute from './components/common/ProtectedRoute';
 import Navbar from './components/Navbar';
 import StickyCTABar from './components/StickyCTABar';
 import CaribbeanVoiceHero from './components/ui/CaribbeanVoiceHero';
@@ -157,12 +158,12 @@ const AppContent: React.FC = () => {
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/analytics" element={<AnalyticsPage />} />
-            <Route path="/security" element={<SecurityPage />} />
-            <Route path="/success" element={<SuccessPage />} />
             <Route path="/pricing" element={<PricingPageWrapper />} />
-            <Route path="/text-to-speech" element={<TextToSpeechPageWrapper />} />
+            <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+            <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+            <Route path="/security" element={<ProtectedRoute><SecurityPage /></ProtectedRoute>} />
+            <Route path="/success" element={<ProtectedRoute><SuccessPage /></ProtectedRoute>} />
+            <Route path="/text-to-speech" element={<ProtectedRoute><TextToSpeechPageWrapper /></ProtectedRoute>} />
           </Routes>
         </Suspense>
       </Router>

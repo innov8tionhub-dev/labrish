@@ -225,7 +225,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         text,
-        model_id: 'eleven_multilingual_v2',
+        model_id: 'eleven_turbo_v2_5',
         voice_settings: settings,
       }),
     });
