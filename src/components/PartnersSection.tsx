@@ -6,22 +6,22 @@ const PartnersSection: React.FC = () => {
   const stats = [
     {
       icon: <Users className="w-6 h-6" />,
-      value: "10,000+",
-      label: "Active Storytellers"
+      value: "500+",
+      label: "Early Storytellers"
     },
     {
       icon: <BookOpen className="w-6 h-6" />,
-      value: "50,000+",
+      value: "2,500+",
       label: "Stories Created"
     },
     {
       icon: <Globe className="w-6 h-6" />,
-      value: "120+",
+      value: "25+",
       label: "Countries Reached"
     },
     {
       icon: <Sparkles className="w-6 h-6" />,
-      value: "15+",
+      value: "8+",
       label: "Authentic Voices"
     }
   ];

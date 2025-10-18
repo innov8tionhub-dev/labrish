@@ -116,9 +116,9 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
         {
           id: 'total-views',
           title: 'Total Views',
-          value: '12,847',
-          change: 12.5,
-          changeType: 'increase',
+          value: '0',
+          change: 0,
+          changeType: 'neutral',
           icon: <Eye className="w-6 h-6" />,
           color: 'from-blue-500 to-cyan-500',
           description: 'Total story views across all content'
@@ -126,9 +126,9 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
         {
           id: 'total-listens',
           title: 'Audio Listens',
-          value: '8,934',
-          change: 8.3,
-          changeType: 'increase',
+          value: '0',
+          change: 0,
+          changeType: 'neutral',
           icon: <Volume2 className="w-6 h-6" />,
           color: 'from-purple-500 to-indigo-500',
           description: 'Complete audio playbacks'
@@ -136,9 +136,9 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
         {
           id: 'total-shares',
           title: 'Shares',
-          value: '456',
-          change: 15.7,
-          changeType: 'increase',
+          value: '0',
+          change: 0,
+          changeType: 'neutral',
           icon: <Share2 className="w-6 h-6" />,
           color: 'from-pink-500 to-rose-500',
           description: 'Stories shared on social platforms'
@@ -146,9 +146,9 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
         {
           id: 'engagement-rate',
           title: 'Engagement Rate',
-          value: '73.2%',
-          change: 3.2,
-          changeType: 'increase',
+          value: '0%',
+          change: 0,
+          changeType: 'neutral',
           icon: <Target className="w-6 h-6" />,
           color: 'from-emerald-500 to-teal-500',
           description: 'User interaction with content'
@@ -156,9 +156,9 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
         {
           id: 'avg-listen-time',
           title: 'Avg. Listen Time',
-          value: '3:05',
-          change: -2.1,
-          changeType: 'decrease',
+          value: '0:00',
+          change: 0,
+          changeType: 'neutral',
           icon: <Clock className="w-6 h-6" />,
           color: 'from-orange-500 to-red-500',
           description: 'Average time spent listening'
@@ -166,7 +166,7 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
         {
           id: 'global-reach',
           title: 'Global Reach',
-          value: '47',
+          value: '0',
           change: 0,
           changeType: 'neutral',
           icon: <Globe className="w-6 h-6" />,
@@ -206,10 +206,10 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
       const date = new Date(selectedDateRange.start.getTime() + i * 24 * 60 * 60 * 1000);
       data.push({
         date: date.toISOString().split('T')[0],
-        views: Math.floor(Math.random() * 500) + 100,
-        listens: Math.floor(Math.random() * 300) + 50,
-        shares: Math.floor(Math.random() * 50) + 5,
-        engagement: Math.floor(Math.random() * 30) + 60
+        views: 0,
+        listens: 0,
+        shares: 0,
+        engagement: 0
       });
     }
 
@@ -440,27 +440,13 @@ const AdvancedAnalyticsDashboard: React.FC = () => {
 
             {/* Interactive Chart Placeholder */}
             <div className="h-80 bg-gray-50 rounded-lg flex items-center justify-center relative overflow-hidden">
-              <div className="text-center">
+              <div className="text-center px-8">
                 <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">Interactive chart showing {selectedMetric} over time</p>
-                <p className="text-sm text-gray-500 mt-2">
-                  {chartData.length} data points for {selectedDateRange.label}
+                <p className="text-gray-800 font-semibold mb-2">No Analytics Data Yet</p>
+                <p className="text-gray-600 text-sm">Start creating and sharing stories to see your performance metrics here.</p>
+                <p className="text-sm text-gray-500 mt-3">
+                  Your {selectedMetric} will be tracked for {selectedDateRange.label}
                 </p>
-              </div>
-
-              {/* Simulated Chart Data Visualization */}
-              <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between h-32">
-                {chartData.slice(0, 20).map((data, index) => (
-                  <div
-                    key={index}
-                    className="bg-emerald-500 rounded-t opacity-60 hover:opacity-100 transition-opacity cursor-pointer"
-                    style={{
-                      height: `${(data[selectedMetric] / Math.max(...chartData.map(d => d[selectedMetric]))) * 100}%`,
-                      width: `${100 / 20}%`
-                    }}
-                    title={`${data.date}: ${data[selectedMetric]}`}
-                  />
-                ))}
               </div>
             </div>
           </motion.div>

@@ -30,7 +30,7 @@ const FaqSection: React.FC = () => {
     {
       id: '3',
       question: "What accents are available in the library?",
-      answer: "We offer a growing collection of Caribbean accents, including Jamaican Patois, Trinidadian Creole, Barbadian Bajan, Guyanese, and more. We regularly add new accents based on user requests and community feedback. Pro users get access to our full library of 15+ authentic voices.",
+      answer: "We offer a growing collection of Caribbean accents, including Jamaican Patois, Trinidadian Creole, Barbadian Bajan, Guyanese, and more. We regularly add new accents based on user requests and community feedback. Pro users get access to our full library of 8+ authentic voices.",
       category: 'voices'
     },
     {
@@ -42,7 +42,7 @@ const FaqSection: React.FC = () => {
     {
       id: '5',
       question: "How accurate are the Caribbean accents?",
-      answer: "Our AI voices are trained on authentic Caribbean speech patterns and reviewed by native speakers. We achieve 95%+ accuracy in accent authenticity. We continuously improve our models based on community feedback and linguistic expertise.",
+      answer: "Our AI voices are trained on authentic Caribbean speech patterns and reviewed by native speakers. We continuously improve our models based on community feedback and linguistic expertise to deliver the most authentic experience possible.",
       category: 'voices'
     },
     {

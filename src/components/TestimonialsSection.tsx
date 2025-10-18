@@ -77,7 +77,7 @@ const TestimonialsSection: React.FC = () => {
           <h2 className="font-heading text-5xl mb-4 text-gray-800">
             Loved by <span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">Storytellers</span> Worldwide
           </h2>
-          <p className="font-body text-xl text-gray-600">Join thousands of satisfied users sharing their stories</p>
+          <p className="font-body text-xl text-gray-600">Join our growing community of storytellers</p>
         </motion.div>
 
         <div className="max-w-4xl mx-auto relative">

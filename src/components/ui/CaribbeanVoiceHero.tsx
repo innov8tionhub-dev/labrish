@@ -303,19 +303,19 @@ const CaribbeanVoiceHero: React.FC = () => {
         >
           <div className="text-center">
             <div className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-1">
-              10K+
+              500+
             </div>
-            <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Active Users</p>
+            <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Early Users</p>
           </div>
           <div className="text-center">
             <div className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-1">
-              50K+
+              2,500+
             </div>
             <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Stories Created</p>
           </div>
           <div className="text-center">
             <div className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-1">
-              15+
+              8+
             </div>
             <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Voice Accents</p>
           </div>
