@@ -48,23 +48,33 @@ class SEOManager {
       { name: 'description', content: fullConfig.description },
       { name: 'keywords', content: fullConfig.keywords?.join(', ') || '' },
       { name: 'author', content: fullConfig.author || 'Labrish Team' },
-      
+
       // Open Graph tags
       { property: 'og:title', content: fullConfig.title },
       { property: 'og:description', content: fullConfig.description },
       { property: 'og:type', content: fullConfig.type || 'website' },
       { property: 'og:site_name', content: fullConfig.siteName || 'Labrish' },
       { property: 'og:locale', content: fullConfig.locale || 'en_US' },
-      
+
       // Twitter Card tags
       { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:title', content: fullConfig.title },
       { name: 'twitter:description', content: fullConfig.description },
-      
+      { name: 'twitter:site', content: '@Labrish' },
+      { name: 'twitter:creator', content: '@Labrish' },
+
       // Additional meta tags
-      { name: 'robots', content: 'index, follow' },
+      { name: 'robots', content: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1' },
+      { name: 'googlebot', content: 'index, follow' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1.0' },
       { name: 'theme-color', content: '#14b8a6' },
+      { name: 'apple-mobile-web-app-capable', content: 'yes' },
+      { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+      { name: 'format-detection', content: 'telephone=no' },
+      { name: 'application-name', content: 'Labrish' },
+      { name: 'msapplication-TileColor', content: '#14b8a6' },
+      { name: 'geo.region', content: 'JM' },
+      { name: 'geo.placename', content: 'Caribbean' },
     ]);
 
     // Set conditional meta tags
@@ -109,10 +119,13 @@ class SEOManager {
 
   private isManageableTag(name: string): boolean {
     const manageableTags = [
-      'description', 'keywords', 'author', 'robots',
+      'description', 'keywords', 'author', 'robots', 'googlebot',
       'og:title', 'og:description', 'og:type', 'og:image', 'og:url', 'og:site_name', 'og:locale',
-      'twitter:card', 'twitter:title', 'twitter:description', 'twitter:image',
-      'article:published_time', 'article:modified_time'
+      'twitter:card', 'twitter:title', 'twitter:description', 'twitter:image', 'twitter:site', 'twitter:creator',
+      'article:published_time', 'article:modified_time',
+      'apple-mobile-web-app-capable', 'apple-mobile-web-app-status-bar-style',
+      'format-detection', 'application-name', 'msapplication-TileColor',
+      'geo.region', 'geo.placename'
     ];
     return manageableTags.includes(name);
   }

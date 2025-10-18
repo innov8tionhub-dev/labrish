@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { ToastContainer, useToast } from '@/components/common/Toast';
 import { useSEO, pageConfigs } from '@/lib/seo';
+import LoadingSpinner from './components/common/LoadingSpinner';
 import Navbar from './components/Navbar';
 import StickyCTABar from './components/StickyCTABar';
 import CaribbeanVoiceHero from './components/ui/CaribbeanVoiceHero';
@@ -15,17 +16,18 @@ import PricingSection from './components/PricingSection';
 import TestimonialsSection from './components/TestimonialsSection';
 import FaqSection from './components/FaqSection';
 import Footer from './components/Footer';
-import LoginPage from './components/auth/LoginPage';
-import SignupPage from './components/auth/SignupPage';
-import Dashboard from './components/Dashboard';
-import SuccessPage from './components/SuccessPage';
-import ForgotPasswordPage from './components/auth/ForgotPasswordPage';
-import ResetPasswordPage from './components/auth/ResetPasswordPage';
-import TextToSpeechPage from './pages/TextToSpeechPage';
-import AdvancedAnalyticsDashboard from './components/analytics/AdvancedAnalyticsDashboard';
-import EnhancedSecurityDashboard from './components/auth/EnhancedAuthentication';
-import VoiceCloningStudio from './components/voice/VoiceCloningStudio';
-import VoiceDesignStudio from './components/voice/VoiceDesignStudio';
+
+const LoginPage = lazy(() => import('./components/auth/LoginPage'));
+const SignupPage = lazy(() => import('./components/auth/SignupPage'));
+const Dashboard = lazy(() => import('./components/Dashboard'));
+const SuccessPage = lazy(() => import('./components/SuccessPage'));
+const ForgotPasswordPage = lazy(() => import('./components/auth/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./components/auth/ResetPasswordPage'));
+const TextToSpeechPage = lazy(() => import('./pages/TextToSpeechPage'));
+const AdvancedAnalyticsDashboard = lazy(() => import('./components/analytics/AdvancedAnalyticsDashboard'));
+const EnhancedSecurityDashboard = lazy(() => import('./components/auth/EnhancedAuthentication'));
+const VoiceCloningStudio = lazy(() => import('./components/voice/VoiceCloningStudio'));
+const VoiceDesignStudio = lazy(() => import('./components/voice/VoiceDesignStudio'));
 
 const HomePage: React.FC = () => {
   const { updateSEO } = useSEO();
@@ -144,19 +146,25 @@ const AppContent: React.FC = () => {
   return (
     <>
       <Router>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/analytics" element={<AnalyticsPage />} />
-          <Route path="/security" element={<SecurityPage />} />
-          <Route path="/success" element={<SuccessPage />} />
-          <Route path="/pricing" element={<PricingPageWrapper />} />
-          <Route path="/text-to-speech" element={<TextToSpeechPageWrapper />} />
-        </Routes>
+        <Suspense fallback={
+          <div className="min-h-screen flex items-center justify-center">
+            <LoadingSpinner size="lg" />
+          </div>
+        }>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="/security" element={<SecurityPage />} />
+            <Route path="/success" element={<SuccessPage />} />
+            <Route path="/pricing" element={<PricingPageWrapper />} />
+            <Route path="/text-to-speech" element={<TextToSpeechPageWrapper />} />
+          </Routes>
+        </Suspense>
       </Router>
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </>

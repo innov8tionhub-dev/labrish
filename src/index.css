@@ -93,4 +93,24 @@
   .scroll-mt-20 {
     scroll-margin-top: 5rem;
   }
+
+  .animate-will-change {
+    will-change: transform, opacity;
+  }
+
+  .backdrop-blur-will-change {
+    will-change: backdrop-filter;
+  }
+
+  .shadow-will-change {
+    will-change: box-shadow;
+  }
+
+  .hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+  }
 }

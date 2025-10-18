@@ -1,0 +1,23 @@
+# robots.txt for Labrish - Caribbean Voice AI Platform
+# https://labrish.online
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /analytics/
+Disallow: /security/
+Disallow: /success/
+Disallow: /*.json$
+
+# Google-specific
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /dashboard/
+
+# Crawl-delay for polite crawlers
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://labrish.online/sitemap.xml

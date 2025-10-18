@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Book,
@@ -208,119 +208,15 @@ const StoryLibrary: React.FC<StoryLibraryProps> = ({ onCreateNew, onEditStory })
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           <AnimatePresence>
             {stories.map((story) => (
-              <motion.div
+              <StoryCard
                 key={story.id}
-                className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-emerald-200/50 overflow-hidden hover:shadow-xl transition-shadow"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                layout
-              >
-                {/* Story Header */}
-                <div className={`h-2 bg-gradient-to-r ${getCategoryColor(story.category)}`} />
-
-                <div className="p-4 sm:p-6">
-                  {/* Title and Category */}
-                  <div className="mb-4">
-                    <h3 className="font-heading text-lg text-gray-800 mb-1 line-clamp-2">
-                      {story.title}
-                    </h3>
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <span className="capitalize">{story.category}</span>
-                      {story.duration && (
-                        <>
-                          <span>•</span>
-                          <Clock className="w-3 h-3" />
-                          <span>{formatDuration(story.duration)}</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Content Preview */}
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                    {story.content}
-                  </p>
-
-                  {/* Tags */}
-                  {story.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-4">
-                      {story.tags.slice(0, 3).map((tag, index) => (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                      {story.tags.length > 3 && (
-                        <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                          +{story.tags.length - 3}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Stats */}
-                  <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
-                    <div className="flex items-center gap-1">
-                      <Eye className="w-3 h-3" />
-                      <span>{story.play_count}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      <span>{new Date(story.created_at).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-2">
-                    {story.audio_url && (
-                      <VoicePlayer
-                        url={story.audio_url}
-                        name={story.title}
-                        className="flex-1"
-                        variant="default"
-                        onPlay={() => incrementPlayCount(story.id)}
-                      />
-                    )}
-
-                    {viewMode === 'my-stories' ? (
-                      <>
-                        <Button
-                          onClick={() => onEditStory(story)}
-                          size="sm"
-                          variant="outline"
-                          aria-label={`Edit ${story.title}`}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          onClick={() => handleDeleteStory(story.id)}
-                          size="sm"
-                          variant="outline"
-                          className="text-red-600 hover:text-red-700 hover:border-red-300"
-                          aria-label={`Delete ${story.title}`}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <Button size="sm" variant="outline" aria-label="Download story">
-                          <Download className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="outline" aria-label="Share story">
-                          <Share2 className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="outline" aria-label="Like story">
-                          <Heart className="w-4 h-4" />
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
+                story={story}
+                viewMode={viewMode}
+                getCategoryColor={getCategoryColor}
+                formatDuration={formatDuration}
+                onEditStory={onEditStory}
+                onDeleteStory={handleDeleteStory}
+              />
             ))}
           </AnimatePresence>
         </div>
@@ -328,5 +224,132 @@ const StoryLibrary: React.FC<StoryLibraryProps> = ({ onCreateNew, onEditStory })
     </div>
   );
 };
+
+interface StoryCardProps {
+  story: Story;
+  viewMode: 'my-stories' | 'public';
+  getCategoryColor: (categoryId: string) => string;
+  formatDuration: (seconds: number) => string;
+  onEditStory: (story: Story) => void;
+  onDeleteStory: (storyId: string) => void;
+}
+
+const StoryCard = memo<StoryCardProps>(({
+  story,
+  viewMode,
+  getCategoryColor,
+  formatDuration,
+  onEditStory,
+  onDeleteStory
+}) => (
+  <motion.div
+    className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-emerald-200/50 overflow-hidden hover:shadow-xl transition-shadow"
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    layout
+  >
+    <div className={`h-2 bg-gradient-to-r ${getCategoryColor(story.category)}`} />
+
+    <div className="p-4 sm:p-6">
+      <div className="mb-4">
+        <h3 className="font-heading text-lg text-gray-800 mb-1 line-clamp-2">
+          {story.title}
+        </h3>
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <span className="capitalize">{story.category}</span>
+          {story.duration && (
+            <>
+              <span>•</span>
+              <Clock className="w-3 h-3" />
+              <span>{formatDuration(story.duration)}</span>
+            </>
+          )}
+        </div>
+      </div>
+
+      <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+        {story.content}
+      </p>
+
+      {story.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-4">
+          {story.tags.slice(0, 3).map((tag, index) => (
+            <span
+              key={index}
+              className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full"
+            >
+              {tag}
+            </span>
+          ))}
+          {story.tags.length > 3 && (
+            <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+              +{story.tags.length - 3}
+            </span>
+          )}
+        </div>
+      )}
+
+      <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
+        <div className="flex items-center gap-1">
+          <Eye className="w-3 h-3" />
+          <span>{story.play_count}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Clock className="w-3 h-3" />
+          <span>{new Date(story.created_at).toLocaleDateString()}</span>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        {story.audio_url && (
+          <VoicePlayer
+            url={story.audio_url}
+            name={story.title}
+            className="flex-1"
+            variant="default"
+            onPlay={() => incrementPlayCount(story.id)}
+          />
+        )}
+
+        {viewMode === 'my-stories' ? (
+          <>
+            <Button
+              onClick={() => onEditStory(story)}
+              size="sm"
+              variant="outline"
+              aria-label={`Edit ${story.title}`}
+            >
+              <Edit className="w-4 h-4" />
+            </Button>
+            <Button
+              onClick={() => onDeleteStory(story.id)}
+              size="sm"
+              variant="outline"
+              className="text-red-600 hover:text-red-700 hover:border-red-300"
+              aria-label={`Delete ${story.title}`}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button size="sm" variant="outline" aria-label="Download story">
+              <Download className="w-4 h-4" />
+            </Button>
+            <Button size="sm" variant="outline" aria-label="Share story">
+              <Share2 className="w-4 h-4" />
+            </Button>
+            <Button size="sm" variant="outline" aria-label="Like story">
+              <Heart className="w-4 h-4" />
+            </Button>
+          </>
+        )}
+      </div>
+    </div>
+  </motion.div>
+));
+
+StoryCard.displayName = 'StoryCard';
 
 export default StoryLibrary;
