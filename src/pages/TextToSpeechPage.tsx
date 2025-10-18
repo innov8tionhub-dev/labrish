@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Volume2, Download, Play, Pause, Square, Loader2, FileText, Settings, Save, Upload, Book, AudioWaveform as Waveform, Share2, ChevronLeft } from 'lucide-react';
+import { Mic, Volume2, Download, Play, Pause, Square, Loader2, FileText, Settings, Save, Upload, Book, AudioWaveform as Waveform, Share2, ChevronLeft, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { generateSpeech, getAvailableVoices, Voice } from '@/lib/elevenlabs';
 import { supabase } from '@/lib/supabase';
@@ -8,12 +8,15 @@ import { useNavigate } from 'react-router-dom';
 import FileUploadZone from '@/components/FileUploadZone';
 import StoryLibrary from '@/components/StoryLibrary';
 import { saveStory, Story, STORY_CATEGORIES } from '@/lib/storyLibrary';
+import StoryTemplateGallery from '@/components/StoryTemplateGallery';
+import { StoryTemplate } from '@/lib/storyTemplates';
 import { getAudioMetadata, generateWaveformData, createAudioVisualization } from '@/lib/audioUtils';
 import { FileUploadResult } from '@/lib/fileUpload';
 import { useOfflineSupport, offlineManager, cacheManager } from '@/lib/offlineSupport';
 import VoicePlayer from '@/components/VoicePlayer';
 import { Crown } from 'lucide-react';
 import { logAudioGeneration, logStoryCreated, logStoryShared } from '@/lib/activityLogger';
+import EnhancedAudioPlayer from '@/components/EnhancedAudioPlayer';
 
 interface VoiceSettings {
   stability: number;
@@ -36,6 +39,7 @@ const TextToSpeechPage: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [showTemplateGallery, setShowTemplateGallery] = useState(false);
   const [waveformData, setWaveformData] = useState<number[]>([]);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -301,6 +305,13 @@ const TextToSpeechPage: React.FC = () => {
 
   const handleFileError = (error: string) => {
     alert(error);
+  };
+
+  const handleSelectTemplate = (template: StoryTemplate) => {
+    setText(template.content);
+    setStoryTitle(template.title);
+    setStoryCategory(template.category);
+    setStoryTags(template.tags);
   };
 
   const handleSaveStory = async () => {
@@ -569,16 +580,28 @@ const TextToSpeechPage: React.FC = () => {
                           <FileText className="w-6 h-6 text-emerald-600" />
                           <h2 className="font-heading text-2xl text-gray-800">Your Text</h2>
                         </div>
-                        <Button
-                          onClick={() => setShowFileUpload(!showFileUpload)}
-                          variant="outline"
-                          size="sm"
-                          className="self-start sm:self-auto"
-                        >
-                          <Upload className="w-4 h-4 mr-2" />
-                          <span className="hidden sm:inline">Upload File</span>
-                          <span className="sm:hidden">Upload</span>
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => setShowTemplateGallery(true)}
+                            variant="outline"
+                            size="sm"
+                            className="self-start sm:self-auto"
+                          >
+                            <BookOpen className="w-4 h-4 mr-2" />
+                            <span className="hidden sm:inline">Use Template</span>
+                            <span className="sm:hidden">Template</span>
+                          </Button>
+                          <Button
+                            onClick={() => setShowFileUpload(!showFileUpload)}
+                            variant="outline"
+                            size="sm"
+                            className="self-start sm:self-auto"
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            <span className="hidden sm:inline">Upload File</span>
+                            <span className="sm:hidden">Upload</span>
+                          </Button>
+                        </div>
                       </div>
 
                       <AnimatePresence>
@@ -696,70 +719,15 @@ const TextToSpeechPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Audio Player with Waveform */}
+                    {/* Enhanced Audio Player */}
                     {audioUrl && (
-                      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-4 sm:p-8 border border-emerald-200/50">
-                        <h3 className="font-heading text-xl text-gray-800 mb-6">Audio Player</h3>
-                        
-                        <audio ref={audioRef} src={audioUrl} className="hidden" />
-                        
-                        {/* Waveform Visualization */}
-                        <div className="mb-6">
-                          <canvas
-                            ref={canvasRef}
-                            width={600}
-                            height={100}
-                            className="w-full h-20 bg-gray-50 rounded-lg border"
-                          />
-                          <div className="flex justify-between text-xs text-gray-500 mt-2">
-                            <span>{formatTime(currentTime)}</span>
-                            <span>{formatTime(duration)}</span>
-                          </div>
-                        </div>
-
-                        {/* Controls */}
-                        <div className="flex flex-wrap items-center justify-center gap-4 mb-6">
-                          <Button
-                            onClick={handlePlayPause}
-                            className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
-                            aria-label={isPlaying ? "Pause audio" : "Play audio"}
-                          >
-                            {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-                          </Button>
-                          
-                          <Button 
-                            onClick={handleStop} 
-                            variant="outline"
-                            aria-label="Stop audio"
-                            className={isPlaying ? "border-red-300 text-red-600 hover:bg-red-50" : ""}
-                          >
-                            <Square className="w-5 h-5" />
-                          </Button>
-                          
-                          <Button 
-                            onClick={handleDownload} 
-                            variant="outline"
-                            aria-label="Download audio"
-                          >
-                            <Download className="w-5 h-5" />
-                          </Button>
-
-                          <Button
-                            onClick={() => setShowSaveDialog(true)}
-                            variant="outline"
-                            aria-label="Save story"
-                          >
-                            <Save className="w-5 h-5" />
-                          </Button>
-
-                          <Button 
-                            variant="outline"
-                            aria-label="Share audio"
-                          >
-                            <Share2 className="w-5 h-5" />
-                          </Button>
-                        </div>
-                      </div>
+                      <EnhancedAudioPlayer
+                        audioUrl={audioUrl}
+                        audioBlob={audioBlob}
+                        onDownload={handleDownload}
+                        onSave={() => setShowSaveDialog(true)}
+                        onShare={() => {}}
+                      />
                     )}
                   </div>
 
@@ -1037,6 +1005,16 @@ const TextToSpeechPage: React.FC = () => {
                   </div>
                 </motion.div>
               </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Story Template Gallery */}
+          <AnimatePresence>
+            {showTemplateGallery && (
+              <StoryTemplateGallery
+                onSelectTemplate={handleSelectTemplate}
+                onClose={() => setShowTemplateGallery(false)}
+              />
             )}
           </AnimatePresence>
         </div>

@@ -27,6 +27,7 @@ import {
   searchStories
 } from '@/lib/storyLibrary';
 import VoicePlayer from '@/components/VoicePlayer';
+import EmptyState from '@/components/common/EmptyState';
 
 interface StoryLibraryProps {
   onCreateNew: () => void;
@@ -187,27 +188,22 @@ const StoryLibrary: React.FC<StoryLibraryProps> = ({ onCreateNew, onEditStory })
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
         </div>
       ) : stories.length === 0 ? (
-        <div className="text-center py-12">
-          <Book className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="font-heading text-xl text-gray-600 mb-2">
-            {viewMode === 'my-stories' ? 'No stories yet' : 'No stories found'}
-          </h3>
-          <p className="text-gray-500 mb-6">
-            {viewMode === 'my-stories'
-              ? 'Create your first Caribbean story to get started'
-              : 'Try adjusting your search or category filter'
-            }
-          </p>
-          {viewMode === 'my-stories' && (
-            <Button
-              onClick={onCreateNew}
-              className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Create Your First Story
-            </Button>
-          )}
-        </div>
+        <EmptyState
+          icon={Book}
+          title={viewMode === 'my-stories' ? 'No Stories Yet' : 'No Stories Found'}
+          description={
+            viewMode === 'my-stories'
+              ? 'Create your first Caribbean story to get started. Transform your words into authentic island voices and share your tales with the world!'
+              : 'Try adjusting your search or category filter to discover more stories. The Caribbean storytelling community is waiting for you!'
+          }
+          actionLabel={viewMode === 'my-stories' ? 'Create First Story' : 'Clear Filters'}
+          onAction={viewMode === 'my-stories' ? onCreateNew : () => {
+            setSearchQuery('');
+            setSelectedCategory('');
+          }}
+          secondaryActionLabel={viewMode === 'my-stories' ? 'Explore Public Stories' : 'View My Stories'}
+          onSecondaryAction={() => setViewMode(viewMode === 'my-stories' ? 'public' : 'my-stories')}
+        />
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           <AnimatePresence>

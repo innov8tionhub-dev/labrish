@@ -33,6 +33,9 @@ import { motion } from 'framer-motion';
 import { useAnalytics } from '@/lib/analytics';
 import { useOfflineSupport } from '@/lib/offlineSupport';
 import { useDashboardStats, useMonthlyStats, useRecentActivities } from '@/hooks/useDashboardStats';
+import EmptyState from '@/components/common/EmptyState';
+import PersonalizedTips from '@/components/dashboard/PersonalizedTips';
+import StatsCard from '@/components/dashboard/StatsCard';
 
 interface SubscriptionData {
   subscription_status: string;
@@ -392,6 +395,16 @@ const Dashboard: React.FC = () => {
           <div className="grid lg:grid-cols-4 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-3 space-y-8">
+              {/* Personalized Tips */}
+              <PersonalizedTips
+                userStats={{
+                  storiesCreated: dashboardStats.storiesCreated,
+                  audioGenerated: dashboardStats.audioGenerated,
+                  totalPlays: dashboardStats.totalPlays
+                }}
+                onNavigate={navigate}
+              />
+
               {/* Enhanced Quick Links */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -451,11 +464,15 @@ const Dashboard: React.FC = () => {
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto"></div>
                     </div>
                   ) : recentActivities.length === 0 ? (
-                    <div className="p-8 text-center text-gray-500">
-                      <Activity className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                      <p>No recent activities yet</p>
-                      <p className="text-sm mt-1">Start creating stories to see your activity here</p>
-                    </div>
+                    <EmptyState
+                      icon={Activity}
+                      title="No Activities Yet"
+                      description="Start creating stories with Caribbean voices to see your activity timeline here. Your journey begins with a single story!"
+                      actionLabel="Create First Story"
+                      onAction={() => navigate('/text-to-speech')}
+                      secondaryActionLabel="Explore Voices"
+                      onSecondaryAction={() => navigate('/text-to-speech')}
+                    />
                   ) : (
                     <div className="divide-y divide-gray-200">
                       {recentActivities.map((activity, index) => (
