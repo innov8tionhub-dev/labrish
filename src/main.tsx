@@ -5,16 +5,22 @@ import './index.css';
 import { registerServiceWorker } from './lib/offlineSupport';
 import { seoManager } from './lib/seo';
 import { analytics } from './lib/analytics';
+import { reportWebVitals } from './lib/webVitals';
 
-// Initialize SEO
 seoManager.generateWebSiteStructuredData();
 seoManager.generateOrganizationStructuredData();
 
-// Register service worker for offline support
 registerServiceWorker();
 
-// Track initial page view
 analytics.pageView(window.location.pathname, document.title);
+
+reportWebVitals((metric) => {
+  analytics.trackEvent('Web Vitals', {
+    metric: metric.name,
+    value: Math.round(metric.value),
+    rating: metric.rating,
+  });
+});
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

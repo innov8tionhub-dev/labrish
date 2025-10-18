@@ -1,14 +1,19 @@
 // Service Worker for offline support and caching
-const CACHE_NAME = 'labrish-cache-v1';
-const STATIC_CACHE_NAME = 'labrish-static-v1';
+const CACHE_NAME = 'labrish-cache-v2';
+const STATIC_CACHE_NAME = 'labrish-static-v2';
+const RUNTIME_CACHE_NAME = 'labrish-runtime-v2';
 
-// Files to cache immediately
 const STATIC_FILES = [
   '/',
   '/index.html',
   '/manifest.json',
-  // Add other static assets as needed
+  '/og-image.svg',
+  '/robots.txt',
+  '/sitemap.xml',
 ];
+
+const CACHE_MAX_AGE = 86400000;
+const CACHE_MAX_ITEMS = 50;
 
 // Install event - cache static files
 self.addEventListener('install', (event) => {
@@ -26,7 +31,9 @@ self.addEventListener('activate', (event) => {
       .then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
-            if (cacheName !== CACHE_NAME && cacheName !== STATIC_CACHE_NAME) {
+            if (cacheName !== CACHE_NAME &&
+                cacheName !== STATIC_CACHE_NAME &&
+                cacheName !== RUNTIME_CACHE_NAME) {
               return caches.delete(cacheName);
             }
           })
@@ -53,34 +60,39 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(request)
       .then((cachedResponse) => {
-        // Return cached version if available
         if (cachedResponse) {
-          return cachedResponse;
+          const cacheAge = Date.now() - new Date(cachedResponse.headers.get('date') || 0).getTime();
+          if (cacheAge < CACHE_MAX_AGE) {
+            return cachedResponse;
+          }
         }
 
-        // Otherwise, fetch from network
         return fetch(request)
           .then((response) => {
-            // Don't cache non-successful responses
             if (!response || response.status !== 200 || response.type !== 'basic') {
               return response;
             }
 
-            // Clone the response
             const responseToCache = response.clone();
 
-            // Cache the response
-            caches.open(CACHE_NAME)
-              .then((cache) => {
+            caches.open(RUNTIME_CACHE_NAME)
+              .then(async (cache) => {
                 cache.put(request, responseToCache);
+
+                const keys = await cache.keys();
+                if (keys.length > CACHE_MAX_ITEMS) {
+                  cache.delete(keys[0]);
+                }
               });
 
             return response;
           })
           .catch(() => {
-            // Return offline page for navigation requests
+            if (cachedResponse) {
+              return cachedResponse;
+            }
             if (request.mode === 'navigate') {
-              return caches.match('/offline.html');
+              return caches.match('/index.html');
             }
           });
       })

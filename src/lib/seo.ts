@@ -200,10 +200,32 @@ class SEOManager {
       description: 'Caribbean Voice AI Platform',
       url: window.location.origin,
       logo: `${window.location.origin}/logo.png`,
-      sameAs: [
-        // Add social media URLs when available
-      ],
+      sameAs: [],
     });
+  }
+
+  generateBreadcrumbStructuredData(items: Array<{ name: string; url: string }>): void {
+    const breadcrumbList = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: items.map((item, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: item.name,
+        item: item.url,
+      })),
+    };
+
+    const existingScript = document.querySelector('script[type="application/ld+json"][data-breadcrumb]');
+    if (existingScript) {
+      existingScript.remove();
+    }
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.setAttribute('data-breadcrumb', 'true');
+    script.textContent = JSON.stringify(breadcrumbList);
+    document.head.appendChild(script);
   }
 }
 
@@ -230,6 +252,7 @@ export const useSEO = () => {
     setPageDescription,
     generateWebSiteStructuredData: seoManager.generateWebSiteStructuredData.bind(seoManager),
     generateOrganizationStructuredData: seoManager.generateOrganizationStructuredData.bind(seoManager),
+    generateBreadcrumbStructuredData: seoManager.generateBreadcrumbStructuredData.bind(seoManager),
   };
 };
 

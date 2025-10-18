@@ -1,0 +1,56 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#14b8a6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0d9488;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#grad1)"/>
+
+  <!-- Pattern overlay -->
+  <circle cx="100" cy="100" r="150" fill="white" opacity="0.05"/>
+  <circle cx="1100" cy="530" r="150" fill="white" opacity="0.05"/>
+  <circle cx="900" cy="100" r="100" fill="white" opacity="0.03"/>
+
+  <!-- Content -->
+  <text x="600" y="250" font-family="Fraunces, serif" font-size="96" font-weight="700" fill="white" text-anchor="middle">
+    Labrish
+  </text>
+
+  <text x="600" y="320" font-family="Cairo, sans-serif" font-size="36" fill="white" text-anchor="middle" opacity="0.95">
+    Caribbean Voice AI Platform
+  </text>
+
+  <text x="600" y="380" font-family="Cairo, sans-serif" font-size="24" fill="white" text-anchor="middle" opacity="0.85">
+    Where every voice has a story
+  </text>
+
+  <!-- Accent bar -->
+  <rect x="300" y="420" width="600" height="8" fill="url(#grad2)" rx="4"/>
+
+  <!-- Features -->
+  <g transform="translate(200, 480)">
+    <circle cx="0" cy="0" r="30" fill="white" opacity="0.15"/>
+    <text x="0" y="8" font-size="28" fill="white" text-anchor="middle">🎤</text>
+    <text x="0" y="50" font-family="Cairo, sans-serif" font-size="18" fill="white" text-anchor="middle">Voice Chat</text>
+  </g>
+
+  <g transform="translate(600, 480)">
+    <circle cx="0" cy="0" r="30" fill="white" opacity="0.15"/>
+    <text x="0" y="8" font-size="28" fill="white" text-anchor="middle">📖</text>
+    <text x="0" y="50" font-family="Cairo, sans-serif" font-size="18" fill="white" text-anchor="middle">Storytelling</text>
+  </g>
+
+  <g transform="translate(1000, 480)">
+    <circle cx="0" cy="0" r="30" fill="white" opacity="0.15"/>
+    <text x="0" y="8" font-size="28" fill="white" text-anchor="middle">🌍</text>
+    <text x="0" y="50" font-family="Cairo, sans-serif" font-size="18" fill="white" text-anchor="middle">Global Reach</text>
+  </g>
+</svg>
