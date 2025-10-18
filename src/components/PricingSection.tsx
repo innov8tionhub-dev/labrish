@@ -139,19 +139,19 @@ const PricingSection: React.FC = () => {
   };
 
   return (
-    <section id="pricing" className="py-20 bg-gradient-to-br from-caribbean-50 to-white scroll-mt-20">
-      <div className="container mx-auto px-4">
-        <motion.div 
-          className="text-center mb-16"
+    <section id="pricing" className="py-12 sm:py-16 md:py-20 bg-gradient-to-br from-caribbean-50 to-white scroll-mt-20">
+      <div className="container mx-auto px-4 sm:px-6">
+        <motion.div
+          className="text-center mb-10 sm:mb-12 md:mb-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="font-heading text-5xl mb-6 text-gray-800">
+          <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 sm:mb-6 text-gray-800 px-2">
             Choose Your <span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">Storytelling</span> Plan
           </h2>
-          <p className="font-body text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+          <p className="font-body text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto mb-6 sm:mb-8 px-4">
             From free exploration to enterprise solutions, find the perfect plan for your Caribbean voice storytelling needs
           </p>
 
@@ -159,7 +159,7 @@ const PricingSection: React.FC = () => {
           <div className="inline-flex items-center bg-white rounded-full p-1 shadow-lg border border-emerald-200">
             <button
               onClick={() => setBillingCycle('monthly')}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+              className={`px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${
                 billingCycle === 'monthly'
                   ? 'bg-emerald-500 text-white shadow-md'
                   : 'text-gray-600 hover:text-gray-800'
@@ -169,14 +169,14 @@ const PricingSection: React.FC = () => {
             </button>
             <button
               onClick={() => setBillingCycle('yearly')}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-all relative ${
+              className={`px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-medium transition-all relative ${
                 billingCycle === 'yearly'
                   ? 'bg-emerald-500 text-white shadow-md'
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
               Yearly
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+              <span className="absolute -top-2 -right-1 sm:-right-2 bg-red-500 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
                 Save 17%
               </span>
             </button>
@@ -184,19 +184,19 @@ const PricingSection: React.FC = () => {
         </motion.div>
         
         {/* Pricing Table Header */}
-        <div className="text-center mb-6 text-gray-600 text-sm">
+        <div className="text-center mb-4 sm:mb-6 text-gray-600 text-xs sm:text-sm px-4">
           <p>Free users are limited to 5 generations per month. Pro subscribers get 40 per month.</p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-7xl mx-auto">
           {plans.map((plan, index) => (
-            <motion.div 
+            <motion.div
               key={plan.name}
               className={`relative bg-white rounded-2xl shadow-xl border-2 transition-all duration-300 hover:shadow-2xl ${
-                plan.popular 
-                  ? 'border-emerald-500 transform scale-105' 
+                plan.popular
+                  ? 'border-emerald-500 md:transform md:scale-105'
                   : 'border-gray-200 hover:border-emerald-300'
-              }`}
+              } ${plan.popular ? 'md:col-span-1 lg:col-span-1' : ''}`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
@@ -204,26 +204,26 @@ const PricingSection: React.FC = () => {
               whileHover={{ y: -5 }}
             >
               {plan.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-6 py-2 rounded-full text-sm font-semibold shadow-lg">
+                <div className="absolute -top-3 sm:-top-4 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-4 sm:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold shadow-lg">
                     {plan.badge}
                   </span>
                 </div>
               )}
 
-              <div className="p-8">
+              <div className="p-5 sm:p-6 md:p-8">
                 {/* Plan Header */}
-                <div className="text-center mb-8">
-                  <div className={`w-16 h-16 bg-gradient-to-r ${plan.color} rounded-full flex items-center justify-center text-white mx-auto mb-4`}>
+                <div className="text-center mb-6 sm:mb-8">
+                  <div className={`w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r ${plan.color} rounded-full flex items-center justify-center text-white mx-auto mb-3 sm:mb-4`}>
                     {plan.icon}
                   </div>
-                  <h3 className="font-heading text-2xl mb-2 text-gray-800">{plan.name}</h3>
-                  <p className="text-gray-600 text-sm mb-4">{plan.description}</p>
-                  
-                  <div className="mb-4">
-                    <span className="text-5xl font-bold text-gray-900">{getCurrentPrice(plan)}</span>
+                  <h3 className="font-heading text-xl sm:text-2xl mb-2 text-gray-800">{plan.name}</h3>
+                  <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 px-2">{plan.description}</p>
+
+                  <div className="mb-3 sm:mb-4">
+                    <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900">{getCurrentPrice(plan)}</span>
                     {plan.price !== "Custom" && plan.price !== "Free" && (
-                      <span className="text-gray-600 ml-2">
+                      <span className="text-gray-600 text-sm ml-1 sm:ml-2">
                         /{billingCycle === 'yearly' ? 'year' : 'month'}
                       </span>
                     )}
@@ -237,11 +237,11 @@ const PricingSection: React.FC = () => {
                 </div>
 
                 {/* Features List */}
-                <ul className="space-y-4 mb-8">
+                <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
                   {plan.features.map((feature, i) => (
                     <li key={i} className="flex items-start text-gray-700">
-                      <Check className="w-5 h-5 text-emerald-500 mr-3 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">{feature}</span>
+                      <Check className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500 mr-2 sm:mr-3 mt-0.5 flex-shrink-0" />
+                      <span className="text-xs sm:text-sm">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -261,7 +261,7 @@ const PricingSection: React.FC = () => {
                 )}
 
                 {/* CTA Button */}
-                <button 
+                <button
                   onClick={() => {
                     if (plan.isEnterprise) {
                       handleContactSales();
@@ -272,7 +272,7 @@ const PricingSection: React.FC = () => {
                     }
                   }}
                   disabled={loading === plan.priceId}
-                  className={`w-full py-4 rounded-xl font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-2 ${
+                  className={`w-full py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg transition-all duration-300 flex items-center justify-center gap-2 ${
                     plan.popular
                       ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl'
                       : 'bg-gray-100 text-gray-800 hover:bg-gray-200 border-2 border-gray-200 hover:border-gray-300'
@@ -299,31 +299,31 @@ const PricingSection: React.FC = () => {
         </div>
 
         {/* Additional Information */}
-        <motion.div 
-          className="mt-16 text-center"
+        <motion.div
+          className="mt-10 sm:mt-12 md:mt-16 text-center"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
           viewport={{ once: true }}
         >
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 max-w-4xl mx-auto border border-emerald-200/50">
-            <h3 className="font-heading text-2xl mb-6 text-gray-800">Frequently Asked Questions</h3>
-            <div className="grid md:grid-cols-2 gap-6 text-left">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 sm:p-6 md:p-8 max-w-4xl mx-auto border border-emerald-200/50">
+            <h3 className="font-heading text-xl sm:text-2xl mb-4 sm:mb-6 text-gray-800">Frequently Asked Questions</h3>
+            <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 text-left">
               <div>
-                <h4 className="font-semibold text-gray-800 mb-2">Can I change plans anytime?</h4>
-                <p className="text-gray-600 text-sm">Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.</p>
+                <h4 className="font-semibold text-gray-800 mb-1.5 sm:mb-2 text-sm sm:text-base">Can I change plans anytime?</h4>
+                <p className="text-gray-600 text-xs sm:text-sm">Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.</p>
               </div>
               <div>
-                <h4 className="font-semibold text-gray-800 mb-2">What payment methods do you accept?</h4>
-                <p className="text-gray-600 text-sm">We accept all major credit cards, PayPal, and bank transfers for enterprise plans.</p>
+                <h4 className="font-semibold text-gray-800 mb-1.5 sm:mb-2 text-sm sm:text-base">What payment methods do you accept?</h4>
+                <p className="text-gray-600 text-xs sm:text-sm">We accept all major credit cards, PayPal, and bank transfers for enterprise plans.</p>
               </div>
               <div>
-                <h4 className="font-semibold text-gray-800 mb-2">Is there a free trial for Pro?</h4>
-                <p className="text-gray-600 text-sm">Yes! New users get a 7-day free trial of Labrish Pro with full access to all features.</p>
+                <h4 className="font-semibold text-gray-800 mb-1.5 sm:mb-2 text-sm sm:text-base">Is there a free trial for Pro?</h4>
+                <p className="text-gray-600 text-xs sm:text-sm">Yes! New users get a 7-day free trial of Labrish Pro with full access to all features.</p>
               </div>
               <div>
-                <h4 className="font-semibold text-gray-800 mb-2">Do you offer refunds?</h4>
-                <p className="text-gray-600 text-sm">We offer a 30-day money-back guarantee for all paid plans, no questions asked.</p>
+                <h4 className="font-semibold text-gray-800 mb-1.5 sm:mb-2 text-sm sm:text-base">Do you offer refunds?</h4>
+                <p className="text-gray-600 text-xs sm:text-sm">We offer a 30-day money-back guarantee for all paid plans, no questions asked.</p>
               </div>
             </div>
           </div>

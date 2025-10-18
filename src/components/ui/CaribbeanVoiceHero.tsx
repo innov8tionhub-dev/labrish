@@ -52,7 +52,7 @@ const AnimatedTextCycle: React.FC<AnimatedTextCycleProps> = ({
   };
 
   return (
-    <span className="relative inline-block min-w-[200px]">
+    <span className="relative inline-block min-w-[150px] sm:min-w-[200px]">
       <AnimatePresence mode="wait">
         <motion.span
           key={currentIndex}
@@ -61,7 +61,7 @@ const AnimatedTextCycle: React.FC<AnimatedTextCycleProps> = ({
           initial="hidden"
           animate="visible"
           exit="exit"
-          style={{ whiteSpace: "nowrap" }}
+          style={{ whiteSpace: "normal" }}
         >
           {words[currentIndex]}
         </motion.span>
@@ -164,70 +164,72 @@ const CaribbeanVoiceHero: React.FC = () => {
       <div className="relative z-20 text-center px-4 max-w-6xl mx-auto">
         {/* Cultural icons */}
         <motion.div
-          className="flex justify-center items-center gap-8 mb-8"
+          className="flex justify-center items-center gap-4 sm:gap-6 md:gap-8 mb-6 sm:mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
         >
           <motion.div
-            className="p-3 rounded-full bg-emerald-500/20 backdrop-blur-sm border border-emerald-400/30"
+            className="p-2 sm:p-3 rounded-full bg-emerald-500/20 backdrop-blur-sm border border-emerald-400/30"
             whileHover={{ scale: 1.1, rotate: 5 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
-            <Mic className="w-6 h-6 text-emerald-400" />
+            <Mic className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
           </motion.div>
           <motion.div
-            className="p-3 rounded-full bg-teal-500/20 backdrop-blur-sm border border-teal-400/30"
+            className="p-2 sm:p-3 rounded-full bg-teal-500/20 backdrop-blur-sm border border-teal-400/30"
             whileHover={{ scale: 1.1, rotate: -5 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
-            <Volume2 className="w-6 h-6 text-teal-400" />
+            <Volume2 className="w-5 h-5 sm:w-6 sm:h-6 text-teal-400" />
           </motion.div>
           <motion.div
-            className="p-3 rounded-full bg-cyan-500/20 backdrop-blur-sm border border-cyan-400/30"
+            className="p-2 sm:p-3 rounded-full bg-cyan-500/20 backdrop-blur-sm border border-cyan-400/30"
             whileHover={{ scale: 1.1, rotate: 5 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
-            <Globe className="w-6 h-6 text-cyan-400" />
+            <Globe className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400" />
           </motion.div>
           <motion.div
-            className="p-3 rounded-full bg-green-500/20 backdrop-blur-sm border border-green-400/30"
+            className="p-2 sm:p-3 rounded-full bg-green-500/20 backdrop-blur-sm border border-green-400/30"
             whileHover={{ scale: 1.1, rotate: -5 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
-            <Heart className="w-6 h-6 text-green-400" />
+            <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-green-400" />
           </motion.div>
         </motion.div>
 
         {/* Main headline */}
         <motion.h1
-          className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-800 mb-6 leading-tight font-heading"
+          className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold text-gray-800 mb-4 sm:mb-6 leading-tight font-heading px-2"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
         >
-          <span className="block mb-2">Labrish</span>
-          <AnimatedTextCycle
-            words={rotatingWords}
-            className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent"
-            interval={3500}
-          />
+          <span className="block mb-2 sm:mb-3">Labrish</span>
+          <span className="block text-2xl sm:text-3xl md:text-5xl lg:text-6xl">
+            <AnimatedTextCycle
+              words={rotatingWords}
+              className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent"
+              interval={3500}
+            />
+          </span>
         </motion.h1>
 
         {/* Description */}
         <motion.p
-          className="text-lg md:text-xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed"
+          className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
         >
-          Connect with AI voices that speak your language, tell your stories, and preserve the rich cultural heritage of the Caribbean. 
+          Connect with AI voices that speak your language, tell your stories, and preserve the rich cultural heritage of the Caribbean.
           From Jamaican Patois to Trinidadian Creole, experience authentic conversations that honor our roots.
         </motion.p>
 
         {/* Audio visualization */}
         <motion.div
-          className="flex justify-center items-end gap-1 mb-8 h-16"
+          className="flex justify-center items-end gap-0.5 sm:gap-1 mb-6 sm:mb-8 h-12 sm:h-16"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.8 }}
@@ -235,7 +237,7 @@ const CaribbeanVoiceHero: React.FC = () => {
           {audioWaves.map((height, index) => (
             <motion.div
               key={index}
-              className="w-2 bg-gradient-to-t from-emerald-500 to-teal-400 rounded-full"
+              className="w-1.5 sm:w-2 bg-gradient-to-t from-emerald-500 to-teal-400 rounded-full"
               style={{ height: `${height}%` }}
               animate={{
                 height: [`${height}%`, `${Math.random() * 80 + 20}%`, `${height}%`]
@@ -252,14 +254,14 @@ const CaribbeanVoiceHero: React.FC = () => {
 
         {/* CTA Buttons */}
         <motion.div
-          className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+          className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 1.0 }}
         >
           <Button
             size="lg"
-            className="group relative overflow-hidden bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-8 py-6 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+            className="group relative overflow-hidden bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white w-full sm:w-auto px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
@@ -286,7 +288,7 @@ const CaribbeanVoiceHero: React.FC = () => {
           <Button
             variant="outline"
             size="lg"
-            className="border-2 border-emerald-400/50 text-emerald-400 hover:bg-emerald-400/10 px-8 py-6 text-lg font-semibold rounded-full backdrop-blur-sm"
+            className="border-2 border-emerald-400/50 text-emerald-400 hover:bg-emerald-400/10 w-full sm:w-auto px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg font-semibold rounded-full backdrop-blur-sm"
           >
             Explore Stories
           </Button>
@@ -294,39 +296,39 @@ const CaribbeanVoiceHero: React.FC = () => {
 
         {/* Social proof stats */}
         <motion.div
-          className="mt-12 grid grid-cols-3 gap-6 max-w-2xl mx-auto"
+          className="mt-8 sm:mt-12 grid grid-cols-3 gap-3 sm:gap-6 max-w-2xl mx-auto px-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 1.2 }}
         >
           <div className="text-center">
-            <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-1">
+            <div className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-1">
               10K+
             </div>
-            <p className="text-xs md:text-sm text-muted-foreground">Active Users</p>
+            <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Active Users</p>
           </div>
           <div className="text-center">
-            <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-1">
+            <div className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-1">
               50K+
             </div>
-            <p className="text-xs md:text-sm text-muted-foreground">Stories Created</p>
+            <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Stories Created</p>
           </div>
           <div className="text-center">
-            <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-1">
+            <div className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-1">
               15+
             </div>
-            <p className="text-xs md:text-sm text-muted-foreground">Voice Accents</p>
+            <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Voice Accents</p>
           </div>
         </motion.div>
 
         {/* Cultural preservation message */}
         <motion.div
-          className="mt-8 p-6 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 backdrop-blur-sm border border-emerald-400/20"
+          className="mt-6 sm:mt-8 mx-4 p-4 sm:p-6 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 backdrop-blur-sm border border-emerald-400/20"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 1.4 }}
         >
-          <p className="text-sm md:text-base text-muted-foreground">
+          <p className="text-xs sm:text-sm md:text-base text-muted-foreground leading-relaxed">
             🌴 <strong className="text-emerald-400">Preserving Culture:</strong> Every conversation helps keep Caribbean languages and stories alive for future generations
           </p>
         </motion.div>
