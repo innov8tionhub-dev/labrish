@@ -160,17 +160,6 @@ const CaribbeanVoiceHero: React.FC = () => {
         {particles}
       </div>
 
-      {/* Bolt Badge */}
-      <a 
-        href="https://www.bolt.new" 
-        target="_blank" 
-        rel="noopener noreferrer" 
-        className="absolute top-20 right-4 z-30 hover:opacity-90 transition-opacity"
-        aria-label="Powered by Bolt.new"
-      >
-        <img src="/boltbadge.png" alt="" className="w-16 h-16 md:w-20 md:h-20" />
-      </a>
-
       {/* Main content */}
       <div className="relative z-20 text-center px-4 max-w-6xl mx-auto">
         {/* Cultural icons */}
