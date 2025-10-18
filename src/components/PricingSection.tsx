@@ -63,10 +63,8 @@ const PricingSection: React.FC = () => {
       features: [
         "5 AI-voiced stories per month",
         "Basic Caribbean accent library",
-        "Community sharing",
         "Standard audio quality (MP3)",
-        "Basic voice customization",
-        "Email support"
+        "Basic voice customization"
       ],
       limitations: [
         "Limited to 500 characters per story",
@@ -82,6 +80,7 @@ const PricingSection: React.FC = () => {
       price: "$19.99",
       yearlyPrice: "$199.99",
       priceId: stripeProducts[0]?.priceId,
+      yearlyPriceId: stripeProducts[1]?.priceId,
       description: "Unlimited storytelling with premium features",
       popular: true,
       features: [
@@ -90,7 +89,6 @@ const PricingSection: React.FC = () => {
         "Custom voice training",
         "HD audio quality (WAV/MP3)",
         "Advanced voice settings",
-        "Priority support",
         "Commercial usage rights",
         "Audio download & sharing",
         "Story analytics",
@@ -101,29 +99,6 @@ const PricingSection: React.FC = () => {
       color: "from-emerald-500 to-teal-500",
       badge: "Most Popular",
       savings: billingCycle === 'yearly' ? "Save $40/year" : null
-    },
-    {
-      name: "Enterprise",
-      price: "Custom",
-      yearlyPrice: "Custom",
-      description: "Tailored solutions for businesses and organizations",
-      popular: false,
-      features: [
-        "Everything in Pro",
-        "API access & integration",
-        "Custom accent development",
-        "White-label solutions",
-        "Dedicated account manager",
-        "SLA guarantees",
-        "Advanced analytics",
-        "Team collaboration tools",
-        "Custom voice models",
-        "Volume discounts"
-      ],
-      cta: "Contact Sales",
-      icon: <Crown className="w-6 h-6" />,
-      color: "from-purple-500 to-indigo-500",
-      isEnterprise: true
     }
   ];
 
@@ -132,11 +107,6 @@ const PricingSection: React.FC = () => {
     return billingCycle === 'yearly' ? plan.yearlyPrice : plan.price;
   };
 
-  const handleContactSales = () => {
-    track('enterprise_contact_clicked');
-    // In a real app, this would open a contact form or redirect to a contact page
-    window.open('mailto:sales@labrish.com?subject=Enterprise Inquiry', '_blank');
-  };
 
   return (
     <section id="pricing" className="py-12 sm:py-16 md:py-20 bg-gradient-to-br from-caribbean-50 to-white scroll-mt-20">
@@ -188,7 +158,7 @@ const PricingSection: React.FC = () => {
           <p>Free users are limited to 5 generations per month. Pro subscribers get 40 per month.</p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-7xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 max-w-4xl mx-auto">
           {plans.map((plan, index) => (
             <motion.div
               key={plan.name}
@@ -263,15 +233,16 @@ const PricingSection: React.FC = () => {
                 {/* CTA Button */}
                 <button
                   onClick={() => {
-                    if (plan.isEnterprise) {
-                      handleContactSales();
-                    } else if (plan.priceId) {
-                      handleSubscribe(plan.priceId, plan.name);
+                    if (plan.priceId) {
+                      const selectedPriceId = billingCycle === 'yearly' && plan.yearlyPriceId
+                        ? plan.yearlyPriceId
+                        : plan.priceId;
+                      handleSubscribe(selectedPriceId, plan.name);
                     } else {
                       navigate('/signup');
                     }
                   }}
-                  disabled={loading === plan.priceId}
+                  disabled={loading !== null && (loading === plan.priceId || loading === plan.yearlyPriceId)}
                   className={`w-full py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg transition-all duration-300 flex items-center justify-center gap-2 ${
                     plan.popular
                       ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl'

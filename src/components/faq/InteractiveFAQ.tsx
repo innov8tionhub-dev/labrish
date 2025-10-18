@@ -72,7 +72,7 @@ const InteractiveFAQ: React.FC = () => {
     {
       id: '4',
       question: "What are the differences between subscription plans?",
-      answer: "Labrish offers three plans: Starter (Free) includes 5 AI-voiced stories per month with basic Caribbean accents and community sharing. Labrish Pro ($19.99/month) provides unlimited stories, full accent library access, custom voice training, HD audio quality, commercial usage rights, and priority support. Enterprise (Custom pricing) includes everything in Pro plus API access, custom accent development, white-label solutions, and dedicated account management. Annual subscriptions save 17% on Pro plans.",
+      answer: "Labrish offers two plans: Starter (Free) includes 5 AI-voiced stories per month with basic Caribbean accents and standard audio quality. Labrish Pro ($19.99/month or $199.99/year) provides unlimited stories, full accent library access (8+ voices), custom voice training, HD audio quality, commercial usage rights, audio download & sharing, story analytics, and batch text processing. Annual subscriptions save $40/year.",
       category: 'billing',
       tags: ['pricing', 'plans', 'features', 'comparison'],
       popularity: 76,

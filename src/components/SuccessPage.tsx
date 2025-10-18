@@ -52,11 +52,11 @@ const SuccessPage: React.FC = () => {
             <div className="bg-gray-50 rounded-lg p-4">
               <h3 className="font-semibold text-gray-800 mb-2">What's Next?</h3>
               <ul className="text-sm text-gray-600 space-y-1 text-left list-none">
-                <li>• 40 AI-voiced stories per month</li>
-                <li>• Full Caribbean accent library</li>
+                <li>• Unlimited AI-voiced stories</li>
+                <li>• Full Caribbean accent library (8+ voices)</li>
                 <li>• Custom voice training capabilities</li>
-                <li>• HD audio quality</li>
-                <li>• Priority support</li>
+                <li>• HD audio quality (WAV/MP3)</li>
+                <li>• Commercial usage rights</li>
               </ul>
             </div>
 

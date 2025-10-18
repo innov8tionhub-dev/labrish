@@ -1,7 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ExternalLink } from 'lucide-react';
+import LegalModal from './LegalModal';
 
 const Footer: React.FC = () => {
+  const [legalModal, setLegalModal] = useState<{ isOpen: boolean; type: 'privacy' | 'terms' | null }>({
+    isOpen: false,
+    type: null
+  });
+
+  const openLegalModal = (type: 'privacy' | 'terms') => {
+    setLegalModal({ isOpen: true, type });
+  };
+
+  const closeLegalModal = () => {
+    setLegalModal({ isOpen: false, type: null });
+  };
+
   return (
     <footer className="bg-white/80 backdrop-blur-sm border-t border-gray-200">
       <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-10 md:py-12">
@@ -45,10 +59,20 @@ const Footer: React.FC = () => {
             <h4 className="font-heading text-base sm:text-lg text-gray-800">Legal</h4>
             <ul className="space-y-2 sm:space-y-3">
               <li>
-                <a href="#" className="font-body text-sm sm:text-base text-gray-600 hover:text-gray-800 transition-colors">Privacy Policy</a>
+                <button
+                  onClick={() => openLegalModal('privacy')}
+                  className="font-body text-sm sm:text-base text-gray-600 hover:text-gray-800 transition-colors text-left"
+                >
+                  Privacy Policy
+                </button>
               </li>
               <li>
-                <a href="#" className="font-body text-sm sm:text-base text-gray-600 hover:text-gray-800 transition-colors">Terms of Service</a>
+                <button
+                  onClick={() => openLegalModal('terms')}
+                  className="font-body text-sm sm:text-base text-gray-600 hover:text-gray-800 transition-colors text-left"
+                >
+                  Terms of Service
+                </button>
               </li>
             </ul>
           </div>
@@ -71,6 +95,15 @@ const Footer: React.FC = () => {
           </a>
         </div>
       </div>
+
+      {/* Legal Modal */}
+      {legalModal.type && (
+        <LegalModal
+          isOpen={legalModal.isOpen}
+          onClose={closeLegalModal}
+          type={legalModal.type}
+        />
+      )}
     </footer>
   );
 };

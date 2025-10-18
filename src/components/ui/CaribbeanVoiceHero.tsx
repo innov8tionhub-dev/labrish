@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Mic, Volume2, Globe, Heart, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 interface AnimatedTextCycleProps {
   words: string[];
@@ -71,6 +72,7 @@ const AnimatedTextCycle: React.FC<AnimatedTextCycleProps> = ({
 };
 
 const CaribbeanVoiceHero: React.FC = () => {
+  const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
   const [audioWaves, setAudioWaves] = useState<number[]>([]);
 
@@ -264,6 +266,7 @@ const CaribbeanVoiceHero: React.FC = () => {
             className="group relative overflow-hidden bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white w-full sm:w-auto px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
+            onClick={() => navigate('/text-to-speech')}
           >
             <motion.span
               className="relative z-10 flex items-center gap-2"
@@ -289,6 +292,12 @@ const CaribbeanVoiceHero: React.FC = () => {
             variant="outline"
             size="lg"
             className="border-2 border-emerald-400/50 text-emerald-400 hover:bg-emerald-400/10 w-full sm:w-auto px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg font-semibold rounded-full backdrop-blur-sm"
+            onClick={() => {
+              const storiesSection = document.getElementById('stories');
+              if (storiesSection) {
+                storiesSection.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
           >
             Explore Stories
           </Button>

@@ -8,8 +8,14 @@ export interface StripeProduct {
 export const stripeProducts: StripeProduct[] = [
   {
     priceId: 'price_1RczlFBXth0JnBQhx6IQppen',
-    name: 'Labrish Pro',
-    description: 'Labrish Subcription',
+    name: 'Labrish Pro Monthly',
+    description: 'Labrish Subscription - Monthly',
+    mode: 'subscription'
+  },
+  {
+    priceId: 'price_annual_placeholder',
+    name: 'Labrish Pro Annual',
+    description: 'Labrish Subscription - Annual',
     mode: 'subscription'
   }
 ];
