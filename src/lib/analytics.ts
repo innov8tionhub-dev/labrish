@@ -2,6 +2,8 @@
  * Privacy-focused analytics and user behavior tracking
  */
 
+import { useCallback } from 'react';
+
 interface AnalyticsEvent {
   name: string;
   properties?: Record<string, any>;
@@ -231,18 +233,18 @@ export const analytics = new Analytics();
 
 // React hook for analytics
 export const useAnalytics = () => {
-  const trackEvent = (name: string, properties?: Record<string, any>) => {
+  const trackEvent = useCallback((name: string, properties?: Record<string, any>) => {
     analytics.track(name, properties);
-  };
+  }, []);
 
-  const trackPageView = (path: string, title?: string) => {
+  const trackPageView = useCallback((path: string, title?: string) => {
     analytics.pageView(path, title);
-  };
+  }, []);
 
-  const trackTiming = (name: string, startTime: number, category?: string) => {
+  const trackTiming = useCallback((name: string, startTime: number, category?: string) => {
     const duration = Date.now() - startTime;
     analytics.timing(name, duration, category);
-  };
+  }, []);
 
   return {
     track: trackEvent,

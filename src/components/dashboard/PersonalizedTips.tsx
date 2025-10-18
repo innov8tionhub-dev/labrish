@@ -97,7 +97,7 @@ const PersonalizedTips: React.FC<PersonalizedTipsProps> = ({ userStats, onNaviga
 
     const activeTips = allTips.filter(tip => !dismissedTips.includes(tip.id));
     setTips(activeTips);
-  }, [userStats, dismissedTips, onNavigate]);
+  }, [userStats.storiesCreated, userStats.audioGenerated, userStats.totalPlays, dismissedTips, onNavigate]);
 
   const handleDismiss = () => {
     if (tips[currentTipIndex]) {

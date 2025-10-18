@@ -2,6 +2,8 @@
  * SEO optimization utilities
  */
 
+import { useCallback } from 'react';
+
 interface MetaTag {
   name?: string;
   property?: string;
@@ -197,17 +199,17 @@ export const seoManager = new SEOManager();
 
 // React hook for SEO
 export const useSEO = () => {
-  const updateSEO = (config: Partial<SEOConfig>) => {
+  const updateSEO = useCallback((config: Partial<SEOConfig>) => {
     seoManager.updatePageSEO(config);
-  };
+  }, []);
 
-  const setPageTitle = (title: string) => {
+  const setPageTitle = useCallback((title: string) => {
     document.title = title;
-  };
+  }, []);
 
-  const setPageDescription = (description: string) => {
+  const setPageDescription = useCallback((description: string) => {
     seoManager.updatePageSEO({ description });
-  };
+  }, []);
 
   return {
     updateSEO,
