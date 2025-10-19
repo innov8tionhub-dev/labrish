@@ -82,27 +82,40 @@ Deno.serve(async (req) => {
 
     const voicesData = await elevenLabsResponse.json();
 
-    // Transform the voices data to match our interface
-    const voices = voicesData.voices?.map((voice: any) => ({
-      voice_id: voice.voice_id,
-      name: voice.name,
-      category: voice.category || 'general',
-      description: voice.description,
-      preview_url: voice.preview_url,
-      available_for_tiers: voice.available_for_tiers,
-      settings: voice.settings,
-    })) || [];
+    // Blocked voices that should not be available
+    const blockedVoices = ['Maurice', 'Monique VC'];
+
+    // Transform and filter the voices data
+    const voices = voicesData.voices
+      ?.filter((voice: any) => !blockedVoices.includes(voice.name))
+      .map((voice: any) => ({
+        voice_id: voice.voice_id,
+        name: voice.name,
+        category: voice.category || 'general',
+        description: voice.description || `${voice.name} voice`,
+        preview_url: voice.preview_url,
+        available_for_tiers: voice.available_for_tiers || [],
+        settings: voice.settings,
+        labels: voice.labels || {},
+        samples: voice.samples || [],
+        high_quality_base_model_ids: voice.high_quality_base_model_ids || [],
+        safety_control: voice.safety_control,
+        voice_verification: voice.voice_verification,
+        sharing: voice.sharing,
+      })) || [];
 
     // Add some Caribbean-focused voices to the top if available
-    const caribbeanVoices = voices.filter((voice: any) => 
+    const caribbeanVoices = voices.filter((voice: any) =>
       voice.name.toLowerCase().includes('caribbean') ||
       voice.name.toLowerCase().includes('jamaican') ||
       voice.name.toLowerCase().includes('island') ||
       voice.description?.toLowerCase().includes('caribbean') ||
-      voice.description?.toLowerCase().includes('jamaican')
+      voice.description?.toLowerCase().includes('jamaican') ||
+      voice.labels?.accent?.toLowerCase().includes('caribbean') ||
+      voice.labels?.accent?.toLowerCase().includes('jamaican')
     );
 
-    const otherVoices = voices.filter((voice: any) => 
+    const otherVoices = voices.filter((voice: any) =>
       !caribbeanVoices.some((cv: any) => cv.voice_id === voice.voice_id)
     );
 

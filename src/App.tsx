@@ -5,6 +5,7 @@ import { ToastContainer, useToast } from '@/components/common/Toast';
 import { useSEO, pageConfigs } from '@/lib/seo';
 import LoadingSpinner from './components/common/LoadingSpinner';
 import ProtectedRoute from './components/common/ProtectedRoute';
+import { AuthProvider } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
 import StickyCTABar from './components/StickyCTABar';
 import CaribbeanVoiceHero from './components/ui/CaribbeanVoiceHero';
@@ -145,7 +146,7 @@ const AppContent: React.FC = () => {
   const { toasts, dismissToast } = useToast();
 
   return (
-    <>
+    <AuthProvider>
       <Router>
         <Suspense fallback={
           <div className="min-h-screen flex items-center justify-center">
@@ -168,7 +169,7 @@ const AppContent: React.FC = () => {
         </Suspense>
       </Router>
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
-    </>
+    </AuthProvider>
   );
 };
 

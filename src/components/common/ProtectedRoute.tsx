@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from './LoadingSpinner';
 
 interface ProtectedRouteProps {
@@ -8,43 +8,14 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const [loading, setLoading] = useState(true);
-  const [authenticated, setAuthenticated] = useState(false);
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-
-        if (!user) {
-          navigate('/login', { replace: true });
-          return;
-        }
-
-        setAuthenticated(true);
-      } catch (error) {
-        console.error('Authentication check failed:', error);
-        navigate('/login', { replace: true });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
-        navigate('/login', { replace: true });
-      } else if (event === 'SIGNED_IN') {
-        setAuthenticated(true);
-      }
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, [navigate]);
+    if (!loading && !user) {
+      navigate('/login', { replace: true });
+    }
+  }, [user, loading, navigate]);
 
   if (loading) {
     return (
@@ -54,7 +25,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
 
-  if (!authenticated) {
+  if (!user) {
     return null;
   }
 

@@ -13,6 +13,18 @@ export interface Voice {
     style?: number;
     use_speaker_boost?: boolean;
   };
+  labels?: {
+    accent?: string;
+    description?: string;
+    age?: string;
+    gender?: string;
+    use_case?: string;
+  };
+  samples?: any[];
+  high_quality_base_model_ids?: string[];
+  safety_control?: any;
+  voice_verification?: any;
+  sharing?: any;
 }
 
 export interface VoiceSettings {

@@ -749,30 +749,58 @@ const TextToSpeechPage: React.FC = () => {
                           <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
                         </div>
                       ) : (
-                        <div className="space-y-3 max-h-64 overflow-y-auto">
-                          {availableVoices.slice(0, 8).map((voice) => (
+                        <div className="space-y-3 max-h-96 overflow-y-auto">
+                          {availableVoices.slice(0, 12).map((voice) => (
                             <div
                               key={voice.voice_id}
-                              className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                              className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                                 selectedVoice === voice.voice_id
                                   ? 'border-emerald-500 bg-emerald-50'
                                   : 'border-gray-200 hover:border-emerald-300'
                               }`}
                               onClick={() => setSelectedVoice(voice.voice_id)}
                             >
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="font-medium text-gray-800">{voice.name}</p>
-                                  <p className="text-sm text-gray-600">{voice.category}</p>
+                              <div className="space-y-2">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <p className="font-medium text-gray-800">{voice.name}</p>
+                                      {voice.labels?.accent && (
+                                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
+                                          {voice.labels.accent}
+                                        </span>
+                                      )}
+                                    </div>
+                                    {voice.description && (
+                                      <p className="text-sm text-gray-600 mt-1">{voice.description}</p>
+                                    )}
+                                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                      {voice.labels?.gender && (
+                                        <span className="text-xs text-gray-500">
+                                          {voice.labels.gender}
+                                        </span>
+                                      )}
+                                      {voice.labels?.age && (
+                                        <span className="text-xs text-gray-500">
+                                          • {voice.labels.age}
+                                        </span>
+                                      )}
+                                      {voice.category && (
+                                        <span className="text-xs text-gray-500">
+                                          • {voice.category}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {voice.preview_url && (
+                                    <VoicePlayer
+                                      url={voice.preview_url}
+                                      name={voice.name}
+                                      size="sm"
+                                      variant={selectedVoice === voice.voice_id ? "default" : "outline"}
+                                    />
+                                  )}
                                 </div>
-                                {voice.preview_url && (
-                                  <VoicePlayer 
-                                    url={voice.preview_url}
-                                    name={voice.name}
-                                    size="sm"
-                                    variant={selectedVoice === voice.voice_id ? "default" : "outline"}
-                                  />
-                                )}
                               </div>
                             </div>
                           ))}

@@ -18,8 +18,6 @@ import {
   Activity,
   Calendar,
   Bookmark,
-  Headphones,
-  Palette,
   Bell,
   Shield,
   ExternalLink,
@@ -32,9 +30,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAnalytics } from '@/lib/analytics';
 import { useOfflineSupport } from '@/lib/offlineSupport';
+import { createBillingPortalSession } from '@/lib/stripe';
 import { useDashboardStats, useMonthlyStats, useRecentActivities } from '@/hooks/useDashboardStats';
 import EmptyState from '@/components/common/EmptyState';
 import PersonalizedTips from '@/components/dashboard/PersonalizedTips';
+import { useToast } from '@/components/common/Toast';
 import StatsCard from '@/components/dashboard/StatsCard';
 
 interface SubscriptionData {
@@ -221,34 +221,6 @@ const Dashboard: React.FC = () => {
       route: '/text-to-speech'
     },
     {
-      id: 'voice-cloning',
-      title: 'Voice Cloning Studio',
-      description: 'Train your own AI voice model',
-      icon: <Headphones className="w-6 h-6" />,
-      action: () => {
-        track('quick_link_clicked', { link: 'voice_cloning' });
-        alert('Voice Cloning Studio is coming soon!');
-      },
-      color: 'from-purple-500 to-indigo-500',
-      status: 'pending',
-      badge: 'Coming Soon',
-      route: null
-    },
-    {
-      id: 'voice-design',
-      title: 'Voice Design Studio',
-      description: 'Create custom voices with AI',
-      icon: <Palette className="w-6 h-6" />,
-      action: () => {
-        track('quick_link_clicked', { link: 'voice_design' });
-        alert('Voice Design Studio is coming soon!');
-      },
-      color: 'from-yellow-500 to-orange-500',
-      status: 'pending',
-      badge: 'Coming Soon',
-      route: null
-    },
-    {
       id: 'analytics-overview',
       title: 'Advanced Analytics',
       description: 'Detailed insights into your content performance',
@@ -299,10 +271,17 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const openStripePortal = () => {
-    // In a real implementation, this would redirect to Stripe Customer Portal
-    track('stripe_portal_clicked');
-    window.open('https://billing.stripe.com/p/login/test_00000000000000', '_blank');
+  const { success: showSuccess, error: showError } = useToast();
+
+  const openStripePortal = async () => {
+    try {
+      track('stripe_portal_clicked');
+      const { url } = await createBillingPortalSession();
+      window.location.href = url;
+    } catch (error: any) {
+      console.error('Failed to open billing portal:', error);
+      showError('Failed to open billing portal', error.message || 'Please try again later');
+    }
   };
 
   if (loading) {
