@@ -45,13 +45,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { data: subscription } = await supabase
-      .from('stripe_user_subscriptions')
-      .select('stripe_customer_id')
+    const { data: customer } = await supabase
+      .from('stripe_customers')
+      .select('customer_id')
       .eq('user_id', user.id)
+      .is('deleted_at', null)
       .maybeSingle();
 
-    if (!subscription || !subscription.stripe_customer_id) {
+    if (!customer || !customer.customer_id) {
       return new Response(
         JSON.stringify({ error: 'No Stripe customer found. Please subscribe first.' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -67,7 +68,7 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        customer: subscription.stripe_customer_id,
+        customer: customer.customer_id,
         return_url: return_url || `${Deno.env.get('SITE_URL') || 'http://localhost:5173'}/dashboard`,
       }).toString(),
     });
