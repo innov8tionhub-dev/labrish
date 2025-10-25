@@ -18,6 +18,7 @@ import PricingSection from './components/PricingSection';
 import TestimonialsSection from './components/TestimonialsSection';
 import FaqSection from './components/FaqSection';
 import Footer from './components/Footer';
+import FeedbackWidget from './components/feedback/FeedbackWidget';
 
 const LoginPage = lazy(() => import('./components/auth/LoginPage'));
 const SignupPage = lazy(() => import('./components/auth/SignupPage'));
@@ -30,6 +31,7 @@ const AdvancedAnalyticsDashboard = lazy(() => import('./components/analytics/Adv
 const EnhancedSecurityDashboard = lazy(() => import('./components/auth/EnhancedAuthentication'));
 const VoiceCloningStudio = lazy(() => import('./components/voice/VoiceCloningStudio'));
 const VoiceDesignStudio = lazy(() => import('./components/voice/VoiceDesignStudio'));
+const FeatureRequestBoard = lazy(() => import('./components/feedback/FeatureRequestBoard'));
 
 const HomePage: React.FC = () => {
   const { updateSEO } = useSEO();
@@ -142,6 +144,20 @@ const VoiceDesignPage: React.FC = () => {
   return <VoiceDesignStudio />;
 };
 
+const FeedbackPage: React.FC = () => {
+  const { updateSEO } = useSEO();
+
+  React.useEffect(() => {
+    updateSEO({
+      title: 'Feature Requests - Labrish',
+      description: 'Vote on features you\'d like to see in Labrish. Your feedback shapes the future of our Caribbean Voice AI Platform.',
+      keywords: ['feature requests', 'feedback', 'roadmap', 'community'],
+    });
+  }, [updateSEO]);
+
+  return <FeatureRequestBoard />;
+};
+
 const AppContent: React.FC = () => {
   const { toasts, dismissToast } = useToast();
 
@@ -160,12 +176,14 @@ const AppContent: React.FC = () => {
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/pricing" element={<PricingPageWrapper />} />
+            <Route path="/feedback" element={<ProtectedRoute><FeedbackPage /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
             <Route path="/security" element={<ProtectedRoute><SecurityPage /></ProtectedRoute>} />
             <Route path="/success" element={<ProtectedRoute><SuccessPage /></ProtectedRoute>} />
             <Route path="/text-to-speech" element={<ProtectedRoute><TextToSpeechPageWrapper /></ProtectedRoute>} />
           </Routes>
+          <FeedbackWidget />
         </Suspense>
       </Router>
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
