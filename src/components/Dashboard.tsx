@@ -24,7 +24,8 @@ import {
   Zap,
   CreditCard,
   Play,
-  Users
+  Users,
+  Sparkles
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -64,6 +65,12 @@ interface GenerationStats {
   percentage: number;
 }
 
+interface AIAssistStats {
+  current: number;
+  limit: number;
+  percentage: number;
+}
+
 const Dashboard: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
@@ -73,6 +80,14 @@ const Dashboard: React.FC = () => {
     limit: 5,
     percentage: 0
   });
+  const [aiAssistStats, setAIAssistStats] = useState<AIAssistStats>({
+    current: 0,
+    limit: 5,
+    percentage: 0
+  });
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [lastStory, setLastStory] = useState<any | null>(null);
+  const [loadingLastStory, setLoadingLastStory] = useState(true);
 
 
   const navigate = useNavigate();
@@ -91,6 +106,8 @@ const Dashboard: React.FC = () => {
       if (user) {
         await fetchSubscription();
         await loadGenerationStats();
+        await loadAIAssistStats();
+        await loadLastStory();
         track('dashboard_viewed', { user_id: user.id });
       }
       setLoading(false);
@@ -113,6 +130,71 @@ const Dashboard: React.FC = () => {
       }
     } catch (error) {
       console.error('Error fetching subscription:', error);
+    }
+  };
+
+  const loadLastStory = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('stories')
+        .select('id, title, content, category, voice_id, voice_settings, updated_at')
+        .eq('user_id', user?.id)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && data) {
+        setLastStory(data);
+      }
+    } catch (error) {
+      console.error('Failed to load last story:', error);
+    } finally {
+      setLoadingLastStory(false);
+    }
+  };
+
+  const handleContinueLastStory = () => {
+    if (lastStory) {
+      track('continue_last_story_clicked', { story_id: lastStory.id });
+      navigate(`/text-to-speech?continue=${lastStory.id}`);
+    }
+  };
+
+  const loadAIAssistStats = async () => {
+    try {
+      const { data: subscription } = await supabase
+        .from('stripe_user_subscriptions')
+        .select('subscription_status')
+        .maybeSingle();
+
+      const isPro = subscription?.subscription_status === 'active' ||
+        subscription?.subscription_status === 'trialing';
+
+      const limit = isPro ? 50 : 5;
+
+      const now = new Date();
+      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+      const { count } = await supabase
+        .from('ai_assist_usage')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user?.id)
+        .eq('month', currentMonth);
+
+      const assistCount = count || 0;
+      const percentage = Math.min(Math.round((assistCount / limit) * 100), 100);
+
+      setAIAssistStats({
+        current: assistCount,
+        limit,
+        percentage
+      });
+
+      if (!isPro && assistCount >= Math.floor(limit * 0.8)) {
+        setShowUpgradeModal(true);
+      }
+    } catch (error) {
+      console.error('Failed to load AI assist stats:', error);
     }
   };
 
@@ -330,7 +412,7 @@ const Dashboard: React.FC = () => {
               </div>
 
               {/* Enhanced Quick Stats */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-emerald-600">{statsLoading ? '...' : dashboardStats.storiesCreated}</div>
                   <div className="text-xs text-gray-500">Stories</div>
@@ -355,6 +437,13 @@ const Dashboard: React.FC = () => {
                   <div className="text-xs text-gray-500">Total Plays</div>
                   <div className="text-xs text-pink-600">
                     {dashboardStats.totalPlays > 0 ? 'Keep sharing!' : 'Share stories'}
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-indigo-600">{aiAssistStats.current}/{aiAssistStats.limit}</div>
+                  <div className="text-xs text-gray-500">AI Assists</div>
+                  <div className="text-xs text-indigo-600">
+                    {aiAssistStats.current >= aiAssistStats.limit ? 'Limit reached' : `${aiAssistStats.limit - aiAssistStats.current} left`}
                   </div>
                 </div>
               </div>
@@ -382,6 +471,42 @@ const Dashboard: React.FC = () => {
                 }}
                 onNavigate={navigate}
               />
+
+              {/* Continue Last Story */}
+              {!loadingLastStory && lastStory && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.05 }}
+                >
+                  <div
+                    className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 backdrop-blur-sm rounded-xl p-6 border-2 border-emerald-300/50 hover:border-emerald-400 transition-all cursor-pointer group"
+                    onClick={handleContinueLastStory}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Edit className="w-5 h-5 text-emerald-600" />
+                          <h3 className="font-heading text-lg text-gray-800">Continue Last Story</h3>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-1">
+                          <span className="font-medium">{lastStory.title || 'Untitled Story'}</span>
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Last edited {new Date(lastStory.updated_at).toLocaleDateString()} • {lastStory.content?.length || 0} characters
+                        </p>
+                      </div>
+                      <Button
+                        className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 group-hover:scale-105 transition-transform"
+                        size="lg"
+                      >
+                        <Play className="w-4 h-4 mr-2" />
+                        Continue
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
 
               {/* Enhanced Quick Links */}
               <motion.div
@@ -487,8 +612,89 @@ const Dashboard: React.FC = () => {
               </motion.div>
             </div>
 
+            {/* Upgrade Banner for Free Users */}
+            {getSubscriptionStatus() === 'Free' && generationStats.percentage >= 80 && (
+              <motion.div
+                className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 backdrop-blur-sm rounded-xl p-6 border border-purple-300 mb-8"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                    <Crown className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-heading text-lg text-gray-800 mb-2">Upgrade to Labrish Pro</h3>
+                    <p className="text-sm text-gray-600 mb-3">
+                      You've used {generationStats.current} of {generationStats.limit} TTS generations and {aiAssistStats.current} of {aiAssistStats.limit} AI assists.
+                      Upgrade for 40 generations and 50 AI assists per month!
+                    </p>
+                    <Button
+                      onClick={() => navigate('/pricing')}
+                      className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                      size="sm"
+                    >
+                      Unlock Pro Features
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             {/* Enhanced Sidebar */}
             <div className="space-y-6">
+              {/* AI Assist Stats */}
+              <motion.div
+                className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-emerald-200/50"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.15 }}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <Sparkles className="w-5 h-5 text-indigo-600" />
+                  <h3 className="font-heading text-lg text-gray-800">AI Assists</h3>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-600">Used this month</span>
+                      <span className="font-medium text-gray-800">{aiAssistStats.current}/{aiAssistStats.limit}</span>
+                    </div>
+                    <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${
+                          aiAssistStats.percentage >= 100
+                            ? 'bg-red-500'
+                            : aiAssistStats.percentage >= 80
+                            ? 'bg-yellow-500'
+                            : 'bg-gradient-to-r from-indigo-500 to-purple-500'
+                        }`}
+                        style={{ width: `${aiAssistStats.percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-gray-500">
+                    {getSubscriptionStatus() === 'Free' ? (
+                      <span>Includes story generation, expansion, dialect help, and more!</span>
+                    ) : (
+                      <span>Pro includes 50 AI assists per month for all features</span>
+                    )}
+                  </div>
+                </div>
+
+                {getSubscriptionStatus() === 'Free' && aiAssistStats.percentage >= 80 && (
+                  <Button
+                    onClick={() => navigate('/pricing')}
+                    className="w-full mt-4 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600"
+                    size="sm"
+                  >
+                    Upgrade for More AI Assists
+                  </Button>
+                )}
+              </motion.div>
+
               {/* Generation Stats */}
               <motion.div
                 className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-emerald-200/50"
