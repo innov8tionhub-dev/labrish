@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Volume2, Download, Play, Pause, Square, Loader2, FileText, Settings, Save, Upload, Book, AudioWaveform as Waveform, Share2, ChevronLeft, BookOpen } from 'lucide-react';
+import { Mic, Volume2, Download, Play, Pause, Square, Loader2, FileText, Settings, Save, Upload, Book, AudioWaveform as Waveform, Share2, ChevronLeft, BookOpen, Maximize2, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { generateSpeech, getAvailableVoices, Voice } from '@/lib/elevenlabs';
 import { supabase } from '@/lib/supabase';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import FileUploadZone from '@/components/FileUploadZone';
 import StoryLibrary from '@/components/StoryLibrary';
 import { saveStory, Story, STORY_CATEGORIES } from '@/lib/storyLibrary';
@@ -17,6 +17,11 @@ import VoicePlayer from '@/components/VoicePlayer';
 import { Crown } from 'lucide-react';
 import { logAudioGeneration, logStoryCreated, logStoryShared } from '@/lib/activityLogger';
 import EnhancedAudioPlayer from '@/components/EnhancedAudioPlayer';
+import { StoryPromptGenerator } from '@/components/ai/StoryPromptGenerator';
+import { DialectEnhancer } from '@/components/ai/DialectEnhancer';
+import { StoryExpander } from '@/components/ai/StoryExpander';
+import { CulturalContextPanel } from '@/components/ai/CulturalContextPanel';
+import { StoryPolisher } from '@/components/ai/StoryPolisher';
 
 interface VoiceSettings {
   stability: number;
@@ -40,6 +45,8 @@ const TextToSpeechPage: React.FC = () => {
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [showTemplateGallery, setShowTemplateGallery] = useState(false);
+  const [showExpander, setShowExpander] = useState(false);
+  const [showCulturalContext, setShowCulturalContext] = useState(false);
   const [waveformData, setWaveformData] = useState<number[]>([]);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -67,6 +74,7 @@ const TextToSpeechPage: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { isOnline, queueSize } = useOfflineSupport();
 
   // Memory leak fix: Clean up audio URLs
@@ -192,6 +200,40 @@ const TextToSpeechPage: React.FC = () => {
       });
     }
   }, [audioBlob]);
+
+  // Handle continue story from dashboard
+  useEffect(() => {
+    const continueStoryId = searchParams.get('continue');
+    if (continueStoryId && user) {
+      const loadStory = async () => {
+        try {
+          const { data: story } = await supabase
+            .from('stories')
+            .select('*')
+            .eq('id', continueStoryId)
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          if (story) {
+            setText(story.content || '');
+            setStoryTitle(story.title || '');
+            setStoryCategory(story.category || 'folklore');
+            setStoryTags(story.tags || []);
+            if (story.voice_id) {
+              setSelectedVoice(story.voice_id);
+            }
+            if (story.voice_settings) {
+              setVoiceSettings(story.voice_settings);
+            }
+            setEditingStory(story);
+          }
+        } catch (error) {
+          console.error('Failed to load story:', error);
+        }
+      };
+      loadStory();
+    }
+  }, [searchParams, user]);
 
   const handleGenerateSpeech = async () => {
     if (!text.trim()) return;
@@ -657,6 +699,51 @@ const TextToSpeechPage: React.FC = () => {
                           </div>
                         </div>
 
+                        {/* AI-Powered Tools */}
+                        <div className="space-y-4">
+                          <StoryPromptGenerator
+                            onSelectPrompt={(prompt) => setText(prompt)}
+                          />
+
+                          <DialectEnhancer
+                            text={text}
+                            onApplySuggestion={(original, replacement) => {
+                              setText(text.replace(original, replacement));
+                            }}
+                          />
+
+                          <StoryPolisher
+                            text={text}
+                            onApplyFix={(fix, location) => {
+                              setText(text);
+                            }}
+                          />
+
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <Button
+                              onClick={() => setShowExpander(true)}
+                              variant="outline"
+                              disabled={!text.trim()}
+                              className="w-full"
+                            >
+                              <Maximize2 className="w-4 h-4 mr-2" />
+                              Expand Story
+                            </Button>
+                            <Button
+                              onClick={() => setShowCulturalContext(!showCulturalContext)}
+                              variant="outline"
+                              className="w-full"
+                            >
+                              <Info className="w-4 h-4 mr-2" />
+                              Cultural Info
+                            </Button>
+                          </div>
+
+                          {showCulturalContext && (
+                            <CulturalContextPanel onClose={() => setShowCulturalContext(false)} />
+                          )}
+                        </div>
+
                         {/* Generate Button */}
                         <Button
                           onClick={handleGenerateSpeech}
@@ -1039,6 +1126,17 @@ const TextToSpeechPage: React.FC = () => {
               <StoryTemplateGallery
                 onSelectTemplate={handleSelectTemplate}
                 onClose={() => setShowTemplateGallery(false)}
+              />
+            )}
+
+            {showExpander && (
+              <StoryExpander
+                originalText={text}
+                onAcceptExpansion={(expandedText) => {
+                  setText(expandedText);
+                  setShowExpander(false);
+                }}
+                onCancel={() => setShowExpander(false)}
               />
             )}
           </AnimatePresence>
