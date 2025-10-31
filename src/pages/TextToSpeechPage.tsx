@@ -56,6 +56,7 @@ const TextToSpeechPage: React.FC = () => {
   const [storyCategory, setStoryCategory] = useState('folklore');
   const [storyTags, setStoryTags] = useState<string[]>([]);
   const [isPublic, setIsPublic] = useState(false);
+  const [visibility, setVisibility] = useState<'private' | 'unlisted' | 'public'>('private');
   const [editingStory, setEditingStory] = useState<Story | null>(null);
 
   // Tier and usage state
@@ -219,6 +220,7 @@ const TextToSpeechPage: React.FC = () => {
             setStoryTitle(story.title || '');
             setStoryCategory(story.category || 'folklore');
             setStoryTags(story.tags || []);
+            setVisibility((story as any).visibility || (story.is_public ? 'public' : 'private'));
             if (story.voice_id) {
               setSelectedVoice(story.voice_id);
             }
@@ -368,7 +370,8 @@ const TextToSpeechPage: React.FC = () => {
         voice_id: selectedVoice,
         voice_settings: voiceSettings,
         audio_url: audioUrl || undefined,
-        is_public: isPublic,
+        is_public: visibility === 'public',
+        visibility: visibility,
         duration: duration || undefined,
       };
 
@@ -398,7 +401,7 @@ const TextToSpeechPage: React.FC = () => {
           duration: duration
         });
 
-        if (isPublic) {
+        if (visibility === 'public' || visibility === 'unlisted') {
           await logStoryShared(savedStory?.id || '', {
             title: storyTitle,
             category: storyCategory
@@ -429,11 +432,12 @@ const TextToSpeechPage: React.FC = () => {
     setStoryCategory(story.category);
     setStoryTags(story.tags);
     setIsPublic(story.is_public);
+    setVisibility((story as any).visibility || (story.is_public ? 'public' : 'private'));
     setSelectedVoice(story.voice_id);
     setVoiceSettings(story.voice_settings);
     setEditingStory(story);
     setActiveTab('create');
-    
+
     if (story.audio_url) {
       // Clean up current audio URL before setting new one
       if (audioUrl) {
@@ -1086,17 +1090,62 @@ const TextToSpeechPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id="is-public"
-                        checked={isPublic}
-                        onChange={(e) => setIsPublic(e.target.checked)}
-                        className="rounded"
-                      />
-                      <label htmlFor="is-public" className="text-sm text-gray-600">
-                        Make this story public
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Visibility
                       </label>
+                      <div className="space-y-3">
+                        <label className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                          <input
+                            type="radio"
+                            name="visibility"
+                            value="private"
+                            checked={visibility === 'private'}
+                            onChange={(e) => setVisibility('private')}
+                            className="mt-1"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-medium text-gray-800">🔒 Private</span>
+                            </div>
+                            <p className="text-xs text-gray-600">Only you can see this story</p>
+                          </div>
+                        </label>
+
+                        <label className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                          <input
+                            type="radio"
+                            name="visibility"
+                            value="unlisted"
+                            checked={visibility === 'unlisted'}
+                            onChange={(e) => setVisibility('unlisted')}
+                            className="mt-1"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-medium text-gray-800">🔗 Unlisted</span>
+                            </div>
+                            <p className="text-xs text-gray-600">Anyone with the link can view</p>
+                          </div>
+                        </label>
+
+                        <label className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                          <input
+                            type="radio"
+                            name="visibility"
+                            value="public"
+                            checked={visibility === 'public'}
+                            onChange={(e) => setVisibility('public')}
+                            className="mt-1"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-medium text-gray-800">🌍 Public</span>
+                            </div>
+                            <p className="text-xs text-gray-600">Visible in discovery feed and search</p>
+                          </div>
+                        </label>
+                      </div>
                     </div>
                   </div>
 

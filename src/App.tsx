@@ -32,6 +32,9 @@ const EnhancedSecurityDashboard = lazy(() => import('./components/auth/EnhancedA
 const VoiceCloningStudio = lazy(() => import('./components/voice/VoiceCloningStudio'));
 const VoiceDesignStudio = lazy(() => import('./components/voice/VoiceDesignStudio'));
 const FeatureRequestBoard = lazy(() => import('./components/feedback/FeatureRequestBoard'));
+const DiscoverPage = lazy(() => import('./pages/DiscoverPage'));
+const LearnPage = lazy(() => import('./pages/LearnPage'));
+const QuizPage = lazy(() => import('./pages/QuizPage'));
 
 const HomePage: React.FC = () => {
   const { updateSEO } = useSEO();
@@ -158,6 +161,48 @@ const FeedbackPage: React.FC = () => {
   return <FeatureRequestBoard />;
 };
 
+const DiscoverPageWrapper: React.FC = () => {
+  const { updateSEO } = useSEO();
+
+  React.useEffect(() => {
+    updateSEO({
+      title: 'Discover Stories - Labrish',
+      description: 'Explore trending Caribbean stories from our community. Swipe through authentic voices and cultural narratives.',
+      keywords: ['discover', 'stories', 'Caribbean content', 'community', 'trending'],
+    });
+  }, [updateSEO]);
+
+  return <DiscoverPage />;
+};
+
+const LearnPageWrapper: React.FC = () => {
+  const { updateSEO } = useSEO();
+
+  React.useEffect(() => {
+    updateSEO({
+      title: 'Learn - Labrish',
+      description: 'Learn Caribbean culture and language through interactive stories with synchronized transcripts and vocabulary building.',
+      keywords: ['learn', 'language learning', 'Caribbean culture', 'vocabulary', 'education'],
+    });
+  }, [updateSEO]);
+
+  return <LearnPage />;
+};
+
+const QuizPageWrapper: React.FC = () => {
+  const { updateSEO } = useSEO();
+
+  React.useEffect(() => {
+    updateSEO({
+      title: 'Cultural Quizzes - Labrish',
+      description: 'Test your Caribbean cultural knowledge, earn XP, and unlock achievements. Challenge yourself with daily quizzes!',
+      keywords: ['quiz', 'cultural knowledge', 'Caribbean culture', 'learning', 'achievements'],
+    });
+  }, [updateSEO]);
+
+  return <QuizPage />;
+};
+
 const AppContent: React.FC = () => {
   const { toasts, dismissToast } = useToast();
 
@@ -182,6 +227,9 @@ const AppContent: React.FC = () => {
             <Route path="/security" element={<ProtectedRoute><SecurityPage /></ProtectedRoute>} />
             <Route path="/success" element={<ProtectedRoute><SuccessPage /></ProtectedRoute>} />
             <Route path="/text-to-speech" element={<ProtectedRoute><TextToSpeechPageWrapper /></ProtectedRoute>} />
+            <Route path="/discover" element={<ProtectedRoute><DiscoverPageWrapper /></ProtectedRoute>} />
+            <Route path="/learn/:storyId" element={<ProtectedRoute><LearnPageWrapper /></ProtectedRoute>} />
+            <Route path="/quiz" element={<ProtectedRoute><QuizPageWrapper /></ProtectedRoute>} />
           </Routes>
           <FeedbackWidget />
         </Suspense>

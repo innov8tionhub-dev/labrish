@@ -25,7 +25,10 @@ import {
   CreditCard,
   Play,
   Users,
-  Sparkles
+  Sparkles,
+  Compass,
+  GraduationCap,
+  Trophy
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -301,6 +304,34 @@ const Dashboard: React.FC = () => {
       status: 'active',
       badge: 'Popular',
       route: '/text-to-speech'
+    },
+    {
+      id: 'discover',
+      title: 'Discover Stories',
+      description: 'Explore trending Caribbean stories',
+      icon: <Compass className="w-6 h-6" />,
+      action: () => {
+        track('quick_link_clicked', { link: 'discover' });
+        navigate('/discover');
+      },
+      color: 'from-purple-500 to-indigo-500',
+      status: 'active',
+      badge: 'New',
+      route: '/discover'
+    },
+    {
+      id: 'quiz',
+      title: 'Cultural Quizzes',
+      description: 'Test your knowledge and earn XP',
+      icon: <Trophy className="w-6 h-6" />,
+      action: () => {
+        track('quick_link_clicked', { link: 'quiz' });
+        navigate('/quiz');
+      },
+      color: 'from-yellow-500 to-orange-500',
+      status: 'active',
+      badge: 'New',
+      route: '/quiz'
     },
     {
       id: 'analytics-overview',
