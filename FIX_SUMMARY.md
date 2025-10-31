@@ -1,7 +1,10 @@
-# Landing Page Rendering Fix
+# Story Prompt Generator - Complete Fix Summary
 
-## Issue
-Landing page wasn't rendering due to TypeScript compilation errors in the new `webVitals.ts` file.
+## Issue Identified
+
+The OpenAI GPT-5 API was returning a different response format than expected. Instead of returning the text directly, it was returning an array containing:
+1. A reasoning object
+2. A message object with the actual content nested inside
 
 ## Root Cause
 The `webVitals.ts` file was using browser Performance API types (`LayoutShift`, `PerformanceEventTiming`, `PerformanceNavigationTiming`) that aren't included in TypeScript's standard lib types.

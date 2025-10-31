@@ -186,8 +186,25 @@ async function callGPT5(
 
   const data = await response.json();
 
+  // OpenAI returns an array with [reasoning_object, message_object]
+  // We need to extract the text from the message object's content
+  let outputText = '';
+
+  if (Array.isArray(data.output)) {
+    // Find the message object in the array
+    const messageObj = data.output.find((item: any) => item.type === 'message');
+    if (messageObj && messageObj.content && Array.isArray(messageObj.content)) {
+      // Extract text from content array
+      const textContent = messageObj.content.find((c: any) => c.type === 'text');
+      outputText = textContent?.text || '';
+    }
+  } else {
+    // Fallback to direct output
+    outputText = data.output_text || data.output || '';
+  }
+
   return {
-    output: data.output_text || data.output || '',
+    output: outputText,
     tokensUsed: (data.usage?.total_tokens || 0),
     responseId: data.id || '',
   };
