@@ -74,15 +74,28 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Invalid authentication token' }, 401);
     }
 
+    // Parse request body first
+    const { text, voice_id, voice_settings } = await req.json();
+
+    // Validate required parameters
+    if (!text || typeof text !== 'string') {
+      return corsResponse({ error: 'Text is required and must be a string' }, 400);
+    }
+
+    if (!voice_id || typeof voice_id !== 'string') {
+      return corsResponse({ error: 'Voice ID is required and must be a string' }, 400);
+    }
+
     // Check user's tier and usage limits
     try {
       // Check if user is on Pro tier by looking up their subscription status
       const { data: subscription } = await supabase
         .from('stripe_user_subscriptions')
         .select('subscription_status')
+        .eq('user_id', user.id)
         .maybeSingle();
 
-      const isPro = subscription?.subscription_status === 'active' || 
+      const isPro = subscription?.subscription_status === 'active' ||
                     subscription?.subscription_status === 'trialing';
 
       // Get the current month in YYYY-MM format
@@ -124,10 +137,10 @@ Deno.serve(async (req) => {
       // Check if user has exceeded their limit
       if (generationCount.generation_count >= monthlyLimit) {
         console.log(`User ${user.id} has reached their ${isPro ? 'Pro' : 'Free'} tier limit of ${monthlyLimit} generations`);
-        
+
         // Return a specific error for limit reached
-        return corsResponse({ 
-          error: 'Monthly generation limit reached', 
+        return corsResponse({
+          error: 'Monthly generation limit reached',
           tier: isPro ? 'pro' : 'free',
           limit: monthlyLimit,
           count: generationCount.generation_count,
@@ -139,7 +152,7 @@ Deno.serve(async (req) => {
       console.log(`Incrementing generation count for user ${user.id} (current: ${generationCount.generation_count})`);
       const { error: updateError } = await supabase
         .from('user_generation_counts')
-        .update({ 
+        .update({
           generation_count: generationCount.generation_count + 1,
           last_generated_at: now.toISOString(),
           updated_at: now.toISOString()
@@ -169,18 +182,6 @@ Deno.serve(async (req) => {
       }
     } catch (countError) {
       console.error('Error checking generation limits:', countError);
-    }
-
-    // Parse request body
-    const { text, voice_id, voice_settings } = await req.json();
-
-    // Validate required parameters
-    if (!text || typeof text !== 'string') {
-      return corsResponse({ error: 'Text is required and must be a string' }, 400);
-    }
-
-    if (!voice_id || typeof voice_id !== 'string') {
-      return corsResponse({ error: 'Voice ID is required and must be a string' }, 400);
     }
 
     // Validate text length
@@ -253,10 +254,10 @@ Deno.serve(async (req) => {
 
   } catch (error: any) {
     console.error('TTS error:', error);
-    
+
     // Special handling for limit reached errors
     if (error.limitReached) {
-      return corsResponse({ 
+      return corsResponse({
         error: error.message || 'Monthly generation limit reached',
         tier: error.tier || 'free',
         limit: error.limit || FREE_TIER_LIMIT,
@@ -264,12 +265,7 @@ Deno.serve(async (req) => {
         limitReached: true
       }, 403);
     }
-    
-    return corsResponse({ error: error.message || 'Internal server error' }, 500);
-  }
-});
-  } catch (error: any) {
-    console.error('TTS error:', error);
+
     return corsResponse({ error: error.message || 'Internal server error' }, 500);
   }
 });

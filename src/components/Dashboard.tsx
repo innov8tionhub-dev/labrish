@@ -121,9 +121,12 @@ const Dashboard: React.FC = () => {
 
   const fetchSubscription = async () => {
     try {
+      if (!user?.id) return;
+
       const { data, error } = await supabase
         .from('stripe_user_subscriptions')
         .select('subscription_status, price_id, current_period_end, cancel_at_period_end')
+        .eq('user_id', user.id)
         .maybeSingle();
 
       if (error) {
@@ -165,9 +168,12 @@ const Dashboard: React.FC = () => {
 
   const loadAIAssistStats = async () => {
     try {
+      if (!user?.id) return;
+
       const { data: subscription } = await supabase
         .from('stripe_user_subscriptions')
         .select('subscription_status')
+        .eq('user_id', user.id)
         .maybeSingle();
 
       const isPro = subscription?.subscription_status === 'active' ||
@@ -181,7 +187,7 @@ const Dashboard: React.FC = () => {
       const { count } = await supabase
         .from('ai_assist_usage')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .eq('month', currentMonth);
 
       const assistCount = count || 0;
@@ -203,10 +209,13 @@ const Dashboard: React.FC = () => {
 
   const loadGenerationStats = async () => {
     try {
+      if (!user?.id) return;
+
       // First determine user tier
       const { data: subscription } = await supabase
         .from('stripe_user_subscriptions')
         .select('subscription_status')
+        .eq('user_id', user.id)
         .maybeSingle();
 
       const isPro = subscription?.subscription_status === 'active' ||
@@ -221,6 +230,7 @@ const Dashboard: React.FC = () => {
       const { data: generationData } = await supabase
         .from('user_generation_counts')
         .select('generation_count')
+        .eq('user_id', user.id)
         .eq('month', currentMonth)
         .maybeSingle();
 
