@@ -163,7 +163,30 @@ Be factual, respectful, and educational.`;
       model: 'gpt-5-nano',
       input: `${systemPrompt}\n\nProvide cultural context for: ${term}`,
       reasoning: { effort: 'low' },
-      text: { verbosity: 'medium' },
+      text: {
+        verbosity: 'medium',
+        format: {
+          type: 'json_schema',
+          name: 'cultural_context',
+          strict: true,
+          schema: {
+            type: 'object',
+            properties: {
+              term: { type: 'string' },
+              definition: { type: 'string' },
+              cultural_significance: { type: 'string' },
+              pronunciation: { type: 'string' },
+              related_terms: {
+                type: 'array',
+                items: { type: 'string' }
+              },
+              region: { type: 'string' }
+            },
+            required: ['term', 'definition', 'cultural_significance', 'related_terms'],
+            additionalProperties: false
+          }
+        }
+      },
     }),
   });
 
@@ -173,14 +196,34 @@ Be factual, respectful, and educational.`;
   }
 
   const data = await response.json();
-  const output = data.output_text || data.output || '';
 
-  const jsonMatch = output.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error('Failed to parse cultural context response');
+  // Extract text from the new GPT-5 Responses API format
+  let outputText = '';
+  if (Array.isArray(data.output)) {
+    const messageObj = data.output.find((item: any) => item.type === 'message');
+    if (messageObj && messageObj.content && Array.isArray(messageObj.content)) {
+      const textContent = messageObj.content.find((c: any) => c.type === 'text' || c.type === 'output_text');
+      outputText = textContent?.text || '';
+    }
+  } else {
+    outputText = data.output_text || data.output || '';
   }
 
-  return JSON.parse(jsonMatch[0]);
+  if (!outputText) {
+    throw new Error('No output received from GPT-5');
+  }
+
+  // Parse the JSON response
+  try {
+    return JSON.parse(outputText);
+  } catch (parseError) {
+    // Fallback: try to extract JSON from text
+    const jsonMatch = outputText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('Failed to parse cultural context response');
+    }
+    return JSON.parse(jsonMatch[0]);
+  }
 }
 
 Deno.serve(async (req) => {

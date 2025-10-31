@@ -196,6 +196,41 @@ async function callGPT5(
     };
   }
 
+  // For polish action, use structured output
+  if (action === 'polish') {
+    requestBody.text.format = {
+      type: 'json_schema',
+      name: 'story_analysis',
+      strict: true,
+      schema: {
+        type: 'object',
+        properties: {
+          overall_score: { type: 'number', minimum: 0, maximum: 10 },
+          readability: { type: 'string' },
+          suggestions: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                type: { type: 'string', enum: ['pacing', 'character', 'dialogue', 'cultural', 'grammar'] },
+                severity: { type: 'string', enum: ['low', 'medium', 'high'] },
+                location: { type: 'string' },
+                issue: { type: 'string' },
+                suggestion: { type: 'string' },
+                fix: { type: 'string' }
+              },
+              required: ['type', 'severity', 'location', 'issue', 'suggestion'],
+              additionalProperties: false
+            }
+          },
+          voice_match: { type: 'string' }
+        },
+        required: ['overall_score', 'readability', 'suggestions'],
+        additionalProperties: false
+      }
+    };
+  }
+
   if (previousResponseId) {
     requestBody.previous_response_id = previousResponseId;
   }

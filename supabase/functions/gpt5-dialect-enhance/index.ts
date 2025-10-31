@@ -96,7 +96,40 @@ Maintain meaning while adding authentic Caribbean flavor.`;
       model: 'gpt-5-nano',
       input: `${systemPrompt}\n\nText to enhance: ${text}`,
       reasoning: { effort: 'minimal' },
-      text: { verbosity: 'low' },
+      text: {
+        verbosity: 'low',
+        format: {
+          type: 'json_schema',
+          name: 'dialect_suggestions',
+          strict: true,
+          schema: {
+            type: 'object',
+            properties: {
+              suggestions: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    original: { type: 'string' },
+                    replacement: { type: 'string' },
+                    position: {
+                      type: 'array',
+                      items: { type: 'number' },
+                      minItems: 2,
+                      maxItems: 2
+                    },
+                    explanation: { type: 'string' }
+                  },
+                  required: ['original', 'replacement', 'position', 'explanation'],
+                  additionalProperties: false
+                }
+              }
+            },
+            required: ['suggestions'],
+            additionalProperties: false
+          }
+        }
+      },
     }),
   });
 
@@ -106,7 +139,20 @@ Maintain meaning while adding authentic Caribbean flavor.`;
   }
 
   const data = await response.json();
-  return data.output_text || data.output || '';
+
+  // Extract text from the new GPT-5 Responses API format
+  let outputText = '';
+  if (Array.isArray(data.output)) {
+    const messageObj = data.output.find((item: any) => item.type === 'message');
+    if (messageObj && messageObj.content && Array.isArray(messageObj.content)) {
+      const textContent = messageObj.content.find((c: any) => c.type === 'text' || c.type === 'output_text');
+      outputText = textContent?.text || '';
+    }
+  } else {
+    outputText = data.output_text || data.output || '';
+  }
+
+  return outputText;
 }
 
 function findLocalSuggestions(text: string, intensity: string): DialectSuggestion[] {
@@ -174,10 +220,19 @@ Deno.serve(async (req) => {
         const aiResponse = await callGPT5Nano(text, intensity);
 
         try {
-          const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
-          if (jsonMatch) {
-            const aiSuggestions = JSON.parse(jsonMatch[0]);
-            suggestions = [...suggestions, ...aiSuggestions];
+          // Try to parse as structured JSON first
+          const parsed = JSON.parse(aiResponse);
+          if (parsed.suggestions && Array.isArray(parsed.suggestions)) {
+            suggestions = [...suggestions, ...parsed.suggestions];
+          } else if (Array.isArray(parsed)) {
+            suggestions = [...suggestions, ...parsed];
+          } else {
+            // Fallback: try to extract JSON array from text
+            const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
+            if (jsonMatch) {
+              const aiSuggestions = JSON.parse(jsonMatch[0]);
+              suggestions = [...suggestions, ...aiSuggestions];
+            }
           }
         } catch (parseError) {
           console.error('Failed to parse AI suggestions:', parseError);

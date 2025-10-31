@@ -53,15 +53,27 @@ export const StoryPolisher: React.FC<StoryPolisherProps> = ({ text, onApplyFix }
         throw new Error(response.error || 'Failed to analyze story');
       }
 
-      const outputText = typeof response.output === 'string' ? response.output : JSON.stringify(response.output);
-      const jsonMatch = outputText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsedAnalysis = JSON.parse(jsonMatch[0]);
-        setAnalysis(parsedAnalysis);
-        setIsOpen(true);
+      // Parse the response output
+      let parsedAnalysis;
+      if (typeof response.output === 'object' && response.output !== null) {
+        parsedAnalysis = response.output;
       } else {
-        throw new Error('Invalid response format. Please try again.');
+        const outputText = typeof response.output === 'string' ? response.output : JSON.stringify(response.output);
+        try {
+          parsedAnalysis = JSON.parse(outputText);
+        } catch {
+          // Fallback: try to extract JSON from text
+          const jsonMatch = outputText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            parsedAnalysis = JSON.parse(jsonMatch[0]);
+          } else {
+            throw new Error('Invalid response format. Please try again.');
+          }
+        }
       }
+
+      setAnalysis(parsedAnalysis);
+      setIsOpen(true);
     } catch (err: any) {
       setError(err.message || 'Failed to polish story');
       console.error('Story polish error:', err);
