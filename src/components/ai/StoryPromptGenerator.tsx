@@ -42,11 +42,31 @@ export const StoryPromptGenerator: React.FC<StoryPromptGeneratorProps> = ({
       }
 
       const outputText = typeof response.output === 'string' ? response.output : JSON.stringify(response.output);
+      console.log('AI Response Output:', outputText);
+
       const jsonMatch = outputText.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
         const parsedPrompts = JSON.parse(jsonMatch[0]);
-        setPrompts(parsedPrompts);
+        console.log('Parsed Prompts:', parsedPrompts);
+
+        // Validate that prompts have the correct structure
+        const validPrompts = parsedPrompts.filter((p: any) => {
+          const isValid = p && typeof p === 'object' && p.title && p.prompt && p.category;
+          if (!isValid) {
+            console.warn('Invalid prompt structure:', p);
+          }
+          return isValid;
+        });
+
+        console.log('Valid Prompts:', validPrompts);
+
+        if (validPrompts.length === 0) {
+          throw new Error('No valid prompts in response. Please try again.');
+        }
+
+        setPrompts(validPrompts);
       } else {
+        console.error('No JSON array found in output:', outputText);
         throw new Error('Invalid response format. Please try again.');
       }
     } catch (err: any) {
@@ -143,40 +163,46 @@ export const StoryPromptGenerator: React.FC<StoryPromptGeneratorProps> = ({
                 </div>
               )}
 
-              {prompts.length > 0 && (
+              {prompts && prompts.length > 0 && (
                 <div className="space-y-3">
-                  {prompts.map((prompt, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg p-4 border border-emerald-200 hover:border-emerald-300 transition-all cursor-pointer group"
-                      onClick={() => handleUsePrompt(prompt.prompt)}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-1 rounded">
-                              {prompt.category}
-                            </span>
+                  {prompts.map((prompt, index) => {
+                    if (!prompt || !prompt.prompt || !prompt.title || !prompt.category) {
+                      return null;
+                    }
+
+                    return (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg p-4 border border-emerald-200 hover:border-emerald-300 transition-all cursor-pointer group"
+                        onClick={() => handleUsePrompt(prompt.prompt)}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-1 rounded">
+                                {prompt.category}
+                              </span>
+                            </div>
+                            <h4 className="font-medium text-gray-800 mb-1">{prompt.title}</h4>
+                            <p className="text-sm text-gray-600">{prompt.prompt}</p>
                           </div>
-                          <h4 className="font-medium text-gray-800 mb-1">{prompt.title}</h4>
-                          <p className="text-sm text-gray-600">{prompt.prompt}</p>
+                          <Button
+                            size="sm"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity bg-emerald-600 hover:bg-emerald-700"
+                          >
+                            Use
+                          </Button>
                         </div>
-                        <Button
-                          size="sm"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity bg-emerald-600 hover:bg-emerald-700"
-                        >
-                          Use
-                        </Button>
-                      </div>
-                    </motion.div>
-                  ))}
+                      </motion.div>
+                    );
+                  })}
                 </div>
               )}
 
-              {prompts.length === 0 && !loading && !error && (
+              {prompts && prompts.length === 0 && !loading && !error && (
                 <div className="text-center py-8 text-gray-400">
                   <Lightbulb className="w-12 h-12 mx-auto mb-3 opacity-50" />
                   <p className="text-sm">Select a category or click "Surprise Me" to get started</p>
