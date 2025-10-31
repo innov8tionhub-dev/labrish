@@ -14,6 +14,15 @@ import {
   Gauge
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  AudioPlayerProvider,
+  AudioPlayerButton,
+  AudioPlayerProgress,
+  AudioPlayerTime,
+  AudioPlayerDuration,
+  AudioPlayerSpeedButtonGroup,
+  AudioPlayerItem,
+} from '@/components/ui/audio-player';
 
 interface EnhancedAudioPlayerProps {
   audioUrl: string;
