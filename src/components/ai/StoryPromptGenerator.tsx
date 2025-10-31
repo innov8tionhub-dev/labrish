@@ -52,22 +52,39 @@ export const StoryPromptGenerator: React.FC<StoryPromptGeneratorProps> = ({
         console.log('Output is already an array');
         parsedPrompts = response.output;
       } else {
-        // Otherwise, try to extract JSON from string
+        // Parse the output string as JSON
         const outputText = typeof response.output === 'string' ? response.output : JSON.stringify(response.output);
         console.log('AI Response Output Text:', outputText.substring(0, 500));
 
-        const jsonMatch = outputText.match(/\[[\s\S]*\]/);
-        if (jsonMatch) {
-          console.log('JSON Match Found:', jsonMatch[0].substring(0, 200) + '...');
-          parsedPrompts = JSON.parse(jsonMatch[0]);
-        } else {
-          console.error('No JSON array found in output');
-          throw new Error('Invalid response format. Please try again.');
+        try {
+          const parsedOutput = JSON.parse(outputText);
+
+          // Check if it's structured with a 'prompts' field
+          if (parsedOutput.prompts && Array.isArray(parsedOutput.prompts)) {
+            console.log('Found structured output with prompts array');
+            parsedPrompts = parsedOutput.prompts;
+          } else if (Array.isArray(parsedOutput)) {
+            console.log('Output is a direct array');
+            parsedPrompts = parsedOutput;
+          } else {
+            // Try to extract JSON array from text
+            const jsonMatch = outputText.match(/\[[\s\S]*\]/);
+            if (jsonMatch) {
+              console.log('JSON Match Found:', jsonMatch[0].substring(0, 200) + '...');
+              parsedPrompts = JSON.parse(jsonMatch[0]);
+            } else {
+              console.error('No JSON array found in output');
+              throw new Error('Invalid response format. Please try again.');
+            }
+          }
+        } catch (parseError) {
+          console.error('JSON parse error:', parseError);
+          throw new Error('Failed to parse response. Please try again.');
         }
       }
 
       console.log('Parsed Prompts:', parsedPrompts);
-      console.log('Number of prompts:', parsedPrompts.length);
+      console.log('Number of prompts:', parsedPrompts?.length);
 
       if (parsedPrompts && parsedPrompts.length > 0) {
 

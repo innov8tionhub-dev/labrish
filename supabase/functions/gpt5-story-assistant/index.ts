@@ -125,7 +125,7 @@ Return JSON format: { "overall_score": number, "readability": string, "suggestio
 
     prompt: `\n\nGenerate 3 creative story prompts for Caribbean storytelling.
 Each should be engaging, culturally relevant, and inspire authentic Caribbean narratives.
-Return as JSON array: [{ "title": string, "prompt": string, "category": string }]`
+Return a JSON object with a 'prompts' array containing objects with 'title', 'prompt', and 'category' fields.`
   };
 
   let prompt = basePrompt + (actionPrompts[action] || '');
@@ -150,6 +150,7 @@ Return as JSON array: [{ "title": string, "prompt": string, "category": string }
 async function callGPT5(
   prompt: string,
   userInput: string,
+  action: string,
   model: string = 'gpt-5-mini',
   reasoning: string = 'medium',
   verbosity: string = 'medium',
@@ -165,6 +166,35 @@ async function callGPT5(
     reasoning: { effort: reasoning },
     text: { verbosity },
   };
+
+  // For prompt generation, use structured output
+  if (action === 'prompt') {
+    requestBody.text.format = {
+      type: 'json_schema',
+      name: 'story_prompts',
+      strict: true,
+      schema: {
+        type: 'object',
+        properties: {
+          prompts: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                title: { type: 'string' },
+                prompt: { type: 'string' },
+                category: { type: 'string' }
+              },
+              required: ['title', 'prompt', 'category'],
+              additionalProperties: false
+            }
+          }
+        },
+        required: ['prompts'],
+        additionalProperties: false
+      }
+    };
+  }
 
   if (previousResponseId) {
     requestBody.previous_response_id = previousResponseId;
@@ -195,7 +225,7 @@ async function callGPT5(
     const messageObj = data.output.find((item: any) => item.type === 'message');
     if (messageObj && messageObj.content && Array.isArray(messageObj.content)) {
       // Extract text from content array
-      const textContent = messageObj.content.find((c: any) => c.type === 'text');
+      const textContent = messageObj.content.find((c: any) => c.type === 'text' || c.type === 'output_text');
       outputText = textContent?.text || '';
     }
   } else {
@@ -257,6 +287,7 @@ Deno.serve(async (req) => {
     const result = await callGPT5(
       systemPrompt,
       input,
+      action,
       model,
       reasoning,
       verbosity,
