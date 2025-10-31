@@ -142,14 +142,14 @@ export const QuizPage: React.FC = () => {
       const leaderboardData = await Promise.all(
         (data || []).map(async (entry) => {
           const { data: profile } = await supabase
-            .from('profiles')
-            .select('full_name, username')
-            .eq('id', entry.user_id)
+            .from('creator_profiles')
+            .select('display_name')
+            .eq('user_id', entry.user_id)
             .maybeSingle();
 
           return {
             user_id: entry.user_id,
-            name: profile?.full_name || profile?.username || 'Anonymous',
+            name: profile?.display_name || 'Anonymous',
             xp: entry.xp_earned,
           };
         })

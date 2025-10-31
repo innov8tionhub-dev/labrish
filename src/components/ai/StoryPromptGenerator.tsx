@@ -41,12 +41,13 @@ export const StoryPromptGenerator: React.FC<StoryPromptGeneratorProps> = ({
         throw new Error(response.error || 'Failed to generate prompts');
       }
 
-      const jsonMatch = response.output.match(/\[[\s\S]*\]/);
+      const outputText = typeof response.output === 'string' ? response.output : JSON.stringify(response.output);
+      const jsonMatch = outputText.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
         const parsedPrompts = JSON.parse(jsonMatch[0]);
         setPrompts(parsedPrompts);
       } else {
-        throw new Error('Invalid response format');
+        throw new Error('Invalid response format. Please try again.');
       }
     } catch (err: any) {
       setError(err.message || 'Failed to generate prompts');

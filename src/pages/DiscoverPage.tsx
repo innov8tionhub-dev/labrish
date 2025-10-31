@@ -113,9 +113,9 @@ export const DiscoverPage: React.FC = () => {
       const enrichedStories = await Promise.all(
         (storiesData || []).map(async (story) => {
           const { data: profile } = await supabase
-            .from('profiles')
-            .select('full_name, username')
-            .eq('id', story.user_id)
+            .from('creator_profiles')
+            .select('display_name')
+            .eq('user_id', story.user_id)
             .maybeSingle();
 
           const { data: analytics } = await supabase
@@ -126,7 +126,7 @@ export const DiscoverPage: React.FC = () => {
 
           return {
             ...story,
-            creator_name: profile?.full_name || profile?.username || 'Anonymous',
+            creator_name: profile?.display_name || 'Anonymous',
             play_count: analytics?.play_count || 0,
             like_count: analytics?.like_count || 0,
             bookmark_count: analytics?.bookmark_count || 0,
