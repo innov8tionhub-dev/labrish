@@ -41,23 +41,63 @@ export const StoryPromptGenerator: React.FC<StoryPromptGeneratorProps> = ({
         throw new Error(response.error || 'Failed to generate prompts');
       }
 
-      const outputText = typeof response.output === 'string' ? response.output : JSON.stringify(response.output);
-      console.log('AI Response Output:', outputText);
+      console.log('Full Response:', response);
+      console.log('Response Output:', response.output);
+      console.log('Output Type:', typeof response.output);
 
-      const jsonMatch = outputText.match(/\[[\s\S]*\]/);
-      if (jsonMatch) {
-        const parsedPrompts = JSON.parse(jsonMatch[0]);
-        console.log('Parsed Prompts:', parsedPrompts);
+      let parsedPrompts;
+
+      // If output is already an array, use it directly
+      if (Array.isArray(response.output)) {
+        console.log('Output is already an array');
+        parsedPrompts = response.output;
+      } else {
+        // Otherwise, try to extract JSON from string
+        const outputText = typeof response.output === 'string' ? response.output : JSON.stringify(response.output);
+        console.log('AI Response Output Text:', outputText.substring(0, 500));
+
+        const jsonMatch = outputText.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          console.log('JSON Match Found:', jsonMatch[0].substring(0, 200) + '...');
+          parsedPrompts = JSON.parse(jsonMatch[0]);
+        } else {
+          console.error('No JSON array found in output');
+          throw new Error('Invalid response format. Please try again.');
+        }
+      }
+
+      console.log('Parsed Prompts:', parsedPrompts);
+      console.log('Number of prompts:', parsedPrompts.length);
+
+      if (parsedPrompts && parsedPrompts.length > 0) {
 
         // Validate that prompts have the correct structure
-        const validPrompts = parsedPrompts.filter((p: any) => {
-          const isValid = p && typeof p === 'object' && p.title && p.prompt && p.category;
+        const validPrompts = parsedPrompts.filter((p: any, index: number) => {
+          console.log(`Checking prompt ${index}:`, {
+            hasTitle: !!p?.title,
+            hasPrompt: !!p?.prompt,
+            hasCategory: !!p?.category,
+            titleType: typeof p?.title,
+            promptType: typeof p?.prompt,
+            categoryType: typeof p?.category,
+          });
+
+          const isValid = p &&
+                         typeof p === 'object' &&
+                         p.title &&
+                         typeof p.title === 'string' &&
+                         p.prompt &&
+                         typeof p.prompt === 'string' &&
+                         p.category &&
+                         typeof p.category === 'string';
+
           if (!isValid) {
             console.warn('Invalid prompt structure:', p);
           }
           return isValid;
         });
 
+        console.log('Valid Prompts Count:', validPrompts.length);
         console.log('Valid Prompts:', validPrompts);
 
         if (validPrompts.length === 0) {
@@ -66,8 +106,7 @@ export const StoryPromptGenerator: React.FC<StoryPromptGeneratorProps> = ({
 
         setPrompts(validPrompts);
       } else {
-        console.error('No JSON array found in output:', outputText);
-        throw new Error('Invalid response format. Please try again.');
+        throw new Error('No prompts found in response.');
       }
     } catch (err: any) {
       setError(err.message || 'Failed to generate prompts');
