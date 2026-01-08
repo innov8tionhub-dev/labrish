@@ -23,6 +23,7 @@ The project aims to blend cultural heritage with innovative AI, making storytell
 *   **Advanced Analytics:** Gain insights into content performance, user engagement, and audience demographics through a detailed analytics dashboard.
 *   **Enhanced Security:** Features like Multi-Factor Authentication (MFA), session management, password strength checking, and security activity logging to protect user accounts.
 *   **Subscription Management:** Integrated Stripe for seamless handling of subscription plans (Starter, Labrish Pro, Enterprise) and billing.
+*   **Persistent Audio Storage:** Generated audio files are automatically stored in S3-compatible storage with permanent URLs for sharing and playback.
 *   **Offline Support:** Utilizes Service Workers to queue requests and provide a smoother experience even when offline.
 *   **File Upload Integration:** Easily upload text content from `.txt`, `.pdf`, `.doc`, and `.docx` files for speech generation.
 *   **Story Library:** Manage and explore both personal and public AI-generated stories.
@@ -68,92 +69,134 @@ Create a `.env` file in the root of your project and add the following environme
 ```env
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+The following secrets should be configured in your Supabase Edge Function settings:
+
+```env
 ELEVENLABS_API_KEY=your_elevenlabs_api_key
 STRIPE_SECRET_KEY=your_stripe_secret_key
 STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+LABRISH_S3=your_s3_access_key
+LABRISH_S3_SECRET=your_s3_secret_key
+```
+
 Replace the placeholder values with your actual keys.
 
-Database Setup (Supabase)
-Create Supabase Project: If you don't have one, create a new project on the Supabase website.
-Run Migrations: The project uses SQL migrations to set up the database schema. You can find the migration files in the supabase/migrations directory. Apply these migrations to your Supabase project.
-20250623020609_fierce_paper.sql: Sets up stripe_customers, stripe_subscriptions, and stripe_orders tables, along with related enums, policies, and views.
-20250623032538_broad_credit.sql: Sets up the stories table, increment_play_count function, and storage buckets for user files.
-Additional tables for authentication enhancements (user_mfa_settings, security_sessions, security_events) and voice cloning (voice_clone_projects, voice_audio_samples) are also defined in the IMPLEMENTATION_PLAN.md and should be created in your Supabase database.
-Configure RLS: Row Level Security (RLS) is enabled by default on critical tables. Ensure the policies defined in the migration files are correctly applied.
-Stripe Integration
-Stripe API Keys: Ensure your STRIPE_SECRET_KEY is correctly set in your .env file.
-Deploy Edge Functions: The project relies on Supabase Edge Functions for Stripe integration. Deploy the following functions from the supabase/functions directory to your Supabase project:
-stripe-checkout: Handles the creation of Stripe checkout sessions.
-stripe-webhook: Processes Stripe webhook events (e.g., checkout.session.completed, payment_intent.succeeded, subscription updates) to sync data with your Supabase database.
-Configure Webhooks: In your Stripe Dashboard, set up a webhook endpoint pointing to your deployed stripe-webhook Edge Function URL. Configure it to listen for events like checkout.session.completed, customer.subscription.updated, customer.subscription.deleted, and payment_intent.succeeded.
-ElevenLabs Integration
-ElevenLabs API Key: Set your ELEVENLABS_API_KEY in your .env file.
-Deploy Edge Functions: Deploy the following ElevenLabs-related Edge Functions from the supabase/functions directory:
-elevenlabs-tts: Handles Text-to-Speech requests.
-elevenlabs-voices: Fetches available voices from ElevenLabs.
-batch-tts: (Optional) For processing multiple text chunks for TTS.
-Frontend Setup
+### S3 Audio Storage (Optional)
+
+To enable persistent audio storage, configure the S3 credentials in your Supabase Edge Function secrets:
+
+1. Go to your Supabase Dashboard > Settings > Edge Functions
+2. Add the `LABRISH_S3` and `LABRISH_S3_SECRET` secrets
+3. The storage bucket `user-files` is automatically created by the database migrations
+
+When configured, all generated audio files are stored at `user-files/audio/{user_id}/{timestamp}.mp3` and can be accessed via permanent public URLs.
+
+### Database Setup (Supabase)
+
+1. **Create Supabase Project:** If you don't have one, create a new project on the Supabase website.
+2. **Run Migrations:** The project uses SQL migrations to set up the database schema. You can find the migration files in the `supabase/migrations` directory. Apply these migrations to your Supabase project.
+   - `20250623020609_fierce_paper.sql`: Sets up stripe_customers, stripe_subscriptions, and stripe_orders tables.
+   - `20250623032538_broad_credit.sql`: Sets up the stories table, increment_play_count function, and storage buckets.
+   - `20260108221822_create_audio_files_table_and_storage.sql`: Sets up the audio_files table and user-files storage bucket for persistent audio storage.
+3. **Configure RLS:** Row Level Security (RLS) is enabled by default on critical tables. Ensure the policies defined in the migration files are correctly applied.
+
+### Stripe Integration
+
+1. **Stripe API Keys:** Ensure your `STRIPE_SECRET_KEY` is correctly set in your Supabase Edge Function secrets.
+2. **Deploy Edge Functions:** The project relies on Supabase Edge Functions for Stripe integration:
+   - `stripe-checkout`: Handles the creation of Stripe checkout sessions.
+   - `stripe-webhook`: Processes Stripe webhook events to sync data with your Supabase database.
+3. **Configure Webhooks:** In your Stripe Dashboard, set up a webhook endpoint pointing to your deployed `stripe-webhook` Edge Function URL.
+
+### ElevenLabs Integration
+
+1. **ElevenLabs API Key:** Set your `ELEVENLABS_API_KEY` in your Supabase Edge Function secrets.
+2. **Deploy Edge Functions:** Deploy the following ElevenLabs-related Edge Functions:
+   - `elevenlabs-tts`: Handles Text-to-Speech requests with optional S3 storage.
+   - `elevenlabs-voices`: Fetches available voices from ElevenLabs.
+   - `batch-tts`: For processing multiple text chunks for TTS.
+
+### Frontend Setup
+
 Install Dependencies:
 
+```bash
 npm install
-# or
-yarn install
+```
+
 Run Development Server:
 
+```bash
 npm run dev
-# or
-yarn dev
-This will start the development server, usually at http://localhost:5173.
-🏃‍♂️ Usage
+```
+
+This will start the development server at http://localhost:5173.
+
+## Usage
+
 Once the development server is running and all backend services are configured:
 
-Access the Application: Open your web browser and navigate to http://localhost:5173.
-Sign Up/Log In: Create a new account or log in with existing credentials.
-Explore Features:
-Text-to-Speech Studio: Navigate to /text-to-speech to convert your text into Caribbean-accented audio.
-Voice Cloning Studio: Visit /voice-studio to train your own AI voice model.
-Dashboard: Your personal hub at /dashboard to manage stories, view analytics, and access quick links.
-Security Settings: Manage your account security at /security.
-Analytics Dashboard: View detailed insights into your content performance at /analytics.
-Interact: Use the various forms and buttons to generate speech, manage stories, and explore the platform's capabilities.
-📚 API Endpoints
-The project utilizes Supabase Edge Functions as its backend API. These functions are designed to be consumed by the frontend application and handle secure interactions with third-party services and the database.
+1. **Access the Application:** Open your web browser and navigate to http://localhost:5173.
+2. **Sign Up/Log In:** Create a new account or log in with existing credentials.
+3. **Explore Features:**
+   - **Text-to-Speech Studio:** Navigate to `/text-to-speech` to convert your text into Caribbean-accented audio.
+   - **Voice Cloning Studio:** Visit `/voice-studio` to train your own AI voice model.
+   - **Dashboard:** Your personal hub at `/dashboard` to manage stories, view analytics, and access quick links.
+   - **Security Settings:** Manage your account security at `/security`.
+   - **Analytics Dashboard:** View detailed insights into your content performance at `/analytics`.
+4. **Interact:** Use the various forms and buttons to generate speech, manage stories, and explore the platform's capabilities.
 
-POST /functions/v1/elevenlabs-tts: Generates speech from text using ElevenLabs.
-Request Body: { text: string, voice_id: string, voice_settings: object }
-Authentication: Bearer Token (Supabase access_token)
-GET /functions/v1/elevenlabs-voices: Fetches a list of available voices from ElevenLabs.
-Authentication: Bearer Token (Supabase access_token)
-POST /functions/v1/batch-tts: (Optional) Generates speech for multiple text chunks.
-Request Body: { texts: string[], voice_id: string, voice_settings: object, merge_audio?: boolean }
-Authentication: Bearer Token (Supabase access_token)
-POST /functions/v1/stripe-checkout: Creates a Stripe checkout session for payments/subscriptions.
-Request Body: { price_id: string, success_url: string, cancel_url: string, mode: 'payment' | 'subscription' }
-Authentication: Bearer Token (Supabase access_token)
-POST /functions/v1/stripe-webhook: Receives and processes Stripe webhook events.
-Authentication: Stripe-Signature header for verification.
-⚙️ Configuration Details
-Frontend Configuration:
-src/lib/supabase.ts: Configures the Supabase client.
-src/stripe-config.ts: Defines Stripe product price IDs.
-tailwind.config.js: Customizes Tailwind CSS, including color palettes (caribbean shades, brandy, apple, cerise), fonts (Fraunces, Cairo), and animations.
-Backend Configuration (Supabase Edge Functions):
-Environment variables (ELEVENLABS_API_KEY, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET) are crucial for the functions to operate correctly. These are set directly in your Supabase project's function settings.
-🤝 Contributing
+## API Endpoints
+
+The project utilizes Supabase Edge Functions as its backend API. These functions handle secure interactions with third-party services and the database.
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/functions/v1/elevenlabs-tts` | POST | Generates speech from text. Returns audio with `X-Audio-Url` header containing the S3 storage URL. |
+| `/functions/v1/elevenlabs-voices` | GET | Fetches available voices from ElevenLabs. |
+| `/functions/v1/batch-tts` | POST | Generates speech for multiple text chunks with optional merging. |
+| `/functions/v1/stripe-checkout` | POST | Creates a Stripe checkout session. |
+| `/functions/v1/stripe-webhook` | POST | Receives Stripe webhook events (uses Stripe-Signature header). |
+
+All endpoints except `stripe-webhook` require Bearer Token authentication using Supabase access_token.
+
+## Configuration Details
+
+**Frontend Configuration:**
+- `src/lib/supabase.ts`: Configures the Supabase client.
+- `src/lib/audioStorage.ts`: Utilities for managing stored audio files.
+- `src/stripe-config.ts`: Defines Stripe product price IDs.
+- `tailwind.config.js`: Customizes Tailwind CSS with Caribbean-inspired color palettes.
+
+**Backend Configuration (Supabase Edge Functions):**
+Environment variables are configured in your Supabase project's Edge Function settings:
+- `ELEVENLABS_API_KEY`: ElevenLabs API key for TTS
+- `STRIPE_SECRET_KEY`: Stripe secret key for payments
+- `STRIPE_WEBHOOK_SECRET`: Stripe webhook verification secret
+- `LABRISH_S3`: S3 access key for audio storage (optional)
+- `LABRISH_S3_SECRET`: S3 secret key for audio storage (optional)
+
+## Contributing
+
 Contributions are welcome! If you'd like to contribute to Labrish, please follow these steps:
 
-Fork the repository.
-Create a new branch (git checkout -b feature/YourFeature).
-Make your changes and commit them (git commit -m 'Add new feature').
-Push to the branch (git push origin feature/YourFeature).
-Open a Pull Request.
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature/YourFeature`).
+3. Make your changes and commit them (`git commit -m 'Add new feature'`).
+4. Push to the branch (`git push origin feature/YourFeature`).
+5. Open a Pull Request.
+
 Please ensure your code adheres to the existing style and passes linting checks.
 
-📄 License
-This project is licensed under the MIT License. See the LICENSE file (if available in the root directory) for more details. If no LICENSE file is present, it is intended to be open-source under the MIT license.
+## License
 
-📧 Contact
+This project is licensed under the MIT License. See the LICENSE file for more details.
+
+## Contact
+
 For any inquiries or support, please contact the Innov8tion Hub team.
 
-Innov8tion Hub Website: https://innov8tionhub.com
-Bolt.new: https://www.bolt.new (The platform used to build this project)
+- **Innov8tion Hub Website:** https://innov8tionhub.com
+- **Bolt.new:** https://www.bolt.new (The platform used to build this project)
