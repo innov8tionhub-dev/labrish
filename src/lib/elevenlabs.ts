@@ -42,18 +42,37 @@ export interface TTSRequest {
 
 export interface TTSResponse {
   audio: Blob;
+  audioUrl?: string;
+}
+
+export interface GenerateSpeechResult {
+  blob: Blob;
+  storageUrl: string | null;
 }
 
 /**
  * Generate speech from text using Eleven Labs API via Supabase Edge Function
+ * Returns both the audio blob and the persistent storage URL if available
  */
 export const generateSpeech = async (
   text: string,
   voiceId: string,
   voiceSettings: VoiceSettings,
 ): Promise<Blob> => {
+  const result = await generateSpeechWithUrl(text, voiceId, voiceSettings);
+  return result.blob;
+};
+
+/**
+ * Generate speech and return both blob and storage URL
+ */
+export const generateSpeechWithUrl = async (
+  text: string,
+  voiceId: string,
+  voiceSettings: VoiceSettings,
+): Promise<GenerateSpeechResult> => {
   const { data: { session } } = await supabase.auth.getSession();
-  
+
   if (!session?.access_token) {
     throw new Error('User not authenticated');
   }
@@ -76,7 +95,6 @@ export const generateSpeech = async (
     throw new Error(error.error || 'Failed to generate speech');
   }
 
-  // Handle specific error for generation limits
   if (response.status === 403) {
     const error = await response.json();
     if (error.limitReached) {
@@ -87,7 +105,10 @@ export const generateSpeech = async (
     }
   }
 
-  return response.blob();
+  const storageUrl = response.headers.get('X-Audio-Url') || null;
+  const blob = await response.blob();
+
+  return { blob, storageUrl };
 };
 
 /**

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, Volume2, Download, Play, Pause, Square, Loader2, FileText, Settings, Save, Upload, Book, AudioWaveform as Waveform, Share2, ChevronLeft, BookOpen, Maximize2, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { generateSpeech, getAvailableVoices, Voice } from '@/lib/elevenlabs';
+import { generateSpeechWithUrl, getAvailableVoices, Voice } from '@/lib/elevenlabs';
 import { supabase } from '@/lib/supabase';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import FileUploadZone from '@/components/FileUploadZone';
@@ -37,6 +37,7 @@ const TextToSpeechPage: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [storageUrl, setStorageUrl] = useState<string | null>(null);
   const [selectedVoice, setSelectedVoice] = useState('21m00Tcm4TlvDq8ikWAM');
   const [availableVoices, setAvailableVoices] = useState<Voice[]>([]);
   const [voicesLoading, setVoicesLoading] = useState(true);
@@ -269,10 +270,11 @@ const TextToSpeechPage: React.FC = () => {
         return;
       }
 
-      const blob = await generateSpeech(text, selectedVoice, voiceSettings);
-      const url = URL.createObjectURL(blob);
+      const result = await generateSpeechWithUrl(text, selectedVoice, voiceSettings);
+      const url = URL.createObjectURL(result.blob);
       setAudioUrl(url);
-      setAudioBlob(blob);
+      setAudioBlob(result.blob);
+      setStorageUrl(result.storageUrl);
 
       await loadUserTierAndUsage();
 
@@ -369,7 +371,7 @@ const TextToSpeechPage: React.FC = () => {
         tags: storyTags,
         voice_id: selectedVoice,
         voice_settings: voiceSettings,
-        audio_url: audioUrl || undefined,
+        audio_url: storageUrl || undefined,
         is_public: visibility === 'public',
         visibility: visibility,
         duration: duration || undefined,

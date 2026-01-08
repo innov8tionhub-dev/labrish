@@ -1,19 +1,52 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { S3Client, PutObjectCommand } from 'npm:@aws-sdk/client-s3@3.600.0';
 
-// Constants for tier limits
 const FREE_TIER_LIMIT = 5;
 const PRO_TIER_LIMIT = 40;
 
 const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '', 
+  Deno.env.get('SUPABASE_URL') ?? '',
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 );
 
 const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
 const ELEVENLABS_BASE_URL = 'https://api.elevenlabs.io/v1';
 
-// Helper function to create responses with CORS headers
+const LABRISH_S3 = Deno.env.get('LABRISH_S3');
+const LABRISH_S3_SECRET = Deno.env.get('LABRISH_S3_SECRET');
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
+const S3_BUCKET = 'user-files';
+
+const projectRef = SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] ?? '';
+
+const s3Client = new S3Client({
+  region: 'auto',
+  endpoint: `https://${projectRef}.supabase.co/storage/v1/s3`,
+  credentials: {
+    accessKeyId: LABRISH_S3 ?? '',
+    secretAccessKey: LABRISH_S3_SECRET ?? '',
+  },
+  forcePathStyle: true,
+});
+
+async function uploadToS3(audioData: ArrayBuffer, userId: string): Promise<string> {
+  const timestamp = Date.now();
+  const hash = Math.random().toString(36).substring(2, 10);
+  const fileName = `audio/${userId}/${timestamp}-${hash}.mp3`;
+
+  const command = new PutObjectCommand({
+    Bucket: S3_BUCKET,
+    Key: fileName,
+    Body: new Uint8Array(audioData),
+    ContentType: 'audio/mpeg',
+  });
+
+  await s3Client.send(command);
+
+  return `${SUPABASE_URL}/storage/v1/object/public/${S3_BUCKET}/${fileName}`;
+}
+
 function corsResponse(body: string | object | ArrayBuffer | null, status = 200, contentType = 'application/json') {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -21,12 +54,10 @@ function corsResponse(body: string | object | ArrayBuffer | null, status = 200, 
     'Access-Control-Allow-Headers': '*',
   };
 
-  // For 204 No Content, don't include Content-Type or body
   if (status === 204) {
     return new Response(null, { status, headers });
   }
 
-  // For binary data (audio)
   if (body instanceof ArrayBuffer) {
     return new Response(body, {
       status,
@@ -60,7 +91,6 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Eleven Labs API key not configured' }, 500);
     }
 
-    // Authenticate user
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return corsResponse({ error: 'Authorization header required' }, 401);
@@ -74,10 +104,8 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Invalid authentication token' }, 401);
     }
 
-    // Parse request body first
     const { text, voice_id, voice_settings } = await req.json();
 
-    // Validate required parameters
     if (!text || typeof text !== 'string') {
       return corsResponse({ error: 'Text is required and must be a string' }, 400);
     }
@@ -86,9 +114,7 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Voice ID is required and must be a string' }, 400);
     }
 
-    // Check user's tier and usage limits
     try {
-      // Check if user is on Pro tier by looking up their subscription status
       const { data: subscription } = await supabase
         .from('stripe_user_subscriptions')
         .select('subscription_status')
@@ -98,11 +124,9 @@ Deno.serve(async (req) => {
       const isPro = subscription?.subscription_status === 'active' ||
                     subscription?.subscription_status === 'trialing';
 
-      // Get the current month in YYYY-MM format
       const now = new Date();
       const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-      // Get or create user's generation count for the current month
       let { data: generationCount } = await supabase
         .from('user_generation_counts')
         .select('generation_count')
@@ -111,7 +135,6 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       if (!generationCount) {
-        // Create a new record for this month
         const { data: newCount, error: insertError } = await supabase
           .from('user_generation_counts')
           .insert({
@@ -131,14 +154,11 @@ Deno.serve(async (req) => {
         generationCount = newCount;
       }
 
-      // Determine the user's limit based on their tier
       const monthlyLimit = isPro ? PRO_TIER_LIMIT : FREE_TIER_LIMIT;
 
-      // Check if user has exceeded their limit
       if (generationCount.generation_count >= monthlyLimit) {
         console.log(`User ${user.id} has reached their ${isPro ? 'Pro' : 'Free'} tier limit of ${monthlyLimit} generations`);
 
-        // Return a specific error for limit reached
         return corsResponse({
           error: 'Monthly generation limit reached',
           tier: isPro ? 'pro' : 'free',
@@ -148,7 +168,6 @@ Deno.serve(async (req) => {
         }, 403);
       }
 
-      // Increment the generation count
       console.log(`Incrementing generation count for user ${user.id} (current: ${generationCount.generation_count})`);
       const { error: updateError } = await supabase
         .from('user_generation_counts')
@@ -184,7 +203,6 @@ Deno.serve(async (req) => {
       console.error('Error checking generation limits:', countError);
     }
 
-    // Validate text length
     if (text.length > 2500) {
       return corsResponse({ error: 'Text must be 2,500 characters or less' }, 400);
     }
@@ -193,7 +211,6 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Text cannot be empty' }, 400);
     }
 
-    // Default voice settings
     const defaultSettings = {
       stability: 0.5,
       similarity_boost: 0.75,
@@ -203,7 +220,6 @@ Deno.serve(async (req) => {
 
     const settings = { ...defaultSettings, ...voice_settings };
 
-    // Validate voice settings
     if (settings.stability < 0 || settings.stability > 1) {
       return corsResponse({ error: 'Stability must be between 0 and 1' }, 400);
     }
@@ -216,7 +232,6 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Style must be between 0 and 1' }, 400);
     }
 
-    // Make request to Eleven Labs API
     const elevenLabsResponse = await fetch(`${ELEVENLABS_BASE_URL}/text-to-speech/${voice_id}`, {
       method: 'POST',
       headers: {
@@ -246,16 +261,46 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Get audio data as ArrayBuffer
     const audioData = await elevenLabsResponse.arrayBuffer();
 
-    // Return audio data
-    return corsResponse(audioData, 200);
+    let audioUrl: string | null = null;
+    if (LABRISH_S3 && LABRISH_S3_SECRET) {
+      try {
+        audioUrl = await uploadToS3(audioData, user.id);
+        console.log(`Audio uploaded to S3: ${audioUrl}`);
+
+        const { error: recordError } = await supabase
+          .from('audio_files')
+          .insert({
+            user_id: user.id,
+            file_path: audioUrl.split('/user-files/')[1] || '',
+            file_name: audioUrl.split('/').pop() || '',
+            file_size: audioData.byteLength,
+            content_type: 'audio/mpeg',
+          });
+
+        if (recordError) {
+          console.error('Error recording audio file:', recordError);
+        }
+      } catch (s3Error) {
+        console.error('S3 upload failed, returning audio without storage:', s3Error);
+      }
+    }
+
+    return new Response(audioData, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': '*',
+        'Content-Type': 'audio/mpeg',
+        'X-Audio-Url': audioUrl || '',
+      },
+    });
 
   } catch (error: any) {
     console.error('TTS error:', error);
 
-    // Special handling for limit reached errors
     if (error.limitReached) {
       return corsResponse({
         error: error.message || 'Monthly generation limit reached',

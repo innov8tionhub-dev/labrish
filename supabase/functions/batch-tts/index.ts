@@ -1,13 +1,48 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { S3Client, PutObjectCommand } from 'npm:@aws-sdk/client-s3@3.600.0';
 
 const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '', 
+  Deno.env.get('SUPABASE_URL') ?? '',
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 );
 
 const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
 const ELEVENLABS_BASE_URL = 'https://api.elevenlabs.io/v1';
+
+const LABRISH_S3 = Deno.env.get('LABRISH_S3');
+const LABRISH_S3_SECRET = Deno.env.get('LABRISH_S3_SECRET');
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
+const S3_BUCKET = 'user-files';
+
+const projectRef = SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] ?? '';
+
+const s3Client = new S3Client({
+  region: 'auto',
+  endpoint: `https://${projectRef}.supabase.co/storage/v1/s3`,
+  credentials: {
+    accessKeyId: LABRISH_S3 ?? '',
+    secretAccessKey: LABRISH_S3_SECRET ?? '',
+  },
+  forcePathStyle: true,
+});
+
+async function uploadToS3(audioData: ArrayBuffer, userId: string): Promise<string> {
+  const timestamp = Date.now();
+  const hash = Math.random().toString(36).substring(2, 10);
+  const fileName = `audio/${userId}/${timestamp}-${hash}.mp3`;
+
+  const command = new PutObjectCommand({
+    Bucket: S3_BUCKET,
+    Key: fileName,
+    Body: new Uint8Array(audioData),
+    ContentType: 'audio/mpeg',
+  });
+
+  await s3Client.send(command);
+
+  return `${SUPABASE_URL}/storage/v1/object/public/${S3_BUCKET}/${fileName}`;
+}
 
 interface BatchTTSRequest {
   texts: string[];
@@ -16,7 +51,6 @@ interface BatchTTSRequest {
   merge_audio?: boolean;
 }
 
-// Helper function to create responses with CORS headers
 function corsResponse(body: string | object | ArrayBuffer | null, status = 200, contentType = 'application/json') {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -47,7 +81,6 @@ function corsResponse(body: string | object | ArrayBuffer | null, status = 200, 
   });
 }
 
-// Split text into chunks that fit within API limits
 function splitTextIntoChunks(text: string, maxLength = 2500): string[] {
   if (text.length <= maxLength) {
     return [text];
@@ -66,7 +99,6 @@ function splitTextIntoChunks(text: string, maxLength = 2500): string[] {
         chunks.push(currentChunk + '.');
         currentChunk = trimmedSentence;
       } else {
-        // Handle very long sentences by splitting on commas or spaces
         const words = trimmedSentence.split(' ');
         let wordChunk = '';
         
@@ -78,7 +110,6 @@ function splitTextIntoChunks(text: string, maxLength = 2500): string[] {
               chunks.push(wordChunk);
               wordChunk = word;
             } else {
-              // Single word is too long, truncate it
               chunks.push(word.slice(0, maxLength));
             }
           }
@@ -98,7 +129,6 @@ function splitTextIntoChunks(text: string, maxLength = 2500): string[] {
   return chunks;
 }
 
-// Generate speech for a single text chunk
 async function generateSpeechChunk(
   text: string,
   voiceId: string,
@@ -125,7 +155,6 @@ async function generateSpeechChunk(
   return response.arrayBuffer();
 }
 
-// Merge multiple audio buffers (simple concatenation)
 function mergeAudioBuffers(buffers: ArrayBuffer[]): ArrayBuffer {
   const totalLength = buffers.reduce((sum, buffer) => sum + buffer.byteLength, 0);
   const merged = new Uint8Array(totalLength);
@@ -153,7 +182,6 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Eleven Labs API key not configured' }, 500);
     }
 
-    // Authenticate user
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return corsResponse({ error: 'Authorization header required' }, 401);
@@ -166,10 +194,8 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Invalid authentication token' }, 401);
     }
 
-    // Parse request body
     const { texts, voice_id, voice_settings, merge_audio = true }: BatchTTSRequest = await req.json();
 
-    // Validate required parameters
     if (!texts || !Array.isArray(texts) || texts.length === 0) {
       return corsResponse({ error: 'Texts array is required and must not be empty' }, 400);
     }
@@ -178,7 +204,6 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Voice ID is required and must be a string' }, 400);
     }
 
-    // Process each text and split into chunks if necessary
     const allChunks: string[] = [];
     for (const text of texts) {
       if (typeof text !== 'string') {
@@ -193,7 +218,6 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Too many text chunks. Maximum 50 chunks allowed.' }, 400);
     }
 
-    // Default voice settings
     const defaultSettings = {
       stability: 0.5,
       similarity_boost: 0.75,
@@ -203,7 +227,6 @@ Deno.serve(async (req) => {
 
     const settings = { ...defaultSettings, ...voice_settings };
 
-    // Generate speech for each chunk
     const audioBuffers: ArrayBuffer[] = [];
     
     for (let i = 0; i < allChunks.length; i++) {
@@ -213,7 +236,6 @@ Deno.serve(async (req) => {
         const audioBuffer = await generateSpeechChunk(chunk, voice_id, settings);
         audioBuffers.push(audioBuffer);
         
-        // Add a small delay between requests to avoid rate limiting
         if (i < allChunks.length - 1) {
           await new Promise(resolve => setTimeout(resolve, 100));
         }
@@ -227,18 +249,47 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Merge audio buffers if requested
+    let finalAudio: ArrayBuffer;
     if (merge_audio && audioBuffers.length > 1) {
-      const mergedAudio = mergeAudioBuffers(audioBuffers);
-      return corsResponse(mergedAudio, 200);
-    } else if (audioBuffers.length === 1) {
-      return corsResponse(audioBuffers[0], 200);
+      finalAudio = mergeAudioBuffers(audioBuffers);
     } else {
-      // Return individual audio files as a multipart response
-      // For simplicity, we'll return the first audio buffer
-      // In a real implementation, you'd use multipart/form-data
-      return corsResponse(audioBuffers[0], 200);
+      finalAudio = audioBuffers[0];
     }
+
+    let audioUrl: string | null = null;
+    if (LABRISH_S3 && LABRISH_S3_SECRET) {
+      try {
+        audioUrl = await uploadToS3(finalAudio, user.id);
+        console.log(`Batch audio uploaded to S3: ${audioUrl}`);
+
+        const { error: recordError } = await supabase
+          .from('audio_files')
+          .insert({
+            user_id: user.id,
+            file_path: audioUrl.split('/user-files/')[1] || '',
+            file_name: audioUrl.split('/').pop() || '',
+            file_size: finalAudio.byteLength,
+            content_type: 'audio/mpeg',
+          });
+
+        if (recordError) {
+          console.error('Error recording audio file:', recordError);
+        }
+      } catch (s3Error) {
+        console.error('S3 upload failed, returning audio without storage:', s3Error);
+      }
+    }
+
+    return new Response(finalAudio, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': '*',
+        'Content-Type': 'audio/mpeg',
+        'X-Audio-Url': audioUrl || '',
+      },
+    });
 
   } catch (error: any) {
     console.error('Batch TTS error:', error);
