@@ -7,7 +7,7 @@ import { handleNetworkError } from './errorHandling';
 export interface ApiRequestConfig {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   headers?: Record<string, string>;
-  body?: any;
+  body?: unknown;
   timeout?: number;
   retries?: number;
   retryDelay?: number;
@@ -15,7 +15,7 @@ export interface ApiRequestConfig {
   cacheTTL?: number;
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   data: T;
   status: number;
   headers: Headers;
@@ -25,8 +25,8 @@ export interface ApiResponse<T = any> {
 class ApiClient {
   private baseURL: string;
   private defaultHeaders: Record<string, string>;
-  private cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
-  private requestQueue = new Map<string, Promise<any>>();
+  private cache = new Map<string, { data: unknown; timestamp: number; ttl: number }>();
+  private requestQueue = new Map<string, Promise<unknown>>();
 
   constructor(baseURL: string = '', defaultHeaders: Record<string, string> = {}) {
     this.baseURL = baseURL;
@@ -40,7 +40,7 @@ class ApiClient {
     return `${config.method || 'GET'}:${url}:${JSON.stringify(config.body || {})}`;
   }
 
-  private getFromCache(key: string): any | null {
+  private getFromCache(key: string): unknown | null {
     const cached = this.cache.get(key);
     if (!cached) return null;
 
@@ -53,7 +53,7 @@ class ApiClient {
     return cached.data;
   }
 
-  private setCache(key: string, data: any, ttl: number): void {
+  private setCache(key: string, data: unknown, ttl: number): void {
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
@@ -178,15 +178,14 @@ class ApiClient {
           status: response.status,
           headers: response.headers,
         };
-      } catch (error: any) {
-        lastError = error;
+      } catch (error: unknown) {
+        lastError = error instanceof Error ? error : new Error(String(error));
 
-        // Don't retry on certain errors
         if (
-          error.name === 'AbortError' ||
-          error.message.includes('401') ||
-          error.message.includes('403') ||
-          error.message.includes('404')
+          lastError.name === 'AbortError' ||
+          lastError.message.includes('401') ||
+          lastError.message.includes('403') ||
+          lastError.message.includes('404')
         ) {
           break;
         }
@@ -206,15 +205,15 @@ class ApiClient {
     return this.makeRequest<T>(url, { ...config, method: 'GET' });
   }
 
-  async post<T>(url: string, body?: any, config?: Omit<ApiRequestConfig, 'method'>): Promise<ApiResponse<T>> {
+  async post<T>(url: string, body?: unknown, config?: Omit<ApiRequestConfig, 'method'>): Promise<ApiResponse<T>> {
     return this.makeRequest<T>(url, { ...config, method: 'POST', body });
   }
 
-  async put<T>(url: string, body?: any, config?: Omit<ApiRequestConfig, 'method'>): Promise<ApiResponse<T>> {
+  async put<T>(url: string, body?: unknown, config?: Omit<ApiRequestConfig, 'method'>): Promise<ApiResponse<T>> {
     return this.makeRequest<T>(url, { ...config, method: 'PUT', body });
   }
 
-  async patch<T>(url: string, body?: any, config?: Omit<ApiRequestConfig, 'method'>): Promise<ApiResponse<T>> {
+  async patch<T>(url: string, body?: unknown, config?: Omit<ApiRequestConfig, 'method'>): Promise<ApiResponse<T>> {
     return this.makeRequest<T>(url, { ...config, method: 'PATCH', body });
   }
 

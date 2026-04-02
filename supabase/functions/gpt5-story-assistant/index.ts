@@ -1,8 +1,8 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 
-const FREE_TIER_AI_LIMIT = 5;
-const PRO_TIER_AI_LIMIT = 50;
+const FREE_TIER_AI_LIMIT = parseInt(Deno.env.get('AI_FREE_TIER_LIMIT') || '5');
+const PRO_TIER_AI_LIMIT = parseInt(Deno.env.get('AI_PRO_TIER_LIMIT') || '50');
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL') ?? '',
@@ -290,7 +290,7 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Authorization header required' }, 401);
     }
 
-    const token = authHeader.replace('Bearer ', '');
+    const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : '';
     const { data: { user }, error: getUserError } = await supabase.auth.getUser(token);
 
     if (getUserError || !user) {

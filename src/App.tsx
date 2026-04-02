@@ -2,7 +2,8 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { ToastContainer, useToast } from '@/components/common/Toast';
-import { useSEO, pageConfigs } from '@/lib/seo';
+import { pageConfigs } from '@/lib/seo';
+import SEOPage from '@/components/common/SEOPage';
 import LoadingSpinner from './components/common/LoadingSpinner';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
@@ -36,14 +37,8 @@ const DiscoverPage = lazy(() => import('./pages/DiscoverPage'));
 const LearnPage = lazy(() => import('./pages/LearnPage'));
 const QuizPage = lazy(() => import('./pages/QuizPage'));
 
-const HomePage: React.FC = () => {
-  const { updateSEO } = useSEO();
-  
-  React.useEffect(() => {
-    updateSEO(pageConfigs.home);
-  }, [updateSEO]);
-
-  return (
+const HomePage: React.FC = () => (
+  <SEOPage config={pageConfigs.home}>
     <main className="min-h-screen">
       <Navbar />
       <StickyCTABar />
@@ -58,150 +53,8 @@ const HomePage: React.FC = () => {
       <FaqSection />
       <Footer />
     </main>
-  );
-};
-
-const DashboardPage: React.FC = () => {
-  const { updateSEO } = useSEO();
-  
-  React.useEffect(() => {
-    updateSEO(pageConfigs.dashboard);
-  }, [updateSEO]);
-
-  return <Dashboard />;
-};
-
-const TextToSpeechPageWrapper: React.FC = () => {
-  const { updateSEO } = useSEO();
-  
-  React.useEffect(() => {
-    updateSEO(pageConfigs.textToSpeech);
-  }, [updateSEO]);
-
-  return <TextToSpeechPage />;
-};
-
-const PricingPageWrapper: React.FC = () => {
-  const { updateSEO } = useSEO();
-  
-  React.useEffect(() => {
-    updateSEO(pageConfigs.pricing);
-  }, [updateSEO]);
-
-  return <HomePage />;
-};
-
-const AnalyticsPage: React.FC = () => {
-  const { updateSEO } = useSEO();
-  
-  React.useEffect(() => {
-    updateSEO({
-      title: 'Analytics Dashboard - Labrish',
-      description: 'Comprehensive analytics and insights for your Caribbean voice content. Track performance, engagement, and audience metrics.',
-      keywords: ['analytics', 'insights', 'performance metrics', 'content analytics', 'voice analytics'],
-    });
-  }, [updateSEO]);
-
-  return <AdvancedAnalyticsDashboard />;
-};
-
-const SecurityPage: React.FC = () => {
-  const { updateSEO } = useSEO();
-  
-  React.useEffect(() => {
-    updateSEO({
-      title: 'Security Settings - Labrish',
-      description: 'Manage your account security with advanced features including two-factor authentication, session management, and security monitoring.',
-      keywords: ['security', 'two-factor authentication', 'account security', 'privacy settings'],
-    });
-  }, [updateSEO]);
-
-  return <EnhancedSecurityDashboard />;
-};
-
-const VoiceStudioPage: React.FC = () => {
-  const { updateSEO } = useSEO();
-  
-  React.useEffect(() => {
-    updateSEO({
-      title: 'Voice Cloning Studio - Labrish',
-      description: 'Create personalized AI voice clones with our advanced voice training technology. Train your own Caribbean voice for authentic storytelling.',
-      keywords: ['voice cloning', 'voice training', 'AI voice', 'personalized voice', 'voice synthesis'],
-    });
-  }, [updateSEO]);
-
-  return <VoiceCloningStudio />;
-};
-
-const VoiceDesignPage: React.FC = () => {
-  const { updateSEO } = useSEO();
-  
-  React.useEffect(() => {
-    updateSEO({
-      title: 'Voice Design Studio - Labrish',
-      description: 'Create custom voices with our AI-powered voice design technology. Describe the voice you want, and we\'ll generate it.',
-      keywords: ['voice design', 'custom voice', 'AI voice', 'voice generator', 'personalized voice'],
-    });
-  }, [updateSEO]);
-
-  return <VoiceDesignStudio />;
-};
-
-const FeedbackPage: React.FC = () => {
-  const { updateSEO } = useSEO();
-
-  React.useEffect(() => {
-    updateSEO({
-      title: 'Feature Requests - Labrish',
-      description: 'Vote on features you\'d like to see in Labrish. Your feedback shapes the future of our Caribbean Voice AI Platform.',
-      keywords: ['feature requests', 'feedback', 'roadmap', 'community'],
-    });
-  }, [updateSEO]);
-
-  return <FeatureRequestBoard />;
-};
-
-const DiscoverPageWrapper: React.FC = () => {
-  const { updateSEO } = useSEO();
-
-  React.useEffect(() => {
-    updateSEO({
-      title: 'Discover Stories - Labrish',
-      description: 'Explore trending Caribbean stories from our community. Swipe through authentic voices and cultural narratives.',
-      keywords: ['discover', 'stories', 'Caribbean content', 'community', 'trending'],
-    });
-  }, [updateSEO]);
-
-  return <DiscoverPage />;
-};
-
-const LearnPageWrapper: React.FC = () => {
-  const { updateSEO } = useSEO();
-
-  React.useEffect(() => {
-    updateSEO({
-      title: 'Learn - Labrish',
-      description: 'Learn Caribbean culture and language through interactive stories with synchronized transcripts and vocabulary building.',
-      keywords: ['learn', 'language learning', 'Caribbean culture', 'vocabulary', 'education'],
-    });
-  }, [updateSEO]);
-
-  return <LearnPage />;
-};
-
-const QuizPageWrapper: React.FC = () => {
-  const { updateSEO } = useSEO();
-
-  React.useEffect(() => {
-    updateSEO({
-      title: 'Cultural Quizzes - Labrish',
-      description: 'Test your Caribbean cultural knowledge, earn XP, and unlock achievements. Challenge yourself with daily quizzes!',
-      keywords: ['quiz', 'cultural knowledge', 'Caribbean culture', 'learning', 'achievements'],
-    });
-  }, [updateSEO]);
-
-  return <QuizPage />;
-};
+  </SEOPage>
+);
 
 const AppContent: React.FC = () => {
   const { toasts, dismissToast } = useToast();
@@ -220,16 +73,18 @@ const AppContent: React.FC = () => {
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/pricing" element={<PricingPageWrapper />} />
-            <Route path="/feedback" element={<ProtectedRoute><FeedbackPage /></ProtectedRoute>} />
-            <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-            <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
-            <Route path="/security" element={<ProtectedRoute><SecurityPage /></ProtectedRoute>} />
+            <Route path="/pricing" element={<SEOPage config={pageConfigs.pricing}><HomePage /></SEOPage>} />
+            <Route path="/feedback" element={<ProtectedRoute><SEOPage config={pageConfigs.feedback}><FeatureRequestBoard /></SEOPage></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><SEOPage config={pageConfigs.dashboard}><Dashboard /></SEOPage></ProtectedRoute>} />
+            <Route path="/analytics" element={<ProtectedRoute><SEOPage config={pageConfigs.analytics}><AdvancedAnalyticsDashboard /></SEOPage></ProtectedRoute>} />
+            <Route path="/security" element={<ProtectedRoute><SEOPage config={pageConfigs.security}><EnhancedSecurityDashboard /></SEOPage></ProtectedRoute>} />
             <Route path="/success" element={<ProtectedRoute><SuccessPage /></ProtectedRoute>} />
-            <Route path="/text-to-speech" element={<ProtectedRoute><TextToSpeechPageWrapper /></ProtectedRoute>} />
-            <Route path="/discover" element={<ProtectedRoute><DiscoverPageWrapper /></ProtectedRoute>} />
-            <Route path="/learn/:storyId" element={<ProtectedRoute><LearnPageWrapper /></ProtectedRoute>} />
-            <Route path="/quiz" element={<ProtectedRoute><QuizPageWrapper /></ProtectedRoute>} />
+            <Route path="/text-to-speech" element={<ProtectedRoute><SEOPage config={pageConfigs.textToSpeech}><TextToSpeechPage /></SEOPage></ProtectedRoute>} />
+            <Route path="/voice-cloning" element={<ProtectedRoute><SEOPage config={pageConfigs.voiceCloning}><VoiceCloningStudio /></SEOPage></ProtectedRoute>} />
+            <Route path="/voice-design" element={<ProtectedRoute><SEOPage config={pageConfigs.voiceDesign}><VoiceDesignStudio /></SEOPage></ProtectedRoute>} />
+            <Route path="/discover" element={<ProtectedRoute><SEOPage config={pageConfigs.discover}><DiscoverPage /></SEOPage></ProtectedRoute>} />
+            <Route path="/learn/:storyId" element={<ProtectedRoute><SEOPage config={pageConfigs.learn}><LearnPage /></SEOPage></ProtectedRoute>} />
+            <Route path="/quiz" element={<ProtectedRoute><SEOPage config={pageConfigs.quiz}><QuizPage /></SEOPage></ProtectedRoute>} />
           </Routes>
           <FeedbackWidget />
         </Suspense>

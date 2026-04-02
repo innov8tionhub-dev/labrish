@@ -13,7 +13,9 @@ const ELEVENLABS_BASE_URL = 'https://api.elevenlabs.io/v1';
 const LABRISH_S3 = Deno.env.get('LABRISH_S3');
 const LABRISH_S3_SECRET = Deno.env.get('LABRISH_S3_SECRET');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
-const S3_BUCKET = 'user-files';
+const S3_BUCKET = Deno.env.get('S3_BUCKET') || 'user-files';
+const MAX_CHUNK_LENGTH = parseInt(Deno.env.get('MAX_TEXT_LENGTH') || '2500');
+const MAX_CHUNKS = parseInt(Deno.env.get('MAX_BATCH_CHUNKS') || '50');
 
 const projectRef = SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] ?? '';
 
@@ -55,7 +57,7 @@ function corsResponse(body: string | object | ArrayBuffer | null, status = 200, 
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': '*',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
   };
 
   if (status === 204) {
@@ -81,7 +83,7 @@ function corsResponse(body: string | object | ArrayBuffer | null, status = 200, 
   });
 }
 
-function splitTextIntoChunks(text: string, maxLength = 2500): string[] {
+function splitTextIntoChunks(text: string, maxLength = MAX_CHUNK_LENGTH): string[] {
   if (text.length <= maxLength) {
     return [text];
   }
@@ -187,7 +189,7 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Authorization header required' }, 401);
     }
 
-    const token = authHeader.replace('Bearer ', '');
+    const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : '';
     const { data: { user }, error: getUserError } = await supabase.auth.getUser(token);
 
     if (getUserError || !user) {
@@ -214,8 +216,8 @@ Deno.serve(async (req) => {
       allChunks.push(...chunks);
     }
 
-    if (allChunks.length > 50) {
-      return corsResponse({ error: 'Too many text chunks. Maximum 50 chunks allowed.' }, 400);
+    if (allChunks.length > MAX_CHUNKS) {
+      return corsResponse({ error: `Too many text chunks. Maximum ${MAX_CHUNKS} chunks allowed.` }, 400);
     }
 
     const defaultSettings = {
@@ -285,7 +287,7 @@ Deno.serve(async (req) => {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': '*',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
         'Content-Type': 'audio/mpeg',
         'X-Audio-Url': audioUrl || '',
       },

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { SecureStorage } from '@/lib/security';
+import { errorHandler } from '@/lib/errorHandling';
 
 export function useLocalStorage<T>(
   key: string,
@@ -15,7 +16,7 @@ export function useLocalStorage<T>(
       
       return item ? JSON.parse(item) : initialValue;
     } catch (error) {
-      console.error(`Error reading localStorage key "${key}":`, error);
+      errorHandler.logError(error instanceof Error ? error : String(error), { key, context: 'localStorage-read' });
       return initialValue;
     }
   });
@@ -37,7 +38,7 @@ export function useLocalStorage<T>(
         window.localStorage.setItem(key, serializedValue);
       }
     } catch (error) {
-      console.error(`Error setting localStorage key "${key}":`, error);
+      errorHandler.logError(error instanceof Error ? error : String(error), { key, context: 'localStorage-set' });
     }
   };
 
@@ -51,7 +52,7 @@ export function useLocalStorage<T>(
       }
       setStoredValue(initialValue);
     } catch (error) {
-      console.error(`Error removing localStorage key "${key}":`, error);
+      errorHandler.logError(error instanceof Error ? error : String(error), { key, context: 'localStorage-remove' });
     }
   };
 
@@ -62,7 +63,7 @@ export function useLocalStorage<T>(
         try {
           setStoredValue(JSON.parse(e.newValue));
         } catch (error) {
-          console.error(`Error parsing localStorage value for key "${key}":`, error);
+          errorHandler.logError(error instanceof Error ? error : String(error), { key, context: 'localStorage-parse' });
         }
       }
     };

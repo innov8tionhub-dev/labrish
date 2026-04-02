@@ -106,9 +106,9 @@ export const useDashboardStats = (userId: string | undefined) => {
             plays: Math.max(0, playsGrowth)
           }
         });
-      } catch (err: any) {
-        console.error('Failed to fetch dashboard stats:', err);
-        setError(err.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Failed to fetch dashboard stats';
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -173,9 +173,9 @@ export const useMonthlyStats = (userId: string | undefined) => {
           totalPlays,
           engagement: Math.min(100, engagement)
         });
-      } catch (err: any) {
-        console.error('Failed to fetch monthly stats:', err);
-        setError(err.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Failed to fetch monthly stats';
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -246,9 +246,9 @@ export const useRecentActivities = (userId: string | undefined, limit: number = 
         });
 
         setActivities(formattedActivities);
-      } catch (err: any) {
-        console.error('Failed to fetch recent activities:', err);
-        setError(err.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Failed to fetch recent activities';
+        setError(message);
       } finally {
         setLoading(false);
       }

@@ -16,7 +16,7 @@ function corsResponse(body: string | object | null, status = 200) {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': '*',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
   };
 
   // For 204 No Content, don't include Content-Type or body
@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
     }
 
     const authHeader = req.headers.get('Authorization')!;
-    const token = authHeader.replace('Bearer ', '');
+    const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : '';
     const {
       data: { user },
       error: getUserError,

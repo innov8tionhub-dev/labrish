@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import { errorHandler } from '@/lib/errorHandling';
 
 interface AuthContextType {
   user: User | null;
@@ -37,7 +38,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
       } catch (error) {
-        console.error('Error initializing auth:', error);
+        errorHandler.logError(error instanceof Error ? error : String(error), { context: 'auth-init' });
       } finally {
         setLoading(false);
       }
@@ -46,22 +47,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initializeAuth();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
-        console.log('Auth state changed:', event);
-
+      (event, currentSession) => {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
 
-        if (event === 'SIGNED_IN') {
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+          if (event === 'SIGNED_OUT') {
+            setUser(null);
+            setSession(null);
+          }
           setLoading(false);
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
-          setSession(null);
-          setLoading(false);
-        } else if (event === 'TOKEN_REFRESHED') {
-          console.log('Token refreshed successfully');
-        } else if (event === 'USER_UPDATED') {
-          console.log('User updated');
         }
       }
     );
@@ -76,7 +71,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(true);
       await supabase.auth.signOut();
     } catch (error) {
-      console.error('Error signing out:', error);
+      errorHandler.logError(error instanceof Error ? error : String(error), { context: 'sign-out' });
       throw error;
     } finally {
       setLoading(false);
@@ -92,7 +87,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setSession(refreshedSession);
       setUser(refreshedSession?.user ?? null);
     } catch (error) {
-      console.error('Error refreshing session:', error);
+      errorHandler.logError(error instanceof Error ? error : String(error), { context: 'session-refresh' });
       throw error;
     }
   };

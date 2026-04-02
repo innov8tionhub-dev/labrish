@@ -100,38 +100,46 @@ export const withErrorHandling = <T extends (...args: any[]) => Promise<any>>(
 };
 
 // Network error handler
-export const handleNetworkError = (error: any): string => {
+export const handleNetworkError = (error: unknown): string => {
   if (!navigator.onLine) {
     return 'No internet connection. Please check your network and try again.';
   }
-  
-  if (error.name === 'AbortError') {
+
+  const err = error as Record<string, unknown>;
+
+  if (err?.name === 'AbortError') {
     return 'Request was cancelled. Please try again.';
   }
-  
-  if (error.code === 'NETWORK_ERROR') {
+
+  if (err?.code === 'NETWORK_ERROR') {
     return 'Network error occurred. Please check your connection.';
   }
-  
-  if (error.status === 429) {
+
+  const status = typeof err?.status === 'number' ? err.status : 0;
+
+  if (status === 429) {
     return 'Too many requests. Please wait a moment and try again.';
   }
-  
-  if (error.status >= 500) {
+
+  if (status >= 500) {
     return 'Server error occurred. Please try again later.';
   }
-  
-  if (error.status === 404) {
+
+  if (status === 404) {
     return 'Requested resource not found.';
   }
-  
-  if (error.status === 403) {
+
+  if (status === 403) {
     return 'Access denied. Please check your permissions.';
   }
-  
-  if (error.status === 401) {
+
+  if (status === 401) {
     return 'Authentication required. Please log in again.';
   }
-  
-  return error.message || 'An unexpected error occurred. Please try again.';
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return 'An unexpected error occurred. Please try again.';
 };

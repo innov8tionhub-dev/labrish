@@ -2,8 +2,8 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { S3Client, PutObjectCommand } from 'npm:@aws-sdk/client-s3@3.600.0';
 
-const FREE_TIER_LIMIT = 5;
-const PRO_TIER_LIMIT = 40;
+const FREE_TIER_LIMIT = parseInt(Deno.env.get('TTS_FREE_TIER_LIMIT') || '5');
+const PRO_TIER_LIMIT = parseInt(Deno.env.get('TTS_PRO_TIER_LIMIT') || '40');
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL') ?? '',
@@ -16,7 +16,8 @@ const ELEVENLABS_BASE_URL = 'https://api.elevenlabs.io/v1';
 const LABRISH_S3 = Deno.env.get('LABRISH_S3');
 const LABRISH_S3_SECRET = Deno.env.get('LABRISH_S3_SECRET');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
-const S3_BUCKET = 'user-files';
+const S3_BUCKET = Deno.env.get('S3_BUCKET') || 'user-files';
+const MAX_TEXT_LENGTH = parseInt(Deno.env.get('MAX_TEXT_LENGTH') || '2500');
 
 const projectRef = SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] ?? '';
 
@@ -51,7 +52,7 @@ function corsResponse(body: string | object | ArrayBuffer | null, status = 200, 
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': '*',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
   };
 
   if (status === 204) {
@@ -96,7 +97,7 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Authorization header required' }, 401);
     }
 
-    const token = authHeader.replace('Bearer ', '');
+    const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : '';
     const { data: { user }, error: getUserError } = await supabase.auth.getUser(token);
 
     console.log('Authenticating user for TTS generation');
@@ -203,8 +204,8 @@ Deno.serve(async (req) => {
       console.error('Error checking generation limits:', countError);
     }
 
-    if (text.length > 2500) {
-      return corsResponse({ error: 'Text must be 2,500 characters or less' }, 400);
+    if (text.length > MAX_TEXT_LENGTH) {
+      return corsResponse({ error: `Text must be ${MAX_TEXT_LENGTH.toLocaleString()} characters or less` }, 400);
     }
 
     if (text.trim().length === 0) {
@@ -292,7 +293,7 @@ Deno.serve(async (req) => {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': '*',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
         'Content-Type': 'audio/mpeg',
         'X-Audio-Url': audioUrl || '',
       },

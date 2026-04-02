@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const token = authHeader.replace('Bearer ', '');
+    const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : '';
     const { data: { user }, error: getUserError } = await supabase.auth.getUser(token);
 
     if (getUserError || !user) {

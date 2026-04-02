@@ -256,29 +256,65 @@ export const useSEO = () => {
   };
 };
 
-// Page-specific SEO configurations
 export const pageConfigs = {
   home: {
     title: 'Labrish - Caribbean Voice AI Platform',
     description: 'Experience authentic Caribbean voices with AI-powered storytelling and conversation. Create, share, and listen to stories in authentic island accents.',
     keywords: ['Caribbean voices', 'AI storytelling', 'text-to-speech', 'Jamaican accent', 'Caribbean culture'],
   },
-  
   dashboard: {
     title: 'Dashboard - Labrish',
     description: 'Manage your Caribbean stories, voice settings, and audio creations in your personal Labrish dashboard.',
     keywords: ['dashboard', 'story management', 'voice settings', 'audio library'],
   },
-  
   textToSpeech: {
     title: 'Text-to-Speech Studio - Labrish',
     description: 'Convert your text to authentic Caribbean voices with our AI-powered text-to-speech studio. Create engaging audio content with island accents.',
     keywords: ['text-to-speech', 'Caribbean voices', 'AI audio', 'voice synthesis', 'audio creation'],
   },
-  
   pricing: {
     title: 'Pricing - Labrish',
     description: 'Choose the perfect plan for your Caribbean storytelling needs. Affordable pricing for individuals and businesses.',
     keywords: ['pricing', 'subscription plans', 'Caribbean AI voices', 'storytelling platform'],
   },
-};
+  analytics: {
+    title: 'Analytics Dashboard - Labrish',
+    description: 'Comprehensive analytics and insights for your Caribbean voice content. Track performance, engagement, and audience metrics.',
+    keywords: ['analytics', 'insights', 'performance metrics', 'content analytics', 'voice analytics'],
+  },
+  security: {
+    title: 'Security Settings - Labrish',
+    description: 'Manage your account security with advanced features including two-factor authentication, session management, and security monitoring.',
+    keywords: ['security', 'two-factor authentication', 'account security', 'privacy settings'],
+  },
+  voiceCloning: {
+    title: 'Voice Cloning Studio - Labrish',
+    description: 'Create personalized AI voice clones with our advanced voice training technology. Train your own Caribbean voice for authentic storytelling.',
+    keywords: ['voice cloning', 'voice training', 'AI voice', 'personalized voice', 'voice synthesis'],
+  },
+  voiceDesign: {
+    title: 'Voice Design Studio - Labrish',
+    description: 'Create custom voices with our AI-powered voice design technology. Describe the voice you want, and we\'ll generate it.',
+    keywords: ['voice design', 'custom voice', 'AI voice', 'voice generator', 'personalized voice'],
+  },
+  feedback: {
+    title: 'Feature Requests - Labrish',
+    description: 'Vote on features you\'d like to see in Labrish. Your feedback shapes the future of our Caribbean Voice AI Platform.',
+    keywords: ['feature requests', 'feedback', 'roadmap', 'community'],
+  },
+  discover: {
+    title: 'Discover Stories - Labrish',
+    description: 'Explore trending Caribbean stories from our community. Swipe through authentic voices and cultural narratives.',
+    keywords: ['discover', 'stories', 'Caribbean content', 'community', 'trending'],
+  },
+  learn: {
+    title: 'Learn - Labrish',
+    description: 'Learn Caribbean culture and language through interactive stories with synchronized transcripts and vocabulary building.',
+    keywords: ['learn', 'language learning', 'Caribbean culture', 'vocabulary', 'education'],
+  },
+  quiz: {
+    title: 'Cultural Quizzes - Labrish',
+    description: 'Test your Caribbean cultural knowledge, earn XP, and unlock achievements. Challenge yourself with daily quizzes!',
+    keywords: ['quiz', 'cultural knowledge', 'Caribbean culture', 'learning', 'achievements'],
+  },
+} as const;
