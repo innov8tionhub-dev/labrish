@@ -8,73 +8,86 @@ import { validateEmail, validatePassword, RateLimiter, sanitizeInput } from '@/l
 import { useErrorHandler } from '@/lib/errorHandling';
 import { useToast } from '@/components/common/Toast';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import FormField from '@/components/ui/FormField';
+import { useFormState } from '@/hooks/useFormState';
 
-const rateLimiter = new RateLimiter(3, 15 * 60 * 1000); // 3 attempts per 15 minutes
+const rateLimiter = new RateLimiter(3, 15 * 60 * 1000);
+
+interface SignupForm extends Record<string, unknown> {
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+const PasswordToggle: React.FC<{
+  visible: boolean;
+  onToggle: () => void;
+}> = ({ visible, onToggle }) => (
+  <button
+    type="button"
+    onClick={onToggle}
+    className="text-gray-400 hover:text-gray-600"
+    aria-label={visible ? 'Hide password' : 'Show password'}
+  >
+    {visible ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+  </button>
+);
 
 const SignupPage: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
-    general?: string
-  }>({});
-  const [passwordStrength, setPasswordStrength] = useState<{ valid: boolean; message?: string }>({ valid: false });
+  const [passwordStrength, setPasswordStrength] = useState<{ valid: boolean; message?: string }>({
+    valid: false,
+  });
+
+  const { values, errors, setValue, setErrors, setFieldError } = useFormState<SignupForm>({
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+
   const navigate = useNavigate();
   const { handleError } = useErrorHandler();
   const { error: showErrorToast, success: showSuccessToast } = useToast();
 
   const handlePasswordChange = (value: string) => {
-    setPassword(value);
-    const strength = validatePassword(value);
-    setPasswordStrength(strength);
+    setValue('password', value);
+    setPasswordStrength(validatePassword(value));
   };
 
   const validateForm = (): boolean => {
-    const newErrors: typeof errors = {};
+    const sanitizedEmail = sanitizeInput(values.email);
+    const sanitizedPassword = sanitizeInput(values.password);
+    const sanitizedConfirm = sanitizeInput(values.confirmPassword);
+    const nextErrors: typeof errors = {};
 
-    // Sanitize inputs
-    const sanitizedEmail = sanitizeInput(email);
-    const sanitizedPassword = sanitizeInput(password);
-    const sanitizedConfirmPassword = sanitizeInput(confirmPassword);
+    if (!sanitizedEmail) nextErrors.email = 'Email is required';
+    else if (!validateEmail(sanitizedEmail))
+      nextErrors.email = 'Please enter a valid email address';
 
-    if (!sanitizedEmail) {
-      newErrors.email = 'Email is required';
-    } else if (!validateEmail(sanitizedEmail)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
+    if (!sanitizedPassword) nextErrors.password = 'Password is required';
+    else if (!passwordStrength.valid) nextErrors.password = passwordStrength.message;
 
-    if (!sanitizedPassword) {
-      newErrors.password = 'Password is required';
-    } else if (!passwordStrength.valid) {
-      newErrors.password = passwordStrength.message;
-    }
+    if (!sanitizedConfirm) nextErrors.confirmPassword = 'Please confirm your password';
+    else if (sanitizedPassword !== sanitizedConfirm)
+      nextErrors.confirmPassword = 'Passwords do not match';
 
-    if (!sanitizedConfirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (sanitizedPassword !== sanitizedConfirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!validateForm()) return;
 
-    // Rate limiting check
-    const clientId = `signup_${email}`;
+    const clientId = `signup_${values.email}`;
     if (!rateLimiter.isAllowed(clientId)) {
       const remainingTime = Math.ceil(rateLimiter.getRemainingTime(clientId) / 1000 / 60);
-      setErrors({ general: `Too many signup attempts. Please try again in ${remainingTime} minutes.` });
+      setFieldError(
+        'general',
+        `Too many signup attempts. Please try again in ${remainingTime} minutes.`
+      );
       return;
     }
 
@@ -82,52 +95,56 @@ const SignupPage: React.FC = () => {
     setErrors({});
 
     try {
-      const sanitizedEmail = sanitizeInput(email);
-      const sanitizedPassword = sanitizeInput(password);
+      const sanitizedEmail = sanitizeInput(values.email);
+      const sanitizedPassword = sanitizeInput(values.password);
 
       const { error } = await supabase.auth.signUp({
         email: sanitizedEmail,
         password: sanitizedPassword,
-        options: {
-          emailRedirectTo: undefined, // Disable email confirmation
-        }
+        options: { emailRedirectTo: undefined },
       });
 
       if (error) {
         handleError(error, { context: 'signup', email: sanitizedEmail });
 
         if (error.message.includes('already registered')) {
-          setErrors({ email: 'An account with this email already exists. Please sign in instead.' });
+          setFieldError(
+            'email',
+            'An account with this email already exists. Please sign in instead.'
+          );
         } else if (error.message.includes('Password should be')) {
-          setErrors({ password: error.message });
+          setFieldError('password', error.message);
         } else {
-          setErrors({ general: error.message });
+          setFieldError('general', error.message);
         }
       } else {
         showSuccessToast('Account created successfully!', 'Redirecting to your dashboard...');
         setTimeout(() => navigate('/dashboard'), 1000);
       }
-    } catch (error: unknown) {
-      handleError(error, { context: 'signup_catch' });
-      setErrors({ general: 'An unexpected error occurred. Please try again.' });
-      showErrorToast('Signup failed', 'Please try again or contact support if the problem persists.');
+    } catch (err: unknown) {
+      handleError(err, { context: 'signup_catch' });
+      setFieldError('general', 'An unexpected error occurred. Please try again.');
+      showErrorToast(
+        'Signup failed',
+        'Please try again or contact support if the problem persists.'
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const getPasswordStrengthColor = () => {
-    if (!password) return 'bg-gray-200';
+    if (!values.password) return 'bg-gray-200';
     if (passwordStrength.valid) return 'bg-green-500';
-    if (password.length >= 6) return 'bg-yellow-500';
+    if (values.password.length >= 6) return 'bg-yellow-500';
     return 'bg-red-500';
   };
 
   const getPasswordStrengthWidth = () => {
-    if (!password) return '0%';
+    if (!values.password) return '0%';
     if (passwordStrength.valid) return '100%';
-    if (password.length >= 6) return '66%';
-    if (password.length >= 3) return '33%';
+    if (values.password.length >= 6) return '66%';
+    if (values.password.length >= 3) return '33%';
     return '16%';
   };
 
@@ -141,22 +158,8 @@ const SignupPage: React.FC = () => {
       >
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-emerald-200/50">
           <div className="text-center mb-8">
-            <motion.h1
-              className="font-heading text-3xl text-gray-800 mb-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              Join Labrish
-            </motion.h1>
-            <motion.p
-              className="text-gray-600"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-            >
-              Create your account to start storytelling
-            </motion.p>
+            <h1 className="font-heading text-3xl text-gray-800 mb-2">Join Labrish</h1>
+            <p className="text-gray-600">Create your account to start storytelling</p>
           </div>
 
           {errors.general && (
@@ -173,68 +176,41 @@ const SignupPage: React.FC = () => {
           )}
 
           <form onSubmit={handleSignup} className="space-y-6" noValidate>
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 transition-colors ${errors.email ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-emerald-500'}`}
-                  placeholder="Enter your email"
-                  required
-                  autoComplete="email"
-                  aria-describedby={errors.email ? 'email-error' : undefined}
-                  aria-invalid={!!errors.email}
-                />
-              </div>
-              {errors.email && (
-                <p id="email-error" className="mt-1 text-sm text-red-600" role="alert">
-                  {errors.email}
-                </p>
-              )}
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => handlePasswordChange(e.target.value)}
-                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 transition-colors ${errors.password ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-emerald-500'}`}
-                  placeholder="Create a password"
-                  required
-                  autoComplete="new-password"
-                  aria-describedby={errors.password ? 'password-error' : 'password-strength'}
-                  aria-invalid={!!errors.password}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-              {/* Password strength indicator */}
-              {password && (
+            <FormField
+              id="email"
+              name="email"
+              type="email"
+              label="Email Address"
+              value={values.email}
+              onChange={(e) => setValue('email', e.target.value)}
+              leadingIcon={<Mail className="w-5 h-5" />}
+              placeholder="Enter your email"
+              autoComplete="email"
+              required
+              error={errors.email}
+            />
+
+            <div>
+              <FormField
+                id="password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                label="Password"
+                value={values.password}
+                onChange={(e) => handlePasswordChange(e.target.value)}
+                leadingIcon={<Lock className="w-5 h-5" />}
+                placeholder="Create a password"
+                autoComplete="new-password"
+                required
+                error={errors.password}
+                trailingIcon={
+                  <PasswordToggle
+                    visible={showPassword}
+                    onToggle={() => setShowPassword((v) => !v)}
+                  />
+                }
+              />
+              {values.password && (
                 <div className="mt-2">
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
@@ -248,86 +224,59 @@ const SignupPage: React.FC = () => {
                     ) : (
                       <AlertCircle className="w-4 h-4 text-yellow-600" />
                     )}
-                    <span className={`text-xs ${passwordStrength.valid ? 'text-green-600' : 'text-yellow-600'}`}>
-                      {passwordStrength.valid ? 'Strong password' : 'Password requirements not met'}
+                    <span
+                      className={`text-xs ${passwordStrength.valid ? 'text-green-600' : 'text-yellow-600'}`}
+                    >
+                      {passwordStrength.valid
+                        ? 'Strong password'
+                        : 'Password requirements not met'}
                     </span>
                   </div>
                 </div>
               )}
-              {errors.password && (
-                <p id="password-error" className="mt-1 text-sm text-red-600" role="alert">
-                  {errors.password}
-                </p>
-              )}
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.6 }}
-            >
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 transition-colors ${errors.confirmPassword ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-emerald-500'}`}
-                  placeholder="Confirm your password"
-                  required
-                  autoComplete="new-password"
-                  aria-describedby={errors.confirmPassword ? 'confirm-password-error' : undefined}
-                  aria-invalid={!!errors.confirmPassword}
+            </div>
+
+            <FormField
+              id="confirmPassword"
+              name="confirmPassword"
+              type={showConfirmPassword ? 'text' : 'password'}
+              label="Confirm Password"
+              value={values.confirmPassword}
+              onChange={(e) => setValue('confirmPassword', e.target.value)}
+              leadingIcon={<Lock className="w-5 h-5" />}
+              placeholder="Confirm your password"
+              autoComplete="new-password"
+              required
+              error={errors.confirmPassword}
+              trailingIcon={
+                <PasswordToggle
+                  visible={showConfirmPassword}
+                  onToggle={() => setShowConfirmPassword((v) => !v)}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-              {errors.confirmPassword && (
-                <p id="confirm-password-error" className="mt-1 text-sm text-red-600" role="alert">
-                  {errors.confirmPassword}
-                </p>
-              )}
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 }}
+              }
+            />
+
+            <Button
+              type="submit"
+              disabled={loading || !passwordStrength.valid}
+              className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-3 rounded-lg font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Button
-                type="submit"
-                disabled={loading || !passwordStrength.valid}
-                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-3 rounded-lg font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <LoadingSpinner size="sm" text="Creating Account..." />
-                ) : (
-                  'Create Account'
-                )}
-              </Button>
-            </motion.div>
+              {loading ? (
+                <LoadingSpinner size="sm" text="Creating Account..." />
+              ) : (
+                'Create Account'
+              )}
+            </Button>
           </form>
-          <motion.div
-            className="mt-6 text-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
-          >
+
+          <div className="mt-6 text-center">
             <p className="text-gray-600">
               Already have an account?{' '}
               <Link to="/login" className="text-emerald-600 hover:text-emerald-700 font-semibold">
                 Sign in
               </Link>
             </p>
-          </motion.div>
+          </div>
         </div>
       </motion.div>
     </div>

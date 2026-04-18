@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Key, Eye, EyeOff, Lock, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -6,6 +6,21 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { validatePassword } from '@/lib/security';
 import { useErrorHandler } from '@/lib/errorHandling';
+import FormField from '@/components/ui/FormField';
+
+const PasswordToggle: React.FC<{ visible: boolean; onToggle: () => void }> = ({
+  visible,
+  onToggle,
+}) => (
+  <button
+    type="button"
+    onClick={onToggle}
+    className="text-gray-400 hover:text-gray-600"
+    aria-label={visible ? 'Hide password' : 'Show password'}
+  >
+    {visible ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+  </button>
+);
 
 const ResetPasswordPage: React.FC = () => {
   const [password, setPassword] = useState('');
@@ -15,8 +30,10 @@ const ResetPasswordPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [passwordStrength, setPasswordStrength] = useState<{ valid: boolean; message?: string }>({ valid: false });
-  
+  const [passwordStrength, setPasswordStrength] = useState<{ valid: boolean; message?: string }>({
+    valid: false,
+  });
+
   const navigate = useNavigate();
   const { handleError } = useErrorHandler();
 
@@ -24,73 +41,54 @@ const ResetPasswordPage: React.FC = () => {
     const handleHashChange = async () => {
       const hash = window.location.hash.substring(1);
       const params = new URLSearchParams(hash);
-      
+
       const accessToken = params.get('access_token');
       const refreshToken = params.get('refresh_token');
       const type = params.get('type');
-      
+
       if (accessToken && type === 'recovery') {
-        // Set the session in Supabase
-        const { error } = await supabase.auth.setSession({
+        const { error: sessionError } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken || '',
         });
-        
-        if (error) {
+
+        if (sessionError) {
           setError('Invalid or expired reset link. Please request a new one.');
         }
       }
     };
-    
-    // Handle the initial URL hash
+
     handleHashChange();
-    
-    // Also listen for hash changes
     window.addEventListener('hashchange', handleHashChange);
-    
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-    };
+    return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  // Validate password strength as user types
   useEffect(() => {
-    const strength = validatePassword(password);
-    setPasswordStrength(strength);
+    setPasswordStrength(validatePassword(password));
   }, [password]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validation
+
     if (!passwordStrength.valid) {
       setError(passwordStrength.message || 'Password is not strong enough');
       return;
     }
-    
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
-    
+
     setIsSubmitting(true);
     setError(null);
-    
+
     try {
-      const { error: updateError } = await supabase.auth.updateUser({
-        password,
-      });
-      
-      if (updateError) {
-        throw updateError;
-      }
-      
+      const { error: updateError } = await supabase.auth.updateUser({ password });
+      if (updateError) throw updateError;
+
       setSuccess(true);
-      
-      // Redirect to login page after 3 seconds
-      setTimeout(() => {
-        navigate('/login');
-      }, 3000);
+      setTimeout(() => navigate('/login'), 3000);
     } catch (err: any) {
       handleError(err, { context: 'reset_password' });
       setError(err.message || 'Failed to reset password');
@@ -114,9 +112,11 @@ const ResetPasswordPage: React.FC = () => {
     return '16%';
   };
 
+  const confirmMismatch = !!confirmPassword && password !== confirmPassword;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-900/20 via-teal-800/10 to-cyan-900/20 flex items-center justify-center p-4">
-      <motion.div 
+      <motion.div
         className="w-full max-w-md"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -134,29 +134,17 @@ const ResetPasswordPage: React.FC = () => {
                 >
                   <Key className="w-10 h-10 text-emerald-600" />
                 </motion.div>
-                <motion.h1 
-                  className="font-heading text-3xl text-gray-800 mb-2"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  Reset Your Password
-                </motion.h1>
-                <motion.p 
-                  className="text-gray-600"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  Create a new password for your account
-                </motion.p>
+                <h1 className="font-heading text-3xl text-gray-800 mb-2">Reset Your Password</h1>
+                <p className="text-gray-600">Create a new password for your account</p>
               </div>
 
               {error && (
-                <motion.div 
+                <motion.div
                   className="mb-6 p-4 rounded-lg bg-red-50 text-red-700 border border-red-200 flex items-start gap-3"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
+                  role="alert"
+                  aria-live="polite"
                 >
                   <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                   <span>{error}</span>
@@ -164,40 +152,30 @@ const ResetPasswordPage: React.FC = () => {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                    New Password
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 border-gray-300"
-                      placeholder="Enter new password"
-                      required
-                      disabled={isSubmitting}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-
-                  {/* Password strength indicator */}
+                <div>
+                  <FormField
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    label="New Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    leadingIcon={<Lock className="w-5 h-5" />}
+                    placeholder="Enter new password"
+                    autoComplete="new-password"
+                    required
+                    disabled={isSubmitting}
+                    trailingIcon={
+                      <PasswordToggle
+                        visible={showPassword}
+                        onToggle={() => setShowPassword((v) => !v)}
+                      />
+                    }
+                  />
                   {password && (
                     <div className="mt-2">
                       <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
+                        <div
                           className={`h-2 rounded-full transition-all duration-300 ${getPasswordStrengthColor()}`}
                           style={{ width: getPasswordStrengthWidth() }}
                         />
@@ -208,75 +186,57 @@ const ResetPasswordPage: React.FC = () => {
                         ) : (
                           <AlertCircle className="w-4 h-4 text-yellow-600" />
                         )}
-                        <span className={`text-xs ${passwordStrength.valid ? 'text-green-600' : 'text-yellow-600'}`}>
-                          {passwordStrength.valid ? 'Strong password' : (passwordStrength.message || 'Password not strong enough')}
+                        <span
+                          className={`text-xs ${passwordStrength.valid ? 'text-green-600' : 'text-yellow-600'}`}
+                        >
+                          {passwordStrength.valid
+                            ? 'Strong password'
+                            : passwordStrength.message || 'Password not strong enough'}
                         </span>
                       </div>
                     </div>
                   )}
-                </motion.div>
+                </div>
 
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                    Confirm Password
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      id="confirmPassword"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 transition-colors ${
-                        confirmPassword && password !== confirmPassword 
-                          ? 'border-red-300 focus:border-red-500' 
-                          : 'border-gray-300 focus:border-emerald-500'
-                      }`}
-                      placeholder="Confirm your password"
-                      required
-                      disabled={isSubmitting}
+                <FormField
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  label="Confirm Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  leadingIcon={<Lock className="w-5 h-5" />}
+                  placeholder="Confirm your password"
+                  autoComplete="new-password"
+                  required
+                  disabled={isSubmitting}
+                  error={confirmMismatch ? 'Passwords do not match' : undefined}
+                  trailingIcon={
+                    <PasswordToggle
+                      visible={showConfirmPassword}
+                      onToggle={() => setShowConfirmPassword((v) => !v)}
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                  {confirmPassword && password !== confirmPassword && (
-                    <p className="text-sm text-red-600 mt-1">Passwords do not match</p>
-                  )}
-                </motion.div>
+                  }
+                />
 
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || !passwordStrength.valid || confirmMismatch}
+                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-3 rounded-lg font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting || !passwordStrength.valid || password !== confirmPassword}
-                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-3 rounded-lg font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? (
-                      <span className="flex items-center justify-center">
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Resetting Password...
-                      </span>
-                    ) : (
-                      'Reset Password'
-                    )}
-                  </Button>
-                </motion.div>
+                  {isSubmitting ? (
+                    <span className="flex items-center justify-center">
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Resetting Password...
+                    </span>
+                  ) : (
+                    'Reset Password'
+                  )}
+                </Button>
               </form>
             </>
           ) : (
-            <motion.div 
+            <motion.div
               className="text-center"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -285,15 +245,18 @@ const ResetPasswordPage: React.FC = () => {
               <div className="w-16 h-16 bg-green-100 rounded-full mx-auto flex items-center justify-center mb-6">
                 <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
-              
-              <h2 className="font-heading text-2xl text-gray-800 mb-4">Password Reset Successful</h2>
-              
+
+              <h2 className="font-heading text-2xl text-gray-800 mb-4">
+                Password Reset Successful
+              </h2>
+
               <p className="text-gray-600 mb-6">
-                Your password has been successfully reset. You'll be redirected to the login page in a moment.
+                Your password has been successfully reset. You'll be redirected to the login page
+                in a moment.
               </p>
-              
-              <Link 
-                to="/login" 
+
+              <Link
+                to="/login"
                 className="inline-block bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-6 py-2 rounded-lg font-medium hover:from-emerald-600 hover:to-teal-600 transition-colors"
               >
                 Go to Login
