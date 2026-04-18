@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Trophy, Star, Zap, Target, Award, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
+import { errorHandler } from '@/lib/errorHandling';
 import { useNavigate } from 'react-router-dom';
 
 interface Quiz {
@@ -73,7 +74,7 @@ export const QuizPage: React.FC = () => {
 
       setQuizzes(data || []);
     } catch (error) {
-      console.error('Failed to load quizzes:', error);
+      errorHandler.logError(error as Error, { source: 'QuizPage.load_quizzes:' });
     } finally {
       setLoading(false);
     }
@@ -98,7 +99,7 @@ export const QuizPage: React.FC = () => {
         level: Math.floor(totalXP / 1000) + 1,
       });
     } catch (error) {
-      console.error('Failed to load user stats:', error);
+      errorHandler.logError(error as Error, { source: 'QuizPage.load_user_stats:' });
     }
   };
 
@@ -112,7 +113,7 @@ export const QuizPage: React.FC = () => {
 
       setAchievements(data || []);
     } catch (error) {
-      console.error('Failed to load achievements:', error);
+      errorHandler.logError(error as Error, { source: 'QuizPage.load_achievements:' });
     }
   };
 
@@ -127,7 +128,7 @@ export const QuizPage: React.FC = () => {
 
       setDailyChallenge(data);
     } catch (error) {
-      console.error('Failed to load daily challenge:', error);
+      errorHandler.logError(error as Error, { source: 'QuizPage.load_daily_challenge:' });
     }
   };
 
@@ -157,7 +158,7 @@ export const QuizPage: React.FC = () => {
 
       setLeaderboard(leaderboardData);
     } catch (error) {
-      console.error('Failed to load leaderboard:', error);
+      errorHandler.logError(error as Error, { source: 'QuizPage.load_leaderboard:' });
     }
   };
 
@@ -225,7 +226,7 @@ export const QuizPage: React.FC = () => {
 
       setShowResult(true);
     } catch (error) {
-      console.error('Failed to save quiz result:', error);
+      errorHandler.logError(error as Error, { source: 'QuizPage.save_quiz_result:' });
     }
   };
 

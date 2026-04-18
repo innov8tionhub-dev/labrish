@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Bookmark, Share2, Play, Pause, ChevronLeft, TrendingUp, Sparkles, Users, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
+import { errorHandler } from '@/lib/errorHandling';
 import { useNavigate } from 'react-router-dom';
 
 interface DiscoverStory {
@@ -70,7 +71,7 @@ export const DiscoverPage: React.FC = () => {
       setLikedStories(likes);
       setBookmarkedStories(bookmarks);
     } catch (error) {
-      console.error('Failed to load interactions:', error);
+      errorHandler.logError(error as Error, { source: 'DiscoverPage.loadUserInteractions' });
     }
   };
 
@@ -136,7 +137,7 @@ export const DiscoverPage: React.FC = () => {
 
       setStories(enrichedStories as DiscoverStory[]);
     } catch (error) {
-      console.error('Failed to load stories:', error);
+      errorHandler.logError(error as Error, { source: 'DiscoverPage.loadStories', filter });
     } finally {
       setLoading(false);
     }
@@ -280,7 +281,7 @@ export const DiscoverPage: React.FC = () => {
 
         incrementCounter(story.id, 'share');
       } catch (error) {
-        console.error('Share failed:', error);
+        errorHandler.logError(error as Error, { source: 'DiscoverPage.handleShare' });
       }
     } else {
       navigator.clipboard.writeText(url);
@@ -404,43 +405,56 @@ export const DiscoverPage: React.FC = () => {
 
           <div className="absolute right-6 bottom-32 z-20 flex flex-col gap-6">
             <button
+              type="button"
               onClick={togglePlay}
-              className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
+              aria-label={isPlaying ? 'Pause story' : 'Play story'}
+              aria-pressed={isPlaying}
+              className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 focus-visible:ring-2 focus-visible:ring-white transition-colors"
             >
               {isPlaying ? (
-                <Pause className="w-6 h-6 text-white" fill="white" />
+                <Pause className="w-6 h-6 text-white" fill="white" aria-hidden="true" />
               ) : (
-                <Play className="w-6 h-6 text-white ml-1" fill="white" />
+                <Play className="w-6 h-6 text-white ml-1" fill="white" aria-hidden="true" />
               )}
             </button>
 
             <button
+              type="button"
               onClick={toggleLike}
-              className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex flex-col items-center justify-center hover:bg-white/30 transition-colors"
+              aria-label={likedStories.has(currentStory.id) ? 'Unlike story' : 'Like story'}
+              aria-pressed={likedStories.has(currentStory.id)}
+              className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex flex-col items-center justify-center hover:bg-white/30 focus-visible:ring-2 focus-visible:ring-white transition-colors"
             >
               <Heart
                 className={`w-6 h-6 ${likedStories.has(currentStory.id) ? 'text-red-500' : 'text-white'}`}
                 fill={likedStories.has(currentStory.id) ? 'currentColor' : 'none'}
+                aria-hidden="true"
               />
               <span className="text-xs text-white mt-1">{currentStory.like_count}</span>
             </button>
 
             <button
+              type="button"
               onClick={toggleBookmark}
-              className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex flex-col items-center justify-center hover:bg-white/30 transition-colors"
+              aria-label={bookmarkedStories.has(currentStory.id) ? 'Remove bookmark' : 'Bookmark story'}
+              aria-pressed={bookmarkedStories.has(currentStory.id)}
+              className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex flex-col items-center justify-center hover:bg-white/30 focus-visible:ring-2 focus-visible:ring-white transition-colors"
             >
               <Bookmark
                 className={`w-6 h-6 ${bookmarkedStories.has(currentStory.id) ? 'text-yellow-400' : 'text-white'}`}
                 fill={bookmarkedStories.has(currentStory.id) ? 'currentColor' : 'none'}
+                aria-hidden="true"
               />
               <span className="text-xs text-white mt-1">{currentStory.bookmark_count}</span>
             </button>
 
             <button
+              type="button"
               onClick={handleShare}
-              className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
+              aria-label="Share story"
+              className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 focus-visible:ring-2 focus-visible:ring-white transition-colors"
             >
-              <Share2 className="w-6 h-6 text-white" />
+              <Share2 className="w-6 h-6 text-white" aria-hidden="true" />
             </button>
           </div>
 

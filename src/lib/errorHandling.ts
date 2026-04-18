@@ -1,6 +1,12 @@
 /**
- * Centralized error handling and logging
+ * Centralized error handling and logging.
+ *
+ * Errors are captured in-memory and, when a user is authenticated, also
+ * persisted to Supabase (`user_error_logs`) so they can be reviewed by the
+ * owning user or aggregated by admins later.
  */
+
+import { supabase } from './supabase';
 
 export interface ErrorLog {
   id: string;
@@ -8,7 +14,7 @@ export interface ErrorLog {
   level: 'error' | 'warning' | 'info';
   message: string;
   stack?: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   userId?: string;
 }
 
@@ -16,7 +22,11 @@ class ErrorHandler {
   private errors: ErrorLog[] = [];
   private maxErrors = 100;
 
-  logError(error: Error | string, context?: Record<string, any>, level: 'error' | 'warning' | 'info' = 'error'): void {
+  logError(
+    error: Error | string,
+    context?: Record<string, unknown>,
+    level: 'error' | 'warning' | 'info' = 'error',
+  ): void {
     const errorLog: ErrorLog = {
       id: crypto.randomUUID(),
       timestamp: new Date(),
@@ -27,28 +37,34 @@ class ErrorHandler {
     };
 
     this.errors.unshift(errorLog);
-    
-    // Keep only the most recent errors
+
     if (this.errors.length > this.maxErrors) {
       this.errors = this.errors.slice(0, this.maxErrors);
     }
 
-    // Log to console in development
     if (import.meta.env.DEV) {
       console.error('Error logged:', errorLog);
     }
 
-    // In production, you would send this to your error tracking service
-    this.sendToErrorService(errorLog);
+    void this.sendToErrorService(errorLog);
   }
 
   private async sendToErrorService(errorLog: ErrorLog): Promise<void> {
-    // Placeholder for error tracking service integration
-    // In production, integrate with services like Sentry, LogRocket, etc.
     try {
-      // Example: await fetch('/api/errors', { method: 'POST', body: JSON.stringify(errorLog) });
-    } catch (error) {
-      console.error('Failed to send error to tracking service:', error);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      await supabase.from('user_error_logs').insert({
+        user_id: user.id,
+        level: errorLog.level,
+        message: errorLog.message.slice(0, 2000),
+        stack: errorLog.stack?.slice(0, 10000) ?? null,
+        context: errorLog.context ?? {},
+        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+        page_url: typeof window !== 'undefined' ? window.location.href : null,
+      });
+    } catch {
+      // Swallow: we must never let the error sink itself throw.
     }
   }
 
@@ -67,27 +83,25 @@ class ErrorHandler {
 
 export const errorHandler = new ErrorHandler();
 
-// Error boundary hook
 export const useErrorHandler = () => {
-  const handleError = (error: Error | string, context?: Record<string, any>) => {
+  const handleError = (error: Error | string, context?: Record<string, unknown>) => {
     errorHandler.logError(error, context);
   };
 
-  const handleWarning = (message: string, context?: Record<string, any>) => {
+  const handleWarning = (message: string, context?: Record<string, unknown>) => {
     errorHandler.logError(message, context, 'warning');
   };
 
-  const handleInfo = (message: string, context?: Record<string, any>) => {
+  const handleInfo = (message: string, context?: Record<string, unknown>) => {
     errorHandler.logError(message, context, 'info');
   };
 
   return { handleError, handleWarning, handleInfo };
 };
 
-// Async error wrapper
-export const withErrorHandling = <T extends (...args: any[]) => Promise<any>>(
+export const withErrorHandling = <T extends (...args: unknown[]) => Promise<unknown>>(
   fn: T,
-  context?: Record<string, any>
+  context?: Record<string, unknown>,
 ): T => {
   return (async (...args: Parameters<T>) => {
     try {
@@ -99,7 +113,6 @@ export const withErrorHandling = <T extends (...args: any[]) => Promise<any>>(
   }) as T;
 };
 
-// Network error handler
 export const handleNetworkError = (error: unknown): string => {
   if (!navigator.onLine) {
     return 'No internet connection. Please check your network and try again.';

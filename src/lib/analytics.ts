@@ -1,8 +1,13 @@
 /**
- * Privacy-focused analytics and user behavior tracking
+ * Privacy-focused analytics and user behavior tracking.
+ *
+ * Events are queued client-side and periodically flushed to Supabase
+ * (`analytics_events`) when a user is authenticated. Anonymous events
+ * are dropped (not persisted) to avoid unauthenticated writes.
  */
 
 import { useCallback } from 'react';
+import { supabase } from './supabase';
 
 interface AnalyticsEvent {
   name: string;
@@ -174,16 +179,22 @@ class Analytics {
     this.queue = [];
 
     try {
-      // In a real implementation, send to your analytics service
-      // await this.sendToAnalyticsService(events);
-      
-      // For now, just log in development
-      if (import.meta.env.DEV) {
-        console.log('Analytics events:', events);
-      }
-    } catch (error) {
-      console.error('Failed to send analytics events:', error);
-      // Re-queue events for retry
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const rows = events.map(e => ({
+        user_id: user.id,
+        session_id: e.sessionId,
+        event_name: e.name,
+        properties: e.properties ?? {},
+        page_url: typeof window !== 'undefined' ? window.location.href : null,
+        occurred_at: new Date(e.timestamp).toISOString(),
+      }));
+
+      const { error } = await supabase.from('analytics_events').insert(rows);
+      if (error) throw error;
+    } catch {
+      // Re-queue events for a future retry; never let analytics crash the app.
       this.queue.unshift(...events);
     }
   }

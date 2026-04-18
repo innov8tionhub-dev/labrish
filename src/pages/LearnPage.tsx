@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ChevronLeft, Play, Pause, SkipBack, SkipForward, Volume2, BookOpen, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
+import { errorHandler } from '@/lib/errorHandling';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getCulturalContext } from '@/lib/aiAssistant';
 
@@ -54,7 +55,7 @@ export const LearnPage: React.FC<LearnPageProps> = () => {
       if (error) throw error;
       setStory(data);
     } catch (error) {
-      console.error('Failed to load story:', error);
+      errorHandler.logError(error as Error, { source: 'LearnPage.load_story:' });
     } finally {
       setLoading(false);
     }
@@ -70,7 +71,7 @@ export const LearnPage: React.FC<LearnPageProps> = () => {
 
       setVocabulary(data || []);
     } catch (error) {
-      console.error('Failed to load vocabulary:', error);
+      errorHandler.logError(error as Error, { source: 'LearnPage.load_vocabulary:' });
     }
   };
 
@@ -85,7 +86,7 @@ export const LearnPage: React.FC<LearnPageProps> = () => {
 
       setProgress(data);
     } catch (error) {
-      console.error('Failed to load progress:', error);
+      errorHandler.logError(error as Error, { source: 'LearnPage.load_progress:' });
     }
   };
 
@@ -125,7 +126,7 @@ export const LearnPage: React.FC<LearnPageProps> = () => {
         last_accessed_at: new Date().toISOString(),
       });
     } catch (error) {
-      console.error('Failed to update progress:', error);
+      errorHandler.logError(error as Error, { source: 'LearnPage.update_progress:' });
     }
   };
 
@@ -181,7 +182,7 @@ export const LearnPage: React.FC<LearnPageProps> = () => {
       loadVocabulary();
       alert('Added to vocabulary!');
     } catch (error) {
-      console.error('Failed to add to vocabulary:', error);
+      errorHandler.logError(error as Error, { source: 'LearnPage.add_to_vocabulary:' });
     }
   };
 
