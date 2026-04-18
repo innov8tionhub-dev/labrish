@@ -3,12 +3,22 @@ import { motion } from 'framer-motion';
 import { Users, BookOpen, Mic2, Sparkles } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { errorHandler } from '@/lib/errorHandling';
+import SectionHeader from '@/components/common/SectionHeader';
+import { scaleIn, viewportOnce } from '@/lib/animations';
+import { cn } from '@/lib/utils';
+import { cardSurface } from '@/lib/styles';
 
 interface LiveStat {
   icon: React.ReactNode;
   value: string;
   label: string;
 }
+
+const statValueClass =
+  'font-heading text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2 break-words leading-tight';
+
+const statIconWrap =
+  'w-12 h-12 mx-auto mb-4 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-full flex items-center justify-center text-emerald-600';
 
 const PartnersSection: React.FC = () => {
   const [storyCount, setStoryCount] = useState<number | null>(null);
@@ -44,17 +54,56 @@ const PartnersSection: React.FC = () => {
     };
   }, []);
 
-  const formatCount = (n: number | null): string | null => {
-    if (n === null) return null;
-    if (n === 0) return null;
-    if (n < 10) return String(n);
-    if (n < 100) return `${Math.floor(n / 10) * 10}+`;
-    if (n < 1000) return `${Math.floor(n / 100) * 100}+`;
-    return `${(Math.floor(n / 1000)).toLocaleString()}k+`;
-  };
+  const stats = buildStats(storytellerCount, storyCount);
 
+  return (
+    <section className="py-12 sm:py-16 bg-gradient-to-b from-white to-caribbean-50/30">
+      <div className="container mx-auto px-4">
+        <SectionHeader
+          title="Preserving Caribbean Culture,"
+          highlight="One Story at a Time"
+          subtitle="An honest, community-driven platform for Caribbean storytelling."
+          className="max-w-2xl"
+        />
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8 max-w-5xl mx-auto">
+          {stats.map((stat, index) => (
+            <motion.div
+              key={`${stat.label}-${index}`}
+              className={cn(cardSurface, 'text-center p-4 sm:p-6')}
+              variants={scaleIn}
+              initial="hidden"
+              whileInView="visible"
+              viewport={viewportOnce}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              whileHover={{ y: -5 }}
+            >
+              <div className={statIconWrap}>{stat.icon}</div>
+              <div className={statValueClass}>{stat.value}</div>
+              <p className="text-xs sm:text-sm text-gray-600 font-body leading-snug">
+                {stat.label}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const formatCount = (n: number | null): string | null => {
+  if (n === null || n === 0) return null;
+  if (n < 10) return String(n);
+  if (n < 100) return `${Math.floor(n / 10) * 10}+`;
+  if (n < 1000) return `${Math.floor(n / 100) * 100}+`;
+  return `${Math.floor(n / 1000).toLocaleString()}k+`;
+};
+
+const buildStats = (
+  storytellerCount: number | null,
+  storyCount: number | null,
+): LiveStat[] => {
   const stats: LiveStat[] = [];
-
   const storytellers = formatCount(storytellerCount);
   if (storytellers) {
     stats.push({
@@ -85,51 +134,7 @@ const PartnersSection: React.FC = () => {
     label: 'Built with the community, not for it',
   });
 
-  return (
-    <section className="py-12 sm:py-16 bg-gradient-to-b from-white to-caribbean-50/30">
-      <div className="container mx-auto px-4">
-        <motion.div
-          className="text-center mb-8 sm:mb-12 max-w-2xl mx-auto"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-        >
-          <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl mb-3 text-gray-800 leading-tight">
-            Preserving Caribbean Culture,{' '}
-            <span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">
-              One Story at a Time
-            </span>
-          </h2>
-          <p className="text-sm sm:text-base text-gray-600 font-body">
-            An honest, community-driven platform for Caribbean storytelling.
-          </p>
-        </motion.div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8 max-w-5xl mx-auto">
-          {stats.map((stat, index) => (
-            <motion.div
-              key={`${stat.label}-${index}`}
-              className="text-center p-4 sm:p-6 bg-white rounded-2xl shadow-lg border border-caribbean-200/50 hover:shadow-xl transition-shadow duration-300"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              viewport={{ once: true }}
-              whileHover={{ y: -5 }}
-            >
-              <div className="w-12 h-12 mx-auto mb-4 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-full flex items-center justify-center text-emerald-600">
-                {stat.icon}
-              </div>
-              <div className="font-heading text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2 break-words leading-tight">
-                {stat.value}
-              </div>
-              <p className="text-xs sm:text-sm text-gray-600 font-body leading-snug">{stat.label}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
+  return stats;
 };
 
 export default PartnersSection;

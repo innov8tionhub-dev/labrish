@@ -15,7 +15,7 @@ registerServiceWorker();
 analytics.pageView(window.location.pathname, document.title);
 
 reportWebVitals((metric) => {
-  analytics.trackEvent('Web Vitals', {
+  analytics.track('Web Vitals', {
     metric: metric.name,
     value: Math.round(metric.value),
     rating: metric.rating,

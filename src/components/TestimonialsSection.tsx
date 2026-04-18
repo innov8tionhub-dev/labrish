@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import SectionHeader from '@/components/common/SectionHeader';
 
 const TestimonialsSection: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -67,18 +68,12 @@ const TestimonialsSection: React.FC = () => {
   return (
     <section className="py-20 bg-gradient-to-b from-white to-caribbean-50/30">
       <div className="container mx-auto px-4">
-        <motion.div
-          className="text-center mb-12"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-        >
-          <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 text-gray-800 leading-tight">
-            Loved by <span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">Storytellers</span> Worldwide
-          </h2>
-          <p className="font-body text-sm sm:text-base md:text-xl text-gray-600">Join our growing community of storytellers</p>
-        </motion.div>
+        <SectionHeader
+          title="Loved by"
+          highlight="Storytellers"
+          titleAfter="Worldwide"
+          subtitle="Join our growing community of storytellers"
+        />
 
         <div className="max-w-4xl mx-auto relative">
           <div className="relative overflow-hidden">
