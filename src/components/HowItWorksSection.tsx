@@ -21,14 +21,14 @@ const HowItWorksSection: React.FC = () => {
   ];
 
   return (
-    <section id="how-it-works" className="py-16 bg-white scroll-mt-20">
+    <section id="how-it-works" className="py-12 sm:py-16 bg-white scroll-mt-20">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="font-heading text-4xl mb-4 text-gray-800">How It Works</h2>
-          <p className="font-body text-lg text-gray-600">Get started with Labrish in three simple steps</p>
+        <div className="text-center mb-8 sm:mb-12">
+          <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl mb-3 sm:mb-4 text-gray-800 leading-tight">How It Works</h2>
+          <p className="font-body text-sm sm:text-base md:text-lg text-gray-600">Get started with Labrish in three simple steps</p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
           {steps.map((step, index) => (
             <div key={index} className="text-center">
               <div className="w-16 h-16 mx-auto mb-6 bg-caribbean-100 rounded-full flex items-center justify-center text-caribbean-600">

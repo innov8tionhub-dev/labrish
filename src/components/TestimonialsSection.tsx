@@ -74,10 +74,10 @@ const TestimonialsSection: React.FC = () => {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="font-heading text-5xl mb-4 text-gray-800">
+          <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 text-gray-800 leading-tight">
             Loved by <span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">Storytellers</span> Worldwide
           </h2>
-          <p className="font-body text-xl text-gray-600">Join our growing community of storytellers</p>
+          <p className="font-body text-sm sm:text-base md:text-xl text-gray-600">Join our growing community of storytellers</p>
         </motion.div>
 
         <div className="max-w-4xl mx-auto relative">
@@ -85,7 +85,7 @@ const TestimonialsSection: React.FC = () => {
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentIndex}
-                className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 border border-emerald-200/50"
+                className="bg-white rounded-3xl shadow-2xl p-5 sm:p-8 md:p-12 border border-emerald-200/50"
                 initial={{ opacity: 0, x: 100 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -100 }}
@@ -96,7 +96,7 @@ const TestimonialsSection: React.FC = () => {
                     <Star key={i} className="w-6 h-6 text-yellow-400 fill-current" />
                   ))}
                 </div>
-                <blockquote className="font-body text-xl text-gray-700 text-center mb-8 leading-relaxed italic">
+                <blockquote className="font-body text-base sm:text-lg md:text-xl text-gray-700 text-center mb-6 sm:mb-8 leading-relaxed italic">
                   "{testimonials[currentIndex].content}"
                 </blockquote>
                 <div className="text-center">

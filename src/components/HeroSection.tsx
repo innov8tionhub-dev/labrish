@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mic, MessageSquare, Globe2, ChevronDown, PlayCircle } from 'lucide-react';
+import { Mic, MessageSquare, Globe as Globe2, ChevronDown, PlayCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const HeroSection: React.FC = () => {
@@ -14,20 +14,20 @@ const HeroSection: React.FC = () => {
         {/* Main Content */}
         <div className="max-w-6xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-12">
-            <h1 className="font-heading text-7xl md:text-8xl mb-6 bg-gradient-to-r from-brandy via-apple to-cerise bg-clip-text text-transparent animate-wave drop-shadow-lg">
+          <div className="text-center mb-8 sm:mb-12 px-2">
+            <h1 className="font-heading text-5xl sm:text-6xl md:text-7xl lg:text-8xl mb-4 sm:mb-6 bg-gradient-to-r from-brandy via-apple to-cerise bg-clip-text text-transparent animate-wave drop-shadow-lg leading-tight">
               Labrish
             </h1>
-            <p className="font-heading text-2xl md:text-3xl text-gray-800 mb-8 drop-shadow">
+            <p className="font-heading text-lg sm:text-2xl md:text-3xl text-gray-800 mb-4 sm:mb-8 drop-shadow leading-snug">
               Where every voice has a story, and every story finds its voice.
             </p>
-            <p className="font-body text-lg md:text-xl text-gray-700 max-w-3xl mx-auto">
+            <p className="font-body text-sm sm:text-base md:text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
               A Caribbean-inspired storytelling hub for the world. Chat, share, and listen to stories in authentic island voices—powered by AI, open to all.
             </p>
           </div>
 
           {/* Feature Blocks */}
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-12">
             {/* Chat Block */}
             <div className="group bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-caribbean-200 hover:scale-105">
               <div className="flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-brandy/10 text-brandy">

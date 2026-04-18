@@ -53,7 +53,7 @@ const AnimatedTextCycle: React.FC<AnimatedTextCycleProps> = ({
   };
 
   return (
-    <span className="relative inline-block min-w-[150px] sm:min-w-[200px]">
+    <span className="relative inline-block min-w-[110px] sm:min-w-[160px] md:min-w-[200px]">
       <AnimatePresence mode="wait">
         <motion.span
           key={currentIndex}
