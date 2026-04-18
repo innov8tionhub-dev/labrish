@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Textarea from '@/components/ui/Textarea';
+import FormField from '@/components/ui/FormField';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/common/Toast';
 
@@ -228,40 +229,40 @@ const FeedbackWidget: React.FC<FeedbackWidgetProps> = ({
                   </div>
                 )}
 
-                <div>
-                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-                    Title <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="title"
-                    type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Brief summary of your feedback"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                    required
-                    maxLength={200}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">{title.length}/200 characters</p>
-                </div>
+                <FormField
+                  id="title"
+                  name="title"
+                  type="text"
+                  label={
+                    <>
+                      Title <span className="text-red-500">*</span>
+                    </>
+                  }
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Brief summary of your feedback"
+                  required
+                  maxLength={200}
+                  showCount
+                />
 
-                <div>
-                  <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
-                    Details <span className="text-red-500">*</span>
-                  </label>
-                  <Textarea
-                    id="content"
-                    name="content"
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="Please provide as much detail as possible..."
-                    rows={5}
-                    required
-                    maxLength={2000}
-                    showCount
-                    className="resize-none"
-                  />
-                </div>
+                <Textarea
+                  id="content"
+                  name="content"
+                  label={
+                    <>
+                      Details <span className="text-red-500">*</span>
+                    </>
+                  }
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Please provide as much detail as possible..."
+                  rows={5}
+                  required
+                  maxLength={2000}
+                  showCount
+                  className="resize-none"
+                />
 
                 {feedbackType === 'feature_request' && (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">

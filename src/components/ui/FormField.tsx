@@ -2,12 +2,13 @@ import React, { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
 interface FormFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
+  label?: React.ReactNode;
   error?: string;
-  hint?: string;
+  hint?: React.ReactNode;
   leadingIcon?: React.ReactNode;
   trailingIcon?: React.ReactNode;
   wrapperClassName?: string;
+  showCount?: boolean;
 }
 
 export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
@@ -19,6 +20,7 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
       leadingIcon,
       trailingIcon,
       wrapperClassName,
+      showCount,
       className,
       id,
       ...props
@@ -28,6 +30,9 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
     const inputId = id ?? props.name;
     const errorId = inputId ? `${inputId}-error` : undefined;
     const hintId = inputId && hint ? `${inputId}-hint` : undefined;
+    const currentLength =
+      typeof props.value === 'string' ? props.value.length : 0;
+    const maxLength = props.maxLength;
 
     return (
       <div className={wrapperClassName}>
@@ -78,6 +83,11 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
             {error}
           </p>
         )}
+        {showCount && maxLength ? (
+          <p className="mt-1 text-xs text-gray-500">
+            {currentLength}/{maxLength} characters
+          </p>
+        ) : null}
       </div>
     );
   }
