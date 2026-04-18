@@ -303,7 +303,7 @@ const CaribbeanVoiceHero: React.FC = () => {
           </Button>
         </motion.div>
 
-        {/* Social proof stats */}
+        {/* Value pillars */}
         <motion.div
           className="mt-8 sm:mt-12 grid grid-cols-3 gap-3 sm:gap-6 max-w-2xl mx-auto px-4"
           initial={{ opacity: 0, y: 20 }}
@@ -311,22 +311,22 @@ const CaribbeanVoiceHero: React.FC = () => {
           transition={{ duration: 0.8, delay: 1.2 }}
         >
           <div className="text-center">
-            <div className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-1">
-              500+
+            <div className="text-base sm:text-lg md:text-xl font-semibold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-1">
+              Authentic
             </div>
-            <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Early Users</p>
+            <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Caribbean voices</p>
           </div>
           <div className="text-center">
-            <div className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-1">
-              2,500+
+            <div className="text-base sm:text-lg md:text-xl font-semibold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-1">
+              Community
             </div>
-            <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Stories Created</p>
+            <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Shaped, not simulated</p>
           </div>
           <div className="text-center">
-            <div className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-1">
-              8+
+            <div className="text-base sm:text-lg md:text-xl font-semibold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-1">
+              Preservation
             </div>
-            <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Voice Accents</p>
+            <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Culture-first by design</p>
           </div>
         </motion.div>
 
