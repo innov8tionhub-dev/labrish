@@ -11,6 +11,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Textarea from '@/components/ui/Textarea';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/common/Toast';
 
@@ -248,17 +249,18 @@ const FeedbackWidget: React.FC<FeedbackWidgetProps> = ({
                   <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
                     Details <span className="text-red-500">*</span>
                   </label>
-                  <textarea
+                  <Textarea
                     id="content"
+                    name="content"
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     placeholder="Please provide as much detail as possible..."
                     rows={5}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
                     required
                     maxLength={2000}
+                    showCount
+                    className="resize-none"
                   />
-                  <p className="text-xs text-gray-500 mt-1">{content.length}/2000 characters</p>
                 </div>
 
                 {feedbackType === 'feature_request' && (

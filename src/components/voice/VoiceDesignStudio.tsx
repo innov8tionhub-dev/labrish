@@ -18,6 +18,7 @@ import {
   VolumeX
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Textarea from '@/components/ui/Textarea';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/common/Toast';
 import { useAnalytics } from '@/lib/analytics';
@@ -428,23 +429,22 @@ const VoiceDesignStudio: React.FC = () => {
                       <label htmlFor="voice-description" className="block text-sm font-medium text-gray-700 mb-2">
                         Voice Description
                       </label>
-                      <textarea
+                      <Textarea
                         id="voice-description"
                         value={voiceDescription}
                         onChange={(e) => setVoiceDescription(e.target.value)}
-                        className="w-full h-40 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"
+                        className="h-40 resize-none focus:ring-purple-500 focus:border-purple-500"
                         placeholder={generatePlaceholder()}
                         maxLength={500}
+                        showCount
                       />
-                      <div className="flex justify-between text-xs text-gray-500 mt-2">
-                        <span>{voiceDescription.length}/500 characters</span>
-                        <button
-                          onClick={() => setVoiceDescription(generatePlaceholder())}
-                          className="text-purple-500 hover:text-purple-700"
-                        >
-                          Use example
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setVoiceDescription(generatePlaceholder())}
+                        className="mt-1 text-xs text-purple-500 hover:text-purple-700"
+                      >
+                        Use example
+                      </button>
                     </div>
 
                     {/* Preview Text */}
@@ -453,17 +453,15 @@ const VoiceDesignStudio: React.FC = () => {
                         <Type className="w-4 h-4 inline mr-2" />
                         Preview Text (what the voice will say)
                       </label>
-                      <textarea
+                      <Textarea
                         id="preview-text"
                         value={previewText}
                         onChange={(e) => setPreviewText(e.target.value)}
-                        className="w-full h-24 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"
+                        className="h-24 resize-none focus:ring-purple-500 focus:border-purple-500"
                         placeholder="Enter the text you want the voice to speak in the preview..."
                         maxLength={500}
+                        showCount
                       />
-                      <div className="text-xs text-gray-500 mt-1">
-                        {previewText.length}/500 characters
-                      </div>
                     </div>
 
                     <div className="pt-4 border-t border-gray-200">
@@ -637,16 +635,14 @@ const VoiceDesignStudio: React.FC = () => {
                               <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Custom Sample Text
                               </label>
-                              <textarea
+                              <Textarea
                                 value={customText}
                                 onChange={(e) => setCustomText(e.target.value)}
-                                className="w-full h-24 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"
+                                className="h-24 resize-none focus:ring-purple-500 focus:border-purple-500"
                                 placeholder="Enter text for the voice to say in the preview..."
                                 maxLength={500}
+                                showCount
                               />
-                              <div className="text-xs text-gray-500 mt-1">
-                                {customText.length}/500 characters
-                              </div>
                             </div>
                           )}
                         </div>

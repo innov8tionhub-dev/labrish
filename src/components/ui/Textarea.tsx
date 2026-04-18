@@ -2,9 +2,9 @@ import React, { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
 interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  label?: string;
+  label?: React.ReactNode;
   error?: string;
-  hint?: string;
+  hint?: React.ReactNode;
   wrapperClassName?: string;
   showCount?: boolean;
 }

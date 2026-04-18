@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, Volume2, Download, Play, Pause, Square, Loader2, FileText, Settings, Save, Upload, Book, AudioWaveform as Waveform, Share2, ChevronLeft, BookOpen, Maximize2, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Textarea from '@/components/ui/Textarea';
 import { generateSpeechWithUrl, getAvailableVoices, Voice } from '@/lib/elevenlabs';
 import { supabase } from '@/lib/supabase';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -666,23 +667,17 @@ const TextToSpeechPage: React.FC = () => {
                       </AnimatePresence>
 
                       <div className="space-y-6">
-                        <div>
-                          <label htmlFor="text-input" className="block text-sm font-medium text-gray-700 mb-2">
-                            Enter your text (max 2,500 characters)
-                          </label>
-                          <textarea
-                            id="text-input"
-                            value={text}
-                            onChange={(e) => setText(e.target.value.slice(0, 2500))}
-                            className="w-full h-48 sm:h-64 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
-                            placeholder="Enter the text you want to convert to speech. Try writing a Caribbean story or dialogue..."
-                          />
-                          <div className="flex justify-between items-center mt-2">
-                            <span className="text-sm text-gray-500">
-                              {text.length}/2,500 characters
-                            </span>
-                          </div>
-                        </div>
+                        <Textarea
+                          id="text-input"
+                          name="text-input"
+                          label="Enter your text (max 2,500 characters)"
+                          value={text}
+                          onChange={(e) => setText(e.target.value.slice(0, 2500))}
+                          className="h-48 sm:h-64 resize-none"
+                          placeholder="Enter the text you want to convert to speech. Try writing a Caribbean story or dialogue..."
+                          maxLength={2500}
+                          showCount
+                        />
 
                         {/* Quick Text Examples */}
                         <div>
