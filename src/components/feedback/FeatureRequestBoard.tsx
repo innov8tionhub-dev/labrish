@@ -7,10 +7,10 @@ import {
   CheckCircle,
   Circle,
   TrendingUp,
-  Filter,
-  Search
+  Filter
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import SearchInput from '@/components/common/SearchInput';
 import {
   Feedback,
   getPublicFeatureRequests,
@@ -159,14 +159,11 @@ const FeatureRequestBoard: React.FC = () => {
 
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 mb-6">
             <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Search feature requests..."
+              <div className="flex-1">
+                <SearchInput
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  onChange={setSearchQuery}
+                  placeholder="Search feature requests..."
                 />
               </div>
 

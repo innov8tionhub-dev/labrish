@@ -1,20 +1,6 @@
 import React, { useState, useEffect, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Book,
-  Search,
-  Filter,
-  Play,
-  Pause,
-  Download,
-  Share2,
-  Edit,
-  Trash2,
-  Plus,
-  Clock,
-  Eye,
-  Heart
-} from 'lucide-react';
+import { Book, Search, Filter, Play, Pause, Download, Share2, CreditCard as Edit, Trash2, Plus, Clock, Eye, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Story,
@@ -28,6 +14,7 @@ import {
 } from '@/lib/storyLibrary';
 import VoicePlayer from '@/components/VoicePlayer';
 import EmptyState from '@/components/common/EmptyState';
+import SearchInput from '@/components/common/SearchInput';
 
 interface StoryLibraryProps {
   onCreateNew: () => void;
@@ -149,15 +136,12 @@ const StoryLibrary: React.FC<StoryLibraryProps> = ({ onCreateNew, onEditStory })
 
           {/* Search */}
           <div className="flex-1 flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                type="text"
+            <div className="flex-1">
+              <SearchInput
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                onChange={setSearchQuery}
+                onSearch={handleSearch}
                 placeholder="Search stories..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
             </div>
             <Button onClick={handleSearch} variant="outline" aria-label="Search">

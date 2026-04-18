@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Book, Search, FileText, Clock, Star, ChevronRight, X } from 'lucide-react';
+import { Book, FileText, Clock, Star, ChevronRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import SearchInput from '@/components/common/SearchInput';
 import { STORY_TEMPLATES, StoryTemplate, getTemplatesByCategory, searchTemplates } from '@/lib/storyTemplates';
 
 interface StoryTemplateGalleryProps {
@@ -89,16 +90,11 @@ const StoryTemplateGallery: React.FC<StoryTemplateGalleryProps> = ({ onSelectTem
           </p>
 
           {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search templates..."
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-            />
-          </div>
+          <SearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search templates..."
+          />
         </div>
 
         <div className="flex flex-1 overflow-hidden">
